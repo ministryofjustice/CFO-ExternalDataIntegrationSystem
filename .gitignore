@@ -276,8 +276,6 @@ logs/
 # Custom
 
 LocalFiles/
-*.env
-.env.*
 *.txt
 *.dat
 *~lock.*
