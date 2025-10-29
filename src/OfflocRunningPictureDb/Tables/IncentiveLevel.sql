@@ -1,0 +1,10 @@
+﻿CREATE TABLE [OfflocRunningPicture].[IncentiveLevel]
+(
+	[NOMSnumber] NVARCHAR(7) NOT NULL,
+	CONSTRAINT [PK_IncentiveLevel] PRIMARY KEY (NOMSnumber),
+	[IncentiveBand] NVARCHAR(10) NULL,
+	[IsActive] BIT NOT NULL,
+	[ValidFrom] DATETIME2 GENERATED ALWAYS AS ROW START NOT NULL,
+    [ValidTo] DATETIME2 GENERATED ALWAYS AS ROW END NOT NULL,
+    PERIOD FOR SYSTEM_TIME ([ValidFrom], [ValidTo])
+)ON [PRIMARY] WITH (SYSTEM_VERSIONING = ON (HISTORY_TABLE = [OfflocTemporal].[IncentiveLevel]))

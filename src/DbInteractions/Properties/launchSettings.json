@@ -1,0 +1,18 @@
+{
+  "profiles": {
+    "DbInteractions": {
+      "commandName": "Project",
+      "environmentVariables": {
+        "DOTNET_ENVIRONMENT": "Development",
+        "SYSTEM_ENVIRONMENT": "Development"
+      }
+    },
+    "Docker": {
+      "commandName": "Project",
+      "environmentVariables": {
+        "DOTNET_ENVIRONMENT": "Development",
+        "SYSTEM_ENVIRONMENT": "Development"
+      }
+    }
+  }
+}

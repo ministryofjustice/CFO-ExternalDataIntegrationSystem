@@ -1,0 +1,133 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+
+<!--All field values are 0-indexed here (fields are 1-indexed in Offloc definition document).-->
+<!--The Field names here are consistent with the Offloc word document.-->
+<ArrayOfDiscretionaryWriterContext>
+	<DiscretionaryWriterContext>
+		<TableName>Assessments</TableName>
+		<IncludeId>true</IncludeId>
+		<StringRelevantFields>
+			<string>Security Category Description</string>
+			<string>Security Category Review Date</string>
+			<string>Date Security Category Changed</string>
+		</StringRelevantFields>
+	</DiscretionaryWriterContext>
+	<DiscretionaryWriterContext>
+		<TableName>Bookings</TableName>
+		<IncludeId>true</IncludeId>
+		<StringRelevantFields>
+			<string>Booking Number</string>
+			<string>First Reception Date</string>
+		</StringRelevantFields>
+	</DiscretionaryWriterContext>
+	<DiscretionaryWriterContext>
+		<TableName>Employment</TableName>
+		<IncludeId>true</IncludeId>
+		<StringRelevantFields>
+			<string>Employed</string>
+			<string>Employment Status at Reception</string>
+			<string>Employment Status at Discharge</string>
+		</StringRelevantFields>
+	</DiscretionaryWriterContext>
+	<DiscretionaryWriterContext>
+		<TableName>IncentiveLevel</TableName>
+		<IncludeId>true</IncludeId>
+		<StringRelevantFields>
+			<string>Incentive Level Description</string>
+		</StringRelevantFields>
+	</DiscretionaryWriterContext>
+	<DiscretionaryWriterContext>
+		<TableName>Identifiers</TableName>
+		<IncludeId>true</IncludeId>
+		<StringRelevantFields>			
+			<string>CRO Number</string>
+		</StringRelevantFields>
+	</DiscretionaryWriterContext>
+	<DiscretionaryWriterContext>
+		<TableName>Locations</TableName>
+		<IncludeId>true</IncludeId>
+		<StringRelevantFields>
+			<string>Cell Location</string>
+		</StringRelevantFields>
+	</DiscretionaryWriterContext>
+	<DiscretionaryWriterContext>
+		<TableName>MainOffence</TableName>
+		<IncludeId>true</IncludeId>
+		<StringRelevantFields>
+			<string>Highest Ranked Offence</string>
+			<string>Date Of First Conviction</string>
+		</StringRelevantFields>
+	</DiscretionaryWriterContext>
+	<DiscretionaryWriterContext>
+		<TableName>Movements</TableName>
+		<IncludeId>true</IncludeId>
+		<StringRelevantFields>
+			<string>Movement Establishment Name</string>
+			<string>Movement Code</string>
+			<string>Transfer Reason 2</string>
+			<string>Date Of Movement</string>
+			<string>Hour Of Movement</string>
+			<string>Minute Of Movement</string>
+			<string>Second Of Movement</string>
+		</StringRelevantFields>
+	</DiscretionaryWriterContext>
+	<DiscretionaryWriterContext>
+		<TableName>OffenderAgencies</TableName>
+		<IncludeId>true</IncludeId>
+		<StringRelevantFields>
+			<string>Prison Code</string>
+		</StringRelevantFields>
+	</DiscretionaryWriterContext>
+	<DiscretionaryWriterContext>
+		<TableName>OffenderStatus</TableName>
+		<IncludeId>true</IncludeId>
+		<StringRelevantFields>
+			<string>Custody Status</string>
+			<string>Main Legal Status Description</string>
+		</StringRelevantFields>
+	</DiscretionaryWriterContext>
+	<DiscretionaryWriterContext>
+		<TableName>PersonalDetails</TableName>
+		<IncludeId>true</IncludeId>
+		<StringRelevantFields>
+			<string>Given Name 1</string>
+			<string>Given Name 2</string>
+			<string>Last Name</string>
+			<string>DOB</string>
+			<string>Gender Description</string>
+			<string>Maternity Status Description</string>
+			<string>Nationality Description</string>
+			<string>Religion Description</string>
+			<string>Marital Status Description</string>
+			<string>Ethnicity Description</string>
+		</StringRelevantFields>
+	</DiscretionaryWriterContext>
+	<DiscretionaryWriterContext>
+		<TableName>SentenceInformation</TableName>
+		<IncludeId>true</IncludeId>
+		<StringRelevantFields>
+			<string>Date First Sentenced</string>
+			<string>Sentence Length (Years)</string>
+			<string>Sentence Length (Months)</string>
+			<string>Sentence Length (Days)</string>
+			<string>Earliest Release Date</string>
+			<string>Confirmed Release Date</string>
+			<string>SED</string>
+			<string>HDCED</string>
+			<string>HDCAD</string>
+			<string>PED</string>
+			<string>CRD</string>
+			<string>NPD</string>
+			<string>LED</string>
+			<string>Top Up Supervision Expiry Date</string>
+		</StringRelevantFields>
+	</DiscretionaryWriterContext>
+	<DiscretionaryWriterContext>
+		<TableName>SexOffenders</TableName>
+		<IncludeId>true</IncludeId>
+		<StringRelevantFields>
+			<string>MAPPA Levels (Schedule 1 Sex Offender)</string>
+		</StringRelevantFields>
+	</DiscretionaryWriterContext>
+</ArrayOfDiscretionaryWriterContext>
+

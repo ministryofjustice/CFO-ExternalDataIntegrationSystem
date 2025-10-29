@@ -1,0 +1,9 @@
+﻿CREATE TABLE [OfflocRunningPicture].[OtherOffences](
+	[NOMSnumber] NVARCHAR(7) NOT NULL,
+	[Details] NVARCHAR(15),
+	[IsActive] BIT NOT NULL,
+	[ValidFrom] DATETIME2 GENERATED ALWAYS AS ROW START NOT NULL,
+    [ValidTo] DATETIME2 GENERATED ALWAYS AS ROW END NOT NULL,
+    PERIOD FOR SYSTEM_TIME ([ValidFrom], [ValidTo]),
+	CONSTRAINT [PK_OtherOffences] PRIMARY KEY (NOMSnumber, Details)
+) ON [PRIMARY] WITH (SYSTEM_VERSIONING = ON (HISTORY_TABLE = [OfflocTemporal].[OtherOffences]))

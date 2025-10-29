@@ -1,0 +1,14 @@
+{
+  "profiles": {
+    "Offloc.Parser": {
+      "commandName": "Project",
+      "environmentVariables": {
+        "DOTNET_ENVIRONMENT": "Development",
+        "SYSTEM_ENVIRONMENT": "Development"
+      }
+    },
+    "Docker": {
+      "commandName": "Project"
+    }
+  }
+}

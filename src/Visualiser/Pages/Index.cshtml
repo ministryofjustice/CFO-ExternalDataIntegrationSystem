@@ -1,0 +1,119 @@
+﻿@page "{handler?}"
+@model IndexModel
+@{
+    ViewData["Title"] = "Home";
+}
+
+<style type="text/css">
+    #network {
+        width: 100%;
+    }
+
+    .vis-manipulation {
+        background: initial !important;
+    }
+</style>
+
+<!-- Modals -->
+<div id="editNodeModal" class="modal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Edit Node</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="editNodeForm">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <input class="form-check-input" type="checkbox" id="reassignCheckbox" disabled>
+                        <label class="form-check-label" for="reassignCheckbox">
+                            Reassign
+                        </label>
+                    </div>
+                    <div class="mb-3" id="reassignSection" hidden>
+                        <div class="alert alert-warning" role="alert">
+                            Reassigning this node will delete any edges currently connected to this node.
+                        </div>
+                        <p>Reassign <b id="selectedNode">unknown</b> from <b id="oldCluster">unknown</b> to:</p>
+                        <select class="form-select" aria-label="Default select example" id="newCluster"></select>
+                    </div>
+
+                    <div>
+                        <input class="form-check-input" type="checkbox" id="hardLinkCheckbox" checked>
+                        <label class="form-check-label" for="hardLinkCheckbox">
+                            Hard Link
+                        </label>
+                    </div>
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div id="findClusterModal" class="modal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Find Cluster</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="findClusterForm">
+                <div class="modal-body">
+                    <div>
+                        <input class="form-check-input" type="checkbox" id="emptyClusterCheckbox" checked>
+                        <label class="form-check-label" for="emptyClusterCheckbox">
+                            Assign a random empty cluster
+                        </label>
+                    </div>
+                    <div class="mt-3" id="findClusterSection" hidden>
+                        <p>Please enter the UPCI to find:</p>
+                        <input type="text" class="form-control" id="findClusterInput" placeholder="UPCI" name="upci">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary" id="findClusterButton" asp-page-handler="Details" hidden>Find</button>
+                    <button type="submit" class="btn btn-primary" id="randomClusterButton" asp-page-handler="Random">Random</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div id="saveNetworkModal" class="modal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Save Network</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="saveNetwork" asp-page-handler="Network" method="post">
+                <div class="modal-body">
+                    <p>Hello</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div id="network"></div>
+
+<button id="saveNetworkButton" class="btn btn-success position-fixed bottom-0 end-0 m-4 shadow">
+    Save
+</button>
+
+@Html.AntiForgeryToken()
+
+@section Scripts {
+    <script type="text/javascript" src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+    <script type="text/javascript" src="~/js/network.js" asp-append-version="true"></script>
+}

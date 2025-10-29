@@ -1,0 +1,19 @@
+﻿CREATE TABLE [OfflocRunningPicture].[Addresses]
+(
+	[NOMSnumber] NVARCHAR(7) NOT NULL,
+	[AddressType] NVARCHAR(15) NOT NULL,
+	[NominatedNOK] NVARCHAR(100) NULL,
+	[AddressRelationship] NVARCHAR(60) NULL,
+	[Address1] NVARCHAR(100) NULL,
+	[Address2] NVARCHAR(100) NULL,
+	[Address3] NVARCHAR(100) NULL,
+	[Address4] NVARCHAR(100) NULL,
+	[Address5] NVARCHAR(100) NULL,
+	[Address6] NVARCHAR(100) NULL,
+	[Address7] NVARCHAR(100) NULL,
+	[IsActive] BIT NOT NULL,
+	[ValidFrom] DATETIME2 GENERATED ALWAYS AS ROW START NOT NULL,
+    [ValidTo] DATETIME2 GENERATED ALWAYS AS ROW END NOT NULL,
+    PERIOD FOR SYSTEM_TIME ([ValidFrom], [ValidTo]),	
+	CONSTRAINT [PK_Addresses] PRIMARY KEY (NOMSnumber , AddressType),
+) ON [PRIMARY] WITH (SYSTEM_VERSIONING = ON (HISTORY_TABLE = [OfflocTemporal].[Addresses]))

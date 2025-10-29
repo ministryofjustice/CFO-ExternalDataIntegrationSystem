@@ -1,0 +1,7 @@
+﻿CREATE TABLE [DeliusStaging].[OAS](
+	[OffenderId] BIGINT NOT NULL,
+	[Id] BIGINT NOT NULL,
+	[ROSHScore] NVARCHAR(38) NULL,
+	[AssesmentDate] DATE NULL,
+	[Deleted] NVARCHAR(1) NULL
+) ON [PRIMARY]

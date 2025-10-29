@@ -1,0 +1,19 @@
+﻿CREATE TABLE [OfflocRunningPicture].[PersonalDetails]
+(
+	[NOMSnumber] NVARCHAR(7) NOT NULL,
+	CONSTRAINT [PK_PersonalDetails] PRIMARY KEY (NOMSnumber),
+	[Forename1] NVARCHAR(50) NULL,
+	[Forename2] NVARCHAR(50) NULL,
+	[Surname] NVARCHAR(50) NULL,
+	[DOB] DATE NOT NULL,
+	[Gender] NVARCHAR(30) NOT NULL,
+	[MaternityStatus] NVARCHAR(100) NULL,
+	[Nationality] NVARCHAR(50) NULL,
+	[Religion] NVARCHAR(50) NULL,
+	[MaritalStatus] NVARCHAR(50) NULL,
+	[EthnicGroup] NVARCHAR(50) NULL,
+	[IsActive] BIT NOT NULL,
+	[ValidFrom] DATETIME2 GENERATED ALWAYS AS ROW START NOT NULL,
+    [ValidTo] DATETIME2 GENERATED ALWAYS AS ROW END NOT NULL,
+    PERIOD FOR SYSTEM_TIME ([ValidFrom], [ValidTo])
+)ON [PRIMARY] WITH (SYSTEM_VERSIONING = ON (HISTORY_TABLE = [OfflocTemporal].[PersonalDetails]))

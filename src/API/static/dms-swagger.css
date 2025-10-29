@@ -1,0 +1,30 @@
+﻿/* swagger-custom.css */
+
+/* Change the background color */
+.swagger-ui {
+    background-color: #f4f4f4;
+}
+
+/* Change text color */
+    .swagger-ui .topbar {
+        background-color: rgb(145, 48, 123);
+    }
+
+.swagger-ui .info__title {
+    color: #ffffff; /* White color for the title */
+}
+
+/* Change button color */
+    .swagger-ui .btn {
+        background-color: rgb(145, 48, 123);
+        border-color: rgb(145, 48, 123);
+        color: white; /* White button text */
+    }
+
+
+.swagger-ui .btn.authorize {
+            background-color: rgb(145, 48, 123) !important;
+            color: white;
+        }
+
+/* More customization based on your needs */

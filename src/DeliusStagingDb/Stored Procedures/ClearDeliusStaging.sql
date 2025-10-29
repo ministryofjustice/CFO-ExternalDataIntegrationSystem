@@ -1,0 +1,25 @@
+﻿CREATE PROCEDURE [DeliusStaging].[ClearDeliusStaging]
+AS
+BEGIN
+
+	TRUNCATE TABLE [DeliusStaging].AdditionalIdentifier;
+	TRUNCATE TABLE [DeliusStaging].AliasDetails;
+	TRUNCATE TABLE [DeliusStaging].Disability;
+	TRUNCATE TABLE [DeliusStaging].Disposal;
+	TRUNCATE TABLE [DeliusStaging].EventDetails;
+	TRUNCATE TABLE [DeliusStaging].MainOffence;
+	TRUNCATE TABLE [DeliusStaging].OAS;
+	TRUNCATE TABLE [DeliusStaging].OffenderAddress;
+	TRUNCATE TABLE [DeliusStaging].OffenderManager;
+	TRUNCATE TABLE [DeliusStaging].OffenderManagerBuildings;
+	TRUNCATE TABLE [DeliusStaging].OffenderManagerTeam;
+	TRUNCATE TABLE [DeliusStaging].Offenders;
+	TRUNCATE TABLE [DeliusStaging].OffenderToOffenderManagerMappings;
+	TRUNCATE TABLE [DeliusStaging].OffenderTransfer;
+	TRUNCATE TABLE [DeliusStaging].PersonalCircumstances;
+	TRUNCATE TABLE [DeliusStaging].Provision;
+	TRUNCATE TABLE [DeliusStaging].RegistrationDetails;
+	TRUNCATE TABLE [DeliusStaging].Requirement;
+	TRUNCATE TABLE [DeliusStaging].StandardisationReference;
+	
+END

@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <Name>DeliusRunningPictureDb</Name>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectVersion>4.1</ProjectVersion>
+    <ProjectGuid>{f9c6adbe-15fb-409e-bfed-a48eebf393a7}</ProjectGuid>
+    <DSP>Microsoft.Data.Tools.Schema.Sql.Sql160DatabaseSchemaProvider</DSP>
+    <OutputType>Database</OutputType>
+    <RootPath>
+    </RootPath>
+    <RootNamespace>DeliusRunningPictureDb</RootNamespace>
+    <AssemblyName>DeliusRunningPictureDb</AssemblyName>
+    <ModelCollation>1033, CI</ModelCollation>
+    <DefaultFileStructure>BySchemaAndSchemaType</DefaultFileStructure>
+    <DeployToDatabase>True</DeployToDatabase>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
+    <TargetLanguage>CS</TargetLanguage>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <SqlServerVerification>False</SqlServerVerification>
+    <IncludeCompositeObjects>True</IncludeCompositeObjects>
+    <TargetDatabaseSet>True</TargetDatabaseSet>
+    <GenerateCreateScript>True</GenerateCreateScript> 
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <OutputPath>bin\Release\</OutputPath>
+    <BuildScriptName>$(MSBuildProjectName).sql</BuildScriptName>
+    <TreatWarningsAsErrors>False</TreatWarningsAsErrors>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <DefineDebug>false</DefineDebug>
+    <DefineTrace>true</DefineTrace>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <OutputPath>bin\Debug\</OutputPath>
+    <BuildScriptName>$(MSBuildProjectName).sql</BuildScriptName>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <DefineDebug>true</DefineDebug>
+    <DefineTrace>true</DefineTrace>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup>
+    <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">11.0</VisualStudioVersion>
+    <!-- Default to the v11.0 targets path if the targets file for the current VS version is not found -->
+    <SSDTExists Condition="Exists('$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v$(VisualStudioVersion)\SSDT\Microsoft.Data.Tools.Schema.SqlTasks.targets')">True</SSDTExists>
+    <VisualStudioVersion Condition="'$(SSDTExists)' == ''">11.0</VisualStudioVersion>
+  </PropertyGroup>
+  <Import Condition="'$(SQLDBExtensionsRefPath)' != ''" Project="$(SQLDBExtensionsRefPath)\Microsoft.Data.Tools.Schema.SqlTasks.targets" />
+  <Import Condition="'$(SQLDBExtensionsRefPath)' == ''" Project="$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v$(VisualStudioVersion)\SSDT\Microsoft.Data.Tools.Schema.SqlTasks.targets" />
+  <ItemGroup>
+    <Folder Include="Properties" />
+    <Folder Include="Tables" />
+    <Folder Include="Schema" />
+    <Folder Include="Indexes" />
+    <Folder Include="Stored Procedures" />
+    <Folder Include="Views" />
+    <Folder Include="Functions" />
+  </ItemGroup>
+  <ItemGroup>
+    <Build Include="Tables\AdditionalIdentifier.sql" />
+    <Build Include="Tables\AliasDetails.sql" />
+    <Build Include="Tables\Disability.sql" />
+    <Build Include="Tables\Disposal.sql" />
+    <Build Include="Tables\EventDetails.sql" />
+    <Build Include="Tables\MainOffence.sql" />
+    <Build Include="Tables\OAS.sql" />
+    <Build Include="Tables\OffenderAddress.sql" />
+    <Build Include="Tables\Offenders.sql" />
+    <Build Include="Tables\OffenderTransfer.sql" />
+    <Build Include="Tables\PersonalCircumstances.sql" />
+    <Build Include="Tables\Provision.sql" />
+    <Build Include="Tables\RegistrationDetails.sql" />
+    <Build Include="Tables\Requirement.sql" />
+    <Build Include="Schema\DeliusRunningPicture.sql" />
+    <Build Include="Schema\DeliusTemporal.sql" />
+    <Build Include="Stored Procedures\MergeOffenders.sql" />
+    <Build Include="Stored Procedures\PreMergeScript.sql" />
+    <Build Include="Stored Procedures\MergeAdditionalIdentifier.sql" />
+    <Build Include="Stored Procedures\MergeAliasDetails.sql" />
+    <Build Include="Stored Procedures\MergeDisability.sql" />
+    <Build Include="Stored Procedures\MergeDisposal.sql" />
+    <Build Include="Stored Procedures\MergeEventDetails.sql" />
+    <Build Include="Stored Procedures\MergeOffenderTransfer.sql" />
+    <Build Include="Stored Procedures\MergeOAS.sql" />
+    <Build Include="Stored Procedures\MergeOffenderAddress.sql" />
+    <Build Include="Stored Procedures\MergeOffenderManager.sql" />
+    <Build Include="Stored Procedures\MergePersonalCircumstances.sql" />
+    <Build Include="Stored Procedures\MergeMainOffence.sql" />
+    <Build Include="Stored Procedures\MergeProvision.sql" />
+    <Build Include="Stored Procedures\MergeRegistrationDetails.sql" />
+    <Build Include="Stored Procedures\MergeOffenderManagerBuildings.sql" />
+    <Build Include="Stored Procedures\MergeOffenderManagerTeam.sql" />
+    <Build Include="Stored Procedures\MergeOffenderToOffenderManagerMappings.sql" />
+    <Build Include="Tables\OffenderManagerBuildings.sql" />
+    <Build Include="Tables\OffenderManagerTeam.sql" />
+    <Build Include="Tables\OffenderToOffenderManagerMappings.sql" />
+    <Build Include="Tables\OffenderManager.sql" />
+    <Build Include="Stored Procedures\MergeAll.sql" />
+    <Build Include="Stored Procedures\MergeRequirement.sql" />
+    <Build Include="Indexes\IX_Offenders.sql" />
+    <Build Include="Views\RecordMatchingView.sql" />
+    <Build Include="Tables\ProcessedFiles.sql" />
+    <Build Include="Stored Procedures\MergeStandardisationReference.sql" />
+    <Build Include="Tables\StandardisationReference.sql" />
+    <Build Include="Views\OffendersCleanView.sql" />
+    <Build Include="Functions\StandardisePrisonNumber.sql" />
+    <Build Include="Functions\StandardiseCRO.sql" />
+    <Build Include="Functions\StandardisePNC.sql" />
+    <Build Include="Views\PrisonNumberView.sql" />
+    <Build Include="Views\PNCView.sql" />
+    <Build Include="Views\CROView.sql" />
+  </ItemGroup>
+</Project>

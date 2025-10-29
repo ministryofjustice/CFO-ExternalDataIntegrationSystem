@@ -1,0 +1,40 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+
+<ArrayOfGroupWriterContext>
+	<GroupWriterContext>
+		<TableName>Flags</TableName>
+		<StartingIndex>147</StartingIndex>
+		<WriterType>Repeating</WriterType>
+		<IgnoreDuplicates>true</IgnoreDuplicates>
+	</GroupWriterContext>
+	<GroupWriterContext>
+		<TableName>PNC</TableName>
+		<StartingIndex>47</StartingIndex>
+		<WriterType>Repeating</WriterType>
+		<IgnoreDuplicates>false</IgnoreDuplicates>
+	</GroupWriterContext>
+	<GroupWriterContext>
+		<TableName>PreviousPrisonNumbers</TableName>
+		<StartingIndex>30</StartingIndex>
+		<WriterType>Repeating</WriterType>
+		<IgnoreDuplicates>false</IgnoreDuplicates>
+	</GroupWriterContext>
+	<GroupWriterContext>
+		<TableName>OtherOffences</TableName>
+		<StartingIndex>146</StartingIndex>
+		<WriterType>Repeating</WriterType>
+		<IgnoreDuplicates>true</IgnoreDuplicates>
+	</GroupWriterContext>
+	<GroupWriterContext>
+		<TableName>DiaryDetails</TableName>
+		<StartingIndex>144</StartingIndex>
+		<WriterType>Nested</WriterType>
+		<IgnoreDuplicates>false</IgnoreDuplicates>
+	</GroupWriterContext>
+	<GroupWriterContext>
+		<TableName>Activities</TableName>
+		<StartingIndex>151</StartingIndex>
+		<WriterType>Nested</WriterType>
+		<IgnoreDuplicates>true</IgnoreDuplicates>
+	</GroupWriterContext>
+</ArrayOfGroupWriterContext>

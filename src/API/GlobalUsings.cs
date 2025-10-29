@@ -1,0 +1,14 @@
+﻿global using API.Extensions;
+global using EnvironmentSetup;
+global using Microsoft.AspNetCore.Authentication;
+global using Microsoft.EntityFrameworkCore;
+global using Microsoft.OpenApi.Models;
+global using Serilog;
+global using Serilog.Events;
+global using System.Reflection;
+global using System.Text.Json.Serialization;
+global using API.Endpoints;
+global using Infrastructure.Contexts;
+global using Infrastructure.Entities;
+global using Infrastructure.Repositories;
+global using Infrastructure.Services.Aggregation;

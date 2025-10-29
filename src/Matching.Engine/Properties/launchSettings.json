@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "Matching.Comparer": {
+      "commandName": "Project",
+      "environmentVariables": {
+        "DOTNET_ENVIRONMENT": "Development"
+      }
+    }
+  }
+}

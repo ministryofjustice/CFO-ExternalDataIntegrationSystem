@@ -1,0 +1,23 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<PackageId>Hmpps.Cfo.Matching.Core</PackageId>
+		<Version>1.0.0</Version>
+		<Authors>CFO Dev Team</Authors>
+		<Company>HMPPS Creating Future Opportunities (CFO)</Company>
+	</PropertyGroup>
+
+	<PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+	<ManagePackageVersionsCentrally>false</ManagePackageVersionsCentrally>
+	<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Phonix" Version="1.0.2" />
+    <PackageReference Include="SimMetrics.Net" Version="1.0.5" />
+  </ItemGroup>
+
+</Project>

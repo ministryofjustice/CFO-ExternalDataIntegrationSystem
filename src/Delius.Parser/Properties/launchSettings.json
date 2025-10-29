@@ -1,0 +1,13 @@
+{
+  "profiles": {
+    "Delius.Parser": {
+      "commandName": "Project",
+      "environmentVariables": {
+        "DOTNET_ENVIRONMENT": "Development"
+      }
+    },
+    "Docker": {
+      "commandName": "Project"
+    }
+  }
+}

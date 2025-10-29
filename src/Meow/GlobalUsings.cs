@@ -1,0 +1,9 @@
+﻿global using EnvironmentSetup;
+global using Infrastructure;
+global using Infrastructure.Services.Aggregation;
+global using Meow.Features.Participants.Events;
+global using Microsoft.Extensions.Configuration;
+global using Microsoft.Extensions.DependencyInjection;
+global using Microsoft.Extensions.Hosting;
+global using Rebus.Config;
+global using Serilog;
