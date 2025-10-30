@@ -98,20 +98,6 @@ app.UseExceptionHandler();
 
 if (configuration["IsDevelopment"] is not null && configuration.GetValue<bool>("IsDevelopment"))
 {
-    using var scope = app.Services.CreateScope();
-    
-    var delius = scope.ServiceProvider.GetRequiredService<DeliusContext>();
-    delius.Database.EnsureCreated();
-
-    var offloc = scope.ServiceProvider.GetRequiredService<OfflocContext>();
-    offloc.Database.EnsureCreated();
-
-    var cluster = scope.ServiceProvider.GetRequiredService<ClusteringContext>();
-    cluster.Database.EnsureCreated();
-
-    var audit = scope.ServiceProvider.GetRequiredService<AuditContext>();
-    audit.Database.EnsureCreated();
-
     app.RegisterDevelopmentEndpoints();
 
     app.UseOpenApi();
@@ -120,24 +106,6 @@ if (configuration["IsDevelopment"] is not null && configuration.GetValue<bool>("
     {
         options.CustomStylesheetPath = "/static/dms-swagger.css";
     });
-
-    var db = scope.ServiceProvider.GetRequiredService<ClusteringContext>();
-
-    var baseDir = AppContext.BaseDirectory;
-
-    var scriptsPath = Path.Combine(baseDir, "Scripts");
-
-    if(Path.Exists(scriptsPath) == false)
-    {
-        throw new DirectoryNotFoundException($"Scripts directory not found at {scriptsPath}");
-    }
-
-    foreach(var file in Directory.GetFiles(scriptsPath, "*.sql").OrderBy(file => file))
-    {
-        var sql = await File.ReadAllTextAsync(file);
-        await db.Database.ExecuteSqlRawAsync(sql);
-    }
-
 }
 
 app.UseAuthentication();
