@@ -7,4 +7,8 @@
 		<Copy SourceFiles="$(EnvFile)" DestinationFolder="$(OutputPath).." />
 	</Target>
 	
+	<PropertyGroup>
+		<TargetFramework>net9.0</TargetFramework>
+	</PropertyGroup>
+
 </Project>
