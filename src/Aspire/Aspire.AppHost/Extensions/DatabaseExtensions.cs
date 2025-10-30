@@ -24,13 +24,13 @@ public static class DatabaseExtensions
     {
         var audit = sqlServer.AddDatabase("AuditDb");
         var offlocStaging = sqlServer.AddDatabase("OfflocStagingDb");
-        var deliusStaging = sqlServer.AddDatabase("DeliveryStagingDb");
+        var deliusStaging = sqlServer.AddDatabase("DeliusStagingDb");
         var deliusRunningPicture = sqlServer.AddDatabase("DeliusRunningPictureDb");
         var offlocRunningPicture = sqlServer.AddDatabase("OfflocRunningPictureDb");
         var matching = sqlServer.AddDatabase("MatchingDb");
         var cluster = sqlServer.AddDatabase("ClusterDb");
 
-        builder.AddSqlProject<AuditDb>("audit")
+        builder.AddSqlProject<AuditDb>("Audit")
             .WithReference(audit);
 
         builder.AddSqlProject<OfflocStagingDb>("OfflocStaging")
