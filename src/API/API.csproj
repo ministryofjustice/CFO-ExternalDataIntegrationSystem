@@ -19,17 +19,14 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\Aspire\Aspire.ServiceDefaults\Aspire.ServiceDefaults.csproj"/>
-        <ProjectReference Include="..\Matching.Core\Matching.Core.csproj"/>
-        <ProjectReference Include="..\EnvironmentSetup\EnvironmentSetup.csproj"/>
-        <ProjectReference Include="..\Infrastructure\Infrastructure.csproj"/>
+        <ProjectReference Include="..\Aspire\Aspire.ServiceDefaults\Aspire.ServiceDefaults.csproj" />
+        <ProjectReference Include="..\Matching.Core\Matching.Core.csproj" />
+        <ProjectReference Include="..\EnvironmentSetup\EnvironmentSetup.csproj" />
+        <ProjectReference Include="..\Infrastructure\Infrastructure.csproj" />
     </ItemGroup>
 
     <ItemGroup>
         <Content Include="static\**\*">
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        </Content>
-        <Content Include="Scripts\**\*">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </Content>
     </ItemGroup>

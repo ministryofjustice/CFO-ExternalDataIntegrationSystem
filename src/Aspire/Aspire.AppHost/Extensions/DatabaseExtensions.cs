@@ -4,7 +4,7 @@ namespace Aspire.AppHost.Extensions;
 
 public static class DatabaseExtensions
 {
-    public static IResourceBuilder<SqlServerServerResource> AddDmsDatabase(
+    public static IResourceBuilder<SqlServerServerResource> AddDmsSqlServer(
         this IDistributedApplicationBuilder builder,
         IResourceBuilder<ParameterResource> password)
     {
@@ -20,7 +20,8 @@ public static class DatabaseExtensions
 
     public static DmsDatabases AddDmsDatabases(
         this IDistributedApplicationBuilder builder,
-        IResourceBuilder<SqlServerServerResource> sqlServer)
+        IResourceBuilder<SqlServerServerResource> sqlServer,
+        bool seedData = false)
     {
         var audit = sqlServer.AddDatabase("AuditDb");
         var offlocStaging = sqlServer.AddDatabase("OfflocStagingDb");
@@ -52,13 +53,20 @@ public static class DatabaseExtensions
                 options.SetVariable("OfflocRunningPictureDb", "OfflocRunningPictureDb");
             });
 
-        builder.AddSqlProject<ClusterDb>("Cluster")
+        var clusterSqlProj = builder.AddSqlProject<ClusterDb>("Cluster")
             .WithReference(cluster)
             .WithConfigureDacDeployOptions(options => {
                 options.SetVariable("MatchingDb", "MatchingDb");
                 options.SetVariable("DeliusRunningPictureDb", "DeliusRunningPictureDb");
                 options.SetVariable("OfflocRunningPictureDb", "OfflocRunningPictureDb");
             });
+
+        if(seedData)
+        {
+            builder.AddProject<FakeDataSeeder>("FakeDataSeeder")
+                .WithReference(cluster)
+                .WaitForCompletion(clusterSqlProj);
+        }
 
         return new DmsDatabases(
             audit,

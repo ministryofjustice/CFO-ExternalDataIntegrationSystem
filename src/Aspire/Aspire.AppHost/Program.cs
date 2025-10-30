@@ -8,8 +8,8 @@ var apiKey = builder.AddParameter("apikey", true);
 var isDevelopment = builder.AddParameter("IsDevelopment");
 
 // Database setup
-var db = builder.AddDmsDatabase(password);
-var databases = builder.AddDmsDatabases(db);
+var sql = builder.AddDmsSqlServer(password);
+var databases = builder.AddDmsDatabases(sql, seedData: true);
 
 // API setup
 var apiService = builder.AddDmsApi(databases, apiKey, isDevelopment);

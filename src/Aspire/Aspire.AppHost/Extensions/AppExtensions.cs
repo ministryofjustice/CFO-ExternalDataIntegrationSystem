@@ -2,7 +2,7 @@
 
 namespace Aspire.AppHost.Extensions;
 
-public static class ApiExtensions
+public static class AppExtensions
 {
     public static IResourceBuilder<ProjectResource> AddDmsApi(
         this IDistributedApplicationBuilder builder,
