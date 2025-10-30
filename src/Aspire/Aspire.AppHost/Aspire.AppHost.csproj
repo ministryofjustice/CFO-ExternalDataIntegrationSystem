@@ -6,6 +6,7 @@
         <Nullable>enable</Nullable>
         <IsAspireHost>true</IsAspireHost>
         <UserSecretsId>4314ae44-7ea1-4bdc-bda3-c55826dd2434</UserSecretsId>
+		<TargetFramework>net9.0</TargetFramework>
     </PropertyGroup>
 
     <ItemGroup>
