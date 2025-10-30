@@ -1,32 +1,32 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-	<Sdk Name="Aspire.AppHost.Sdk" Version="9.0.0"></Sdk>
-	<PropertyGroup>
-    <OutputType>Exe</OutputType>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
-    <IsAspireHost>true</IsAspireHost>
-    <UserSecretsId>4314ae44-7ea1-4bdc-bda3-c55826dd2434</UserSecretsId>
-	  <ManagePackageVersionsCentrally>false</ManagePackageVersionsCentrally>
-  </PropertyGroup>
+    <Sdk Name="Aspire.AppHost.Sdk" Version="9.5.2"/>
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <IsAspireHost>true</IsAspireHost>
+        <UserSecretsId>4314ae44-7ea1-4bdc-bda3-c55826dd2434</UserSecretsId>
+    </PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Aspire.Hosting.AppHost" Version="9.5.2" />
-    <PackageReference Include="Aspire.Hosting.Redis" Version="9.5.2" />
-    <PackageReference Include="Aspire.Hosting.SqlServer" Version="9.5.2" />
-    <PackageReference Include="CommunityToolkit.Aspire.Hosting.SqlDatabaseProjects" Version="9.8.0" />
-  </ItemGroup>
+    <ItemGroup>
+        <PackageReference Include="Aspire.Hosting.AppHost"/>
+        <PackageReference Include="Aspire.Hosting.Redis"/>
+        <PackageReference Include="Aspire.Hosting.SqlServer"/>
+        <PackageReference Include="CommunityToolkit.Aspire.Hosting.SqlDatabaseProjects"/>
+    </ItemGroup>
 
-  <ItemGroup>
-	  <ProjectReference Include="..\..\API\API.csproj" />
-	  <ProjectReference Include="..\..\DeliusRunningPictureDb\DeliusRunningPictureDb.sqlproj" />
-	  <ProjectReference Include="..\..\DeliusStagingDb\DeliusStagingDb.sqlproj" />
-	  <ProjectReference Include="..\..\MatchingDb\MatchingDb.sqlproj" />
-	  <ProjectReference Include="..\..\Meow\Meow.csproj" />
-	  <ProjectReference Include="..\..\OfflocRunningPictureDb\OfflocRunningPictureDb.sqlproj" />
-	  <ProjectReference Include="..\..\Visualiser\Visualiser.csproj" />
-	  <ProjectReference Include="..\..\AuditDb\AuditDb.sqlproj" />
-	  <ProjectReference Include="..\..\OfflocStagingDb\OfflocStagingDb.sqlproj" />
-	  <ProjectReference Include="..\..\ClusterDb\ClusterDb.sqlproj" />
-  </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\API\API.csproj"/>
+        <ProjectReference Include="..\..\DeliusRunningPictureDb\DeliusRunningPictureDb.sqlproj"/>
+        <ProjectReference Include="..\..\DeliusStagingDb\DeliusStagingDb.sqlproj"/>
+        <ProjectReference Include="..\..\MatchingDb\MatchingDb.sqlproj"/>
+        <ProjectReference Include="..\..\Meow\Meow.csproj"/>
+        <ProjectReference Include="..\..\OfflocRunningPictureDb\OfflocRunningPictureDb.sqlproj"/>
+        <ProjectReference Include="..\..\Visualiser\Visualiser.csproj"/>
+        <ProjectReference Include="..\..\AuditDb\AuditDb.sqlproj"/>
+        <ProjectReference Include="..\..\OfflocStagingDb\OfflocStagingDb.sqlproj"/>
+        <ProjectReference Include="..\..\ClusterDb\ClusterDb.sqlproj"/>
+    </ItemGroup>
 
 </Project>
