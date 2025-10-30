@@ -27,7 +27,8 @@
         <ProjectReference Include="..\..\Visualiser\Visualiser.csproj"/>
         <ProjectReference Include="..\..\AuditDb\AuditDb.sqlproj"/>
         <ProjectReference Include="..\..\OfflocStagingDb\OfflocStagingDb.sqlproj"/>
-        <ProjectReference Include="..\..\ClusterDb\ClusterDb.sqlproj"/>
+		<ProjectReference Include="..\..\ClusterDb\ClusterDb.sqlproj"/>
+		<ProjectReference Include="..\..\FakeDataSeeder\FakeDataSeeder.csproj"/>
     </ItemGroup>
 
 </Project>
