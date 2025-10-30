@@ -1,28 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
-<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
+<Project DefaultTargets="Build">
   <Sdk Name="Microsoft.Build.Sql" Version="2.0.0" />
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <Name>OfflocRunningPictureDb</Name>
-    <SchemaVersion>2.0</SchemaVersion>
-    <ProjectVersion>4.1</ProjectVersion>
-    <ProjectGuid>{a1a8a7ed-d3d2-4916-866a-9aeb510840ac}</ProjectGuid>
-    <DSP>Microsoft.Data.Tools.Schema.Sql.Sql160DatabaseSchemaProvider</DSP>
-    <OutputType>Database</OutputType>
-    <RootPath>
-    </RootPath>
-    <RootNamespace>OfflocRunningPictureDb</RootNamespace>
-    <AssemblyName>OfflocRunningPictureDb</AssemblyName>
-    <ModelCollation>1033, CI</ModelCollation>
-    <DefaultFileStructure>BySchemaAndSchemaType</DefaultFileStructure>
-    <DeployToDatabase>True</DeployToDatabase>
-    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
-    <TargetLanguage>CS</TargetLanguage>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <SqlServerVerification>False</SqlServerVerification>
-    <IncludeCompositeObjects>True</IncludeCompositeObjects>
-    <TargetDatabaseSet>True</TargetDatabaseSet>
-    <GenerateCreateScript>True</GenerateCreateScript> 
+		<Name>OfflocRunningPictureDb</Name>
+		<DSP>Microsoft.Data.Tools.Schema.Sql.Sql160DatabaseSchemaProvider</DSP>
+		<ModelCollation>1033, CI</ModelCollation>
+		<RootNamespace>OfflocRunningPictureDb</RootNamespace>
+		<AssemblyName>OfflocRunningPictureDb</AssemblyName>
   </PropertyGroup>
+
 </Project>
