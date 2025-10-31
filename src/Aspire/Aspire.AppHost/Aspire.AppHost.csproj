@@ -1,5 +1,5 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-    <Sdk Name="Aspire.AppHost.Sdk" Version="9.5.2"/>
+    <Sdk Name="Aspire.AppHost.Sdk" Version="9.5.2" />
     <PropertyGroup>
         <OutputType>Exe</OutputType>
         <ImplicitUsings>enable</ImplicitUsings>
@@ -10,25 +10,40 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Aspire.Hosting.AppHost"/>
-        <PackageReference Include="Aspire.Hosting.Redis"/>
-        <PackageReference Include="Aspire.Hosting.SqlServer"/>
-        <PackageReference Include="CommunityToolkit.Aspire.Hosting.SqlDatabaseProjects"/>
+        <PackageReference Include="Aspire.Hosting.AppHost" />
+        <PackageReference Include="Aspire.Hosting.RabbitMQ" />
+        <PackageReference Include="Aspire.Hosting.Redis" />
+        <PackageReference Include="Aspire.Hosting.SqlServer" />
+        <PackageReference Include="Aspire.RabbitMQ.Client" />
+        <PackageReference Include="CommunityToolkit.Aspire.Hosting.SqlDatabaseProjects" />
     </ItemGroup>
 
 
     <ItemGroup>
-        <ProjectReference Include="..\..\API\API.csproj"/>
-        <ProjectReference Include="..\..\DeliusRunningPictureDb\DeliusRunningPictureDb.sqlproj"/>
-        <ProjectReference Include="..\..\DeliusStagingDb\DeliusStagingDb.sqlproj"/>
-        <ProjectReference Include="..\..\MatchingDb\MatchingDb.sqlproj"/>
-        <ProjectReference Include="..\..\Meow\Meow.csproj"/>
-        <ProjectReference Include="..\..\OfflocRunningPictureDb\OfflocRunningPictureDb.sqlproj"/>
-        <ProjectReference Include="..\..\Visualiser\Visualiser.csproj"/>
-        <ProjectReference Include="..\..\AuditDb\AuditDb.sqlproj"/>
-        <ProjectReference Include="..\..\OfflocStagingDb\OfflocStagingDb.sqlproj"/>
-		<ProjectReference Include="..\..\ClusterDb\ClusterDb.sqlproj"/>
-		<ProjectReference Include="..\..\FakeDataSeeder\FakeDataSeeder.csproj"/>
+        <ProjectReference Include="..\..\API\API.csproj" />
+        <ProjectReference Include="..\..\DeliusRunningPictureDb\DeliusRunningPictureDb.sqlproj" />
+        <ProjectReference Include="..\..\DeliusStagingDb\DeliusStagingDb.sqlproj" />
+        <ProjectReference Include="..\..\MatchingDb\MatchingDb.sqlproj" />
+        <ProjectReference Include="..\..\Meow\Meow.csproj" />
+        <ProjectReference Include="..\..\OfflocRunningPictureDb\OfflocRunningPictureDb.sqlproj" />
+        <ProjectReference Include="..\..\Visualiser\Visualiser.csproj" />
+        <ProjectReference Include="..\..\AuditDb\AuditDb.sqlproj" />
+        <ProjectReference Include="..\..\OfflocStagingDb\OfflocStagingDb.sqlproj" />
+		<ProjectReference Include="..\..\ClusterDb\ClusterDb.sqlproj" />
+		<ProjectReference Include="..\..\FakeDataSeeder\FakeDataSeeder.csproj" />
+		<!-- DMS APPS -->
+		<ProjectReference Include="..\..\Blocking\Blocking.csproj" />
+		<ProjectReference Include="..\..\Cleanup\Cleanup.csproj" />
+		<ProjectReference Include="..\..\DbInteractions\DbInteractions.csproj" />
+		<ProjectReference Include="..\..\Delius.Parser\Delius.Parser.csproj" />
+		<ProjectReference Include="..\..\Import\Import.csproj" />
+		<ProjectReference Include="..\..\Kickoff\Kickoff.csproj" />
+		<ProjectReference Include="..\..\Logging\Logging.csproj" />
+		<ProjectReference Include="..\..\Matching.Engine\Matching.Engine.csproj" />
+		<ProjectReference Include="..\..\Meow\Meow.csproj" />
+		<ProjectReference Include="..\..\Offloc.Cleaner\Offloc.Cleaner.csproj" />
+		<ProjectReference Include="..\..\Offloc.Parser\Offloc.Parser.csproj" />
+		<ProjectReference Include="..\..\Orchestrator\Orchestrator.csproj" />
     </ItemGroup>
 
 </Project>

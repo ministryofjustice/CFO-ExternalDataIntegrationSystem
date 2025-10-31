@@ -4,9 +4,11 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageVersion Include="Aspire.Hosting.AppHost" Version="9.5.2" />
+    <PackageVersion Include="Aspire.Hosting.RabbitMQ" Version="9.5.2" />
     <PackageVersion Include="Aspire.Hosting.Redis" Version="9.5.2" />
     <PackageVersion Include="Aspire.Hosting.SqlServer" Version="9.5.2" />
     <PackageVersion Include="Aspire.Microsoft.EntityFrameworkCore.SqlServer" Version="9.5.2" />
+    <PackageVersion Include="Aspire.RabbitMQ.Client" Version="9.5.2" />
     <PackageVersion Include="CommunityToolkit.Aspire.Hosting.SqlDatabaseProjects" Version="9.8.1-beta.424" />
     <PackageVersion Include="Autofac" Version="8.4.0" />
     <PackageVersion Include="Autofac.Extensions.DependencyInjection" Version="10.0.0" />
