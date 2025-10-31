@@ -15,6 +15,12 @@ var databases = builder.AddDmsDatabases(sql, seedData: true);
 var apiService = builder.AddDmsApi(databases, apiKey, isDevelopment);
 
 // Visualiser setup
-builder.AddDmsVisualiser(apiService, apiKey);
+builder.AddDmsVisualiser(apiService);
+
+var rabbit = builder
+    .AddRabbitMQ("RabbitMQ")
+    .WithManagementPlugin();
+
+builder.AddDmsServices(rabbit, databases);
 
 builder.Build().Run();
