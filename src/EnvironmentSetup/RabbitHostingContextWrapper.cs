@@ -9,6 +9,13 @@ public class RabbitHostingContextWrapper
     public string Username { get; }
     public string Password { get; }
 
+    public Uri? Uri { get; }
+
+    public RabbitHostingContextWrapper(Uri uri) : this(defaultContext)
+    {
+        Uri = uri;
+    }
+
     public RabbitHostingContextWrapper(string? hostingContext, string username = "guest", string password = "guest")
     {
         Context = hostingContext ?? defaultContext;

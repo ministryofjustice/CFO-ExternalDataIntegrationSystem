@@ -33,12 +33,20 @@ public class RabbitService : IMessageService
     {
         this.rabbitContext = hostingContext;
 
-        factory = new ConnectionFactory()
+        // Configures connection factory based on whether a full URI is provided or individual components.
+        if (hostingContext.Uri is not null)
         {
-            HostName = rabbitContext.Context,
-            UserName = rabbitContext.Username,
-            Password = rabbitContext.Password
-        };
+            factory = new ConnectionFactory() { Uri = hostingContext.Uri };
+        }
+        else
+        {
+            factory = new ConnectionFactory()
+            {
+                HostName = hostingContext.Context,
+                UserName = hostingContext.Username,
+                Password = hostingContext.Password
+            };
+        }
 
         connection = factory.CreateConnection();
         channel = connection.CreateModel();
