@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 17
-VisualStudioVersion = 17.14.36414.22 d17.14
+# Visual Studio Version 18
+VisualStudioVersion = 18.0.11116.177
 MinimumVisualStudioVersion = 15.0.26124.0
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{D30CBF2D-71E6-43EE-85EC-BF193B03782D}"
 EndProject
@@ -15,9 +15,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Messaging", "src\Messaging\
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Import", "src\Import\Import.csproj", "{47A53A37-1E8C-479C-B3B5-276D2D05154E}"
 EndProject
-Project("{00D1A9C2-B5F0-4AF3-8072-F6C62B433612}") = "OfflocStagingDb", "src\OfflocStagingDb\OfflocStagingDb.sqlproj", "{0FA34F76-91ED-4037-883D-5916258BA65A}"
+Project("{42EA0DBD-9CF1-443E-919E-BE9C484E4577}") = "OfflocStagingDb", "src\OfflocStagingDb\OfflocStagingDb.sqlproj", "{0FA34F76-91ED-4037-883D-5916258BA65A}"
 EndProject
-Project("{00D1A9C2-B5F0-4AF3-8072-F6C62B433612}") = "DeliusStagingDb", "src\DeliusStagingDb\DeliusStagingDb.sqlproj", "{5E86F978-BE47-458C-ADE7-D3B5B47C514A}"
+Project("{42EA0DBD-9CF1-443E-919E-BE9C484E4577}") = "DeliusStagingDb", "src\DeliusStagingDb\DeliusStagingDb.sqlproj", "{5E86F978-BE47-458C-ADE7-D3B5B47C514A}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FileStorage", "src\FileStorage\FileStorage.csproj", "{6783146D-6C22-4332-861D-81A1D4DA1CFD}"
 EndProject
@@ -56,7 +56,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Kickoff", "src\Kickoff\Kick
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Blocking", "src\Blocking\Blocking.csproj", "{F08A806A-C1B9-40D7-9BE6-F47DBD66B259}"
 EndProject
-Project("{00D1A9C2-B5F0-4AF3-8072-F6C62B433612}") = "MatchingDb", "src\MatchingDb\MatchingDb.sqlproj", "{128D9167-3DC4-4D91-9837-CC4FDC664B13}"
+Project("{42EA0DBD-9CF1-443E-919E-BE9C484E4577}") = "MatchingDb", "src\MatchingDb\MatchingDb.sqlproj", "{128D9167-3DC4-4D91-9837-CC4FDC664B13}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Matching", "Matching", "{B6043229-B4C5-4DA1-9204-75875A6CF80F}"
 EndProject
@@ -64,11 +64,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Matching.Engine", "src\Matc
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Matching.Core", "src\Matching.Core\Matching.Core.csproj", "{17500BC8-5DBF-415F-9454-C24EFA8EBC59}"
 EndProject
-Project("{00D1A9C2-B5F0-4AF3-8072-F6C62B433612}") = "ClusterDb", "src\ClusterDb\ClusterDb.sqlproj", "{17582F6C-FC3E-427B-BDD0-FD721C6C318B}"
+Project("{42EA0DBD-9CF1-443E-919E-BE9C484E4577}") = "ClusterDb", "src\ClusterDb\ClusterDb.sqlproj", "{17582F6C-FC3E-427B-BDD0-FD721C6C318B}"
 EndProject
-Project("{00D1A9C2-B5F0-4AF3-8072-F6C62B433612}") = "DeliusRunningPictureDb", "src\DeliusRunningPictureDb\DeliusRunningPictureDb.sqlproj", "{F9C6ADBE-15FB-409E-BFED-A48EEBF393A7}"
+Project("{42EA0DBD-9CF1-443E-919E-BE9C484E4577}") = "DeliusRunningPictureDb", "src\DeliusRunningPictureDb\DeliusRunningPictureDb.sqlproj", "{F9C6ADBE-15FB-409E-BFED-A48EEBF393A7}"
 EndProject
-Project("{00D1A9C2-B5F0-4AF3-8072-F6C62B433612}") = "OfflocRunningPictureDb", "src\OfflocRunningPictureDb\OfflocRunningPictureDb.sqlproj", "{A1A8A7ED-D3D2-4916-866A-9AEB510840AC}"
+Project("{42EA0DBD-9CF1-443E-919E-BE9C484E4577}") = "OfflocRunningPictureDb", "src\OfflocRunningPictureDb\OfflocRunningPictureDb.sqlproj", "{A1A8A7ED-D3D2-4916-866A-9AEB510840AC}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "API", "src\API\API.csproj", "{EBFD06D5-A7B3-48B7-8646-3155538BC867}"
 EndProject
@@ -86,7 +86,9 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Infrastructure", "src\Infra
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Visualiser", "src\Visualiser\Visualiser.csproj", "{C512532D-ADF0-D460-B843-C239A2A093EC}"
 EndProject
-Project("{00D1A9C2-B5F0-4AF3-8072-F6C62B433612}") = "AuditDb", "src\AuditDb\AuditDb.sqlproj", "{22A80A04-1AC5-46F1-BE57-DE9B1456B34E}"
+Project("{42EA0DBD-9CF1-443E-919E-BE9C484E4577}") = "AuditDb", "src\AuditDb\AuditDb.sqlproj", "{22A80A04-1AC5-46F1-BE57-DE9B1456B34E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FakeDataSeeder", "src\FakeDataSeeder\FakeDataSeeder.csproj", "{F7F37423-FFBD-4093-AC69-E1D38B208998}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -488,6 +490,18 @@ Global
 		{22A80A04-1AC5-46F1-BE57-DE9B1456B34E}.Release|x86.ActiveCfg = Release|Any CPU
 		{22A80A04-1AC5-46F1-BE57-DE9B1456B34E}.Release|x86.Build.0 = Release|Any CPU
 		{22A80A04-1AC5-46F1-BE57-DE9B1456B34E}.Release|x86.Deploy.0 = Release|Any CPU
+		{F7F37423-FFBD-4093-AC69-E1D38B208998}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F7F37423-FFBD-4093-AC69-E1D38B208998}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F7F37423-FFBD-4093-AC69-E1D38B208998}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{F7F37423-FFBD-4093-AC69-E1D38B208998}.Debug|x64.Build.0 = Debug|Any CPU
+		{F7F37423-FFBD-4093-AC69-E1D38B208998}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{F7F37423-FFBD-4093-AC69-E1D38B208998}.Debug|x86.Build.0 = Debug|Any CPU
+		{F7F37423-FFBD-4093-AC69-E1D38B208998}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F7F37423-FFBD-4093-AC69-E1D38B208998}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F7F37423-FFBD-4093-AC69-E1D38B208998}.Release|x64.ActiveCfg = Release|Any CPU
+		{F7F37423-FFBD-4093-AC69-E1D38B208998}.Release|x64.Build.0 = Release|Any CPU
+		{F7F37423-FFBD-4093-AC69-E1D38B208998}.Release|x86.ActiveCfg = Release|Any CPU
+		{F7F37423-FFBD-4093-AC69-E1D38B208998}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -528,6 +542,7 @@ Global
 		{CBE1DCBE-419F-4F3B-ABDE-D1416A4A40F7} = {605FBD70-9552-462C-BAC2-90D4655F1A27}
 		{C512532D-ADF0-D460-B843-C239A2A093EC} = {D30CBF2D-71E6-43EE-85EC-BF193B03782D}
 		{22A80A04-1AC5-46F1-BE57-DE9B1456B34E} = {8242D833-6E75-4EAA-9EB1-57B7EC128354}
+		{F7F37423-FFBD-4093-AC69-E1D38B208998} = {D30CBF2D-71E6-43EE-85EC-BF193B03782D}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {39E62751-A441-4DEF-AD24-20CDC6D59FF3}

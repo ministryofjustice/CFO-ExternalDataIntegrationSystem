@@ -77,11 +77,23 @@ public static class ServiceConfiguration
 
     private static IServiceCollection ConfigureRabbit(this IServiceCollection services, IConfiguration config)
     {
-        string? hosting = config.GetValue<string>("RABBIT_HOSTING");
-        string? username = config.GetValue<string>("RABBIT_USERNAME");
-        string? password = config.GetValue<string>("RABBIT_PASSWORD");
+        RabbitHostingContextWrapper rabbit;
 
-        services.AddSingleton(new RabbitHostingContextWrapper(hosting, username, password));
+        // Prefer connection string if available
+        if (config.GetConnectionString("RabbitMQ") is { Length: > 0 } connectionString)
+        {
+            rabbit = new RabbitHostingContextWrapper(new Uri(connectionString));
+        }
+        else
+        {
+            string? hosting = config.GetValue<string>("RABBIT_HOSTING");
+            string? username = config.GetValue<string>("RABBIT_USERNAME");
+            string? password = config.GetValue<string>("RABBIT_PASSWORD");
+
+            rabbit = new RabbitHostingContextWrapper(hosting, username, password);
+        }
+
+        services.AddSingleton(rabbit);
 
         return services;
     }
