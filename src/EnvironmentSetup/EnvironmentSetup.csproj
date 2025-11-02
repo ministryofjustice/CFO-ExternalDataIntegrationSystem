@@ -7,7 +7,6 @@
 
   <ItemGroup>
     <PackageReference Include="DotNetEnv" />
-    <PackageReference Include="Microsoft.AspNetCore" />
     <PackageReference Include="Microsoft.Extensions.Configuration" />
     <PackageReference Include="Microsoft.Extensions.Hosting.WindowsServices" />
 	<PackageReference Include="Serilog.Extensions.Hosting" />
