@@ -280,3 +280,6 @@ LocalFiles/
 *.dat
 *~lock.*
 *.pubxml
+
+# Mac
+.DS_STORE
