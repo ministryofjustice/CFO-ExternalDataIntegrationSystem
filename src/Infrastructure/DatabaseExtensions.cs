@@ -16,10 +16,20 @@ public static class DatabaseExtensions
     {
         builder.Services.AddScoped<AuditSaveChangesInterceptor>();
 
-        builder.AddSqlServerDbContext<AuditContext>("AuditDb");
+        builder.Services.AddDbContext<AuditContext>((sp, options) =>
+        {
+            options.UseSqlServer(builder.Configuration.GetConnectionString("AuditDb"));
+        });
 
-        builder.AddSqlServerDbContext<DeliusContext>("DeliusRunningPictureDb");
-        builder.AddSqlServerDbContext<OfflocContext>("OfflocRunningPictureDb");
+        builder.Services.AddDbContext<DeliusContext>((sp, options) =>
+        {
+            options.UseSqlServer(builder.Configuration.GetConnectionString("DeliusRunningPictureDb"));
+        });
+        
+        builder.Services.AddDbContext<OfflocContext>((sp, options) =>
+        {
+            options.UseSqlServer(builder.Configuration.GetConnectionString("OfflocRunningPictureDb"));
+        });
 
         builder.Services.AddDbContext<ClusteringContext>((sp, options) =>
         {
