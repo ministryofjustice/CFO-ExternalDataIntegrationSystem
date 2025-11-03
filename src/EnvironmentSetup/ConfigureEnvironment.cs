@@ -1,4 +1,4 @@
-﻿using DotNetEnv.Configuration;
+using DotNetEnv.Configuration;
 using FileStorage;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -29,7 +29,7 @@ public static class ConfigureEnvironment
 
     public static ConfigurationManager ConfigureEnv(this ConfigurationManager configManager)
     {
-        string envFilePath = $@"{envFileBasePath}\development.local.env";
+        string envFilePath = Path.Combine(envFileBasePath, "development.local.env");
 
         if (File.Exists(envFilePath))
         {
