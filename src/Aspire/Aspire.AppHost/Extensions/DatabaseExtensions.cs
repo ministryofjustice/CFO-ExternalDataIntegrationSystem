@@ -1,4 +1,4 @@
-﻿using Projects;
+using Projects;
 
 namespace Aspire.AppHost.Extensions;
 
@@ -35,16 +35,20 @@ public static class DatabaseExtensions
             .WithReference(audit);
 
         var offlocStagingSqlProj = builder.AddSqlProject<OfflocStagingDb>("OfflocStaging")
-            .WithReference(offlocStaging);
+            .WithReference(offlocStaging)
+            .WithSkipWhenDeployed();
 
         var deliusStagingSqlProj = builder.AddSqlProject<DeliusStagingDb>("DeliusStaging")
-            .WithReference(deliusStaging);
+            .WithReference(deliusStaging)
+            .WithSkipWhenDeployed();
 
         var deliusRunningPictureSqlProj = builder.AddSqlProject<DeliusRunningPictureDb>("DeliusRunningPicture")
-            .WithReference(deliusRunningPicture);
+            .WithReference(deliusRunningPicture)
+            .WithSkipWhenDeployed();
 
         var offlocRunningPictureSqlProj = builder.AddSqlProject<OfflocRunningPictureDb>("OfflocRunningPicture")
-            .WithReference(offlocRunningPicture);
+            .WithReference(offlocRunningPicture)
+            .WithSkipWhenDeployed();
 
         var matchingSqlProj = builder.AddSqlProject<MatchingDb>("Matching")
             .WithReference(matching)
@@ -53,7 +57,8 @@ public static class DatabaseExtensions
                 options.SetVariable("OfflocRunningPictureDb", "OfflocRunningPictureDb");
             })
             .WaitForCompletion(deliusRunningPictureSqlProj)
-            .WaitForCompletion(offlocRunningPictureSqlProj);
+            .WaitForCompletion(offlocRunningPictureSqlProj)
+            .WithSkipWhenDeployed();
 
         var clusterSqlProj = builder.AddSqlProject<ClusterDb>("Cluster")
             .WithReference(cluster)
@@ -65,7 +70,8 @@ public static class DatabaseExtensions
             })
             .WaitForCompletion(matchingSqlProj)
             .WaitForCompletion(deliusRunningPictureSqlProj)
-            .WaitForCompletion(offlocRunningPictureSqlProj);
+            .WaitForCompletion(offlocRunningPictureSqlProj)
+            .WithSkipWhenDeployed();
 
         if (seedData)
         {
