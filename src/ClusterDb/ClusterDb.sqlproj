@@ -44,5 +44,15 @@
       <DefaultValue>OfflocRunningPictureDb</DefaultValue>
       <Value>$(SqlCmdVar__5)</Value>
     </SqlCmdVariable>
+    <SqlCmdVariable Include="PopulateReferenceTables">
+      <DefaultValue>True</DefaultValue>
+      <Value>$(SqlCmdVar__6)</Value>
+    </SqlCmdVariable>
+  </ItemGroup>
+  <ItemGroup>
+    <PostDeploy Include="scripts\populate-reference-tables.sql" />
+  </ItemGroup>
+  <ItemGroup>
+    <Build Remove="scripts\populate-reference-tables.sql" />
   </ItemGroup>
 </Project>

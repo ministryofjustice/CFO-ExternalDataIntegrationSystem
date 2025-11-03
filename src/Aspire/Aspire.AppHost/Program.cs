@@ -9,7 +9,7 @@ var isDevelopment = builder.AddParameter("IsDevelopment");
 
 // Database setup
 var sql = builder.AddDmsSqlServer(password);
-var databases = builder.AddDmsDatabases(sql, seedData: true);
+var databases = builder.AddDmsDatabases(sql, seedData: false);
 
 // API setup
 var apiService = builder.AddDmsApi(databases, apiKey, isDevelopment);

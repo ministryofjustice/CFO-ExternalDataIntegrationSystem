@@ -65,7 +65,8 @@ public static class AppExtensions
             .WithDmsDatabaseReference(databases.DeliusRunningPicture)
             .WithDmsDatabaseReference(databases.Audit)
             .WithDmsDatabaseReference(databases.Cluster)
-            .WithDmsDatabaseReference(databases.Matching);
+            .WithDmsDatabaseReference(databases.Matching)
+            .WithEnvironment("DmsFilesBasePath", "~/DMS/");
 
         return project;
     }

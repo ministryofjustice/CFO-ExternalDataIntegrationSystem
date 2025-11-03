@@ -42,16 +42,7 @@ public class LocalFileLocations : IFileLocations
     private string _basePath;
     public LocalFileLocations(string basePath)
     {
-        if (!string.IsNullOrEmpty(basePath))
-        {
-            this._basePath = basePath;
-        }
-        else
-        {
-            this._basePath = $"C:/Users/{System.Security.Principal.WindowsIdentity.GetCurrent().Name!.Split("\\").Last().ToLower()}/DMS/";
-        }
-
-       _basePath = _basePath.Replace("~", Environment.ExpandEnvironmentVariables("%USERPROFILE%"));
+        this._basePath = basePath.Replace("~", Environment.GetFolderPath(Environment.SpecialFolder.UserProfile));
     }
     public string basePath { get => _basePath; }
 

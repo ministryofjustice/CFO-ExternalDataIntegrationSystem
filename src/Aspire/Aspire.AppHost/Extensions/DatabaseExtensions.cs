@@ -1,4 +1,4 @@
-using Projects;
+﻿using Projects;
 
 namespace Aspire.AppHost.Extensions;
 
@@ -8,10 +8,12 @@ public static class DatabaseExtensions
         this IDistributedApplicationBuilder builder,
         IResourceBuilder<ParameterResource> password)
     {
+        var home = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
 
 #pragma warning disable ASPIREPROXYENDPOINTS001
         return builder.AddSqlServer("sql", password, 61749)
             .WithDataVolume("dms-data")
+            .WithBindMount($"{home}/DMS", "/app/")
             .WithLifetime(ContainerLifetime.Persistent)
             .WithEndpointProxySupport(false)
             .WithImageTag("2022-latest");
@@ -67,6 +69,7 @@ public static class DatabaseExtensions
                 options.SetVariable("MatchingDb", "MatchingDb");
                 options.SetVariable("DeliusRunningPictureDb", "DeliusRunningPictureDb");
                 options.SetVariable("OfflocRunningPictureDb", "OfflocRunningPictureDb");
+                options.SetVariable("PopulateReferenceTables", "True");
             })
             .WaitForCompletion(matchingSqlProj)
             .WaitForCompletion(deliusRunningPictureSqlProj)
