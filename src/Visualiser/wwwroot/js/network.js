@@ -49,6 +49,13 @@ var editNodeModal = new bootstrap.Modal('#editNodeModal');
 var findClusterModal = new bootstrap.Modal('#findClusterModal');
 var saveNetworkModal = new bootstrap.Modal('#saveNetworkModal');
 
+const toastEl = document.getElementById('success-toast');
+
+const toast = new bootstrap.Toast(toastEl, {
+    autohide: true,
+    delay: 3000
+});
+
 function getAntiForgeryToken() {
     const el = document.querySelector('input[name="__RequestVerificationToken"]');
     return el ? el.value : '';
@@ -104,6 +111,10 @@ document.getElementById("findClusterForm").addEventListener("submit", async even
         return;
     }
 
+    $('#randomClusterButton').prop('disabled', true);
+    $('#findClusterButton').prop('disabled', true);
+    $('#cancelClusterButton').prop('disabled', true);
+
     fetch(action + '?upci=' + group, { method: "GET" })
         .then(async response => {
 
@@ -131,6 +142,11 @@ document.getElementById("findClusterForm").addEventListener("submit", async even
     .catch(error => {
         console.error(error);
         alert(`Something went wrong. Error: ${error}`)
+    })
+    .finally(() => {
+        $('#randomClusterButton').prop('disabled', false);
+        $('#findClusterButton').prop('disabled', false);
+        $('#cancelClusterButton').prop('disabled', false);
     });
 });
 
@@ -158,6 +174,9 @@ document.getElementById("saveNetwork").addEventListener("submit", async event =>
         clusters: getNetwork()
     };
 
+    $('#saveNetworkBtn').prop('disabled', true);
+    $('#saveNetworkCancelBtn').prop('disabled', true);
+
     fetch(action, {
         method: "POST",
         headers: {
@@ -179,13 +198,16 @@ document.getElementById("saveNetwork").addEventListener("submit", async event =>
             return;
         }
 
-        // Saved successfully
-
         saveNetworkModal.hide();
+        toast.show();
     })
     .catch(error => {
         console.error(error);
         alert(`Something went wrong. Error: ${error}`)
+    })
+    .finally(() => {
+        $('#saveNetworkBtn').prop('disabled', false);
+        $('#saveNetworkCancelBtn').prop('disabled', false);
     });
 });
 
