@@ -42,7 +42,7 @@ public static class AppExtensions
         //builder.AddDmsService<Meow>("Meow", rabbit, databases);
         builder.AddDmsService<Offloc_Cleaner>("Offloc-Cleaner", rabbit, databases);
         builder.AddDmsService<Offloc_Parser>("Offloc-Parser", rabbit, databases);
-        builder.AddDmsService<Orchestrator>("Orchestrator", rabbit, databases);
+        //builder.AddDmsService<Orchestrator>("Orchestrator", rabbit, databases);
 
         // Entry point - start the app to 'kick off' DMS
         builder.AddDmsService<Kickoff>("Kickoff", rabbit, databases)
