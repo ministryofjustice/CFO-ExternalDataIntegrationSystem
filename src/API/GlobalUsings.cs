@@ -2,7 +2,6 @@
 global using EnvironmentSetup;
 global using Microsoft.AspNetCore.Authentication;
 global using Microsoft.EntityFrameworkCore;
-global using Microsoft.OpenApi.Models;
 global using Serilog;
 global using Serilog.Events;
 global using System.Reflection;

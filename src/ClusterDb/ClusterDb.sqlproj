@@ -1,117 +1,13 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
+<Project DefaultTargets="Build">
+  <Sdk Name="Microsoft.Build.Sql" Version="2.0.0" />
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <Name>ClusterDb</Name>
-    <SchemaVersion>2.0</SchemaVersion>
-    <ProjectVersion>4.1</ProjectVersion>
-    <ProjectGuid>{17582f6c-fc3e-427b-bdd0-fd721c6c318b}</ProjectGuid>
-    <DSP>Microsoft.Data.Tools.Schema.Sql.Sql160DatabaseSchemaProvider</DSP>
-    <OutputType>Database</OutputType>
-    <RootPath>
-    </RootPath>
-    <RootNamespace>ClusterDb</RootNamespace>
-    <AssemblyName>ClusterDb</AssemblyName>
-    <ModelCollation>1033, CI</ModelCollation>
-    <DefaultFileStructure>BySchemaAndSchemaType</DefaultFileStructure>
-    <DeployToDatabase>True</DeployToDatabase>
-    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
-    <TargetLanguage>CS</TargetLanguage>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <SqlServerVerification>False</SqlServerVerification>
-    <IncludeCompositeObjects>True</IncludeCompositeObjects>
-    <TargetDatabaseSet>True</TargetDatabaseSet>
-    <GenerateCreateScript>True</GenerateCreateScript>
+		<Name>ClusterDb</Name>
+		<DSP>Microsoft.Data.Tools.Schema.Sql.Sql160DatabaseSchemaProvider</DSP>
+		<ModelCollation>1033, CI</ModelCollation>
+		<RootNamespace>ClusterDb</RootNamespace>
+		<AssemblyName>ClusterDb</AssemblyName>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <OutputPath>bin\Release\</OutputPath>
-    <BuildScriptName>$(MSBuildProjectName).sql</BuildScriptName>
-    <TreatWarningsAsErrors>False</TreatWarningsAsErrors>
-    <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
-    <DefineDebug>false</DefineDebug>
-    <DefineTrace>true</DefineTrace>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <OutputPath>bin\Debug\</OutputPath>
-    <BuildScriptName>$(MSBuildProjectName).sql</BuildScriptName>
-    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <DefineDebug>true</DefineDebug>
-    <DefineTrace>true</DefineTrace>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-  </PropertyGroup>
-  <PropertyGroup>
-    <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">11.0</VisualStudioVersion>
-    <!-- Default to the v11.0 targets path if the targets file for the current VS version is not found -->
-    <SSDTExists Condition="Exists('$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v$(VisualStudioVersion)\SSDT\Microsoft.Data.Tools.Schema.SqlTasks.targets')">True</SSDTExists>
-    <VisualStudioVersion Condition="'$(SSDTExists)' == ''">11.0</VisualStudioVersion>
-  </PropertyGroup>
-  <Import Condition="'$(SQLDBExtensionsRefPath)' != ''" Project="$(SQLDBExtensionsRefPath)\Microsoft.Data.Tools.Schema.SqlTasks.targets" />
-  <Import Condition="'$(SQLDBExtensionsRefPath)' == ''" Project="$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v$(VisualStudioVersion)\SSDT\Microsoft.Data.Tools.Schema.SqlTasks.targets" />
-  <ItemGroup>
-    <Folder Include="Properties" />
-    <Folder Include="search\" />
-    <Folder Include="search\Tables\" />
-    <Folder Include="reference\" />
-    <Folder Include="reference\Tables\" />
-    <Folder Include="processing\" />
-    <Folder Include="processing\Tables\" />
-    <Folder Include="output\" />
-    <Folder Include="output\Tables\" />
-    <Folder Include="input\" />
-    <Folder Include="input\Tables\" />
-    <Folder Include="processing\Stored Procedures\" />
-    <Folder Include="Security\" />
-    <Folder Include="Clustering\" />
-    <Folder Include="Clustering\Views\" />
-  </ItemGroup>
-  <ItemGroup>
-    <Build Include="search\Tables\ClusterAttributes.sql" />
-    <Build Include="search\Tables\Precedence.sql" />
-    <Build Include="reference\Tables\UPCI2.sql" />
-    <Build Include="reference\Tables\SubGraphSets.sql" />
-    <Build Include="reference\Tables\Edges.sql" />
-    <Build Include="reference\Tables\Nodes.sql" />
-    <Build Include="processing\Tables\LinkNodes.sql" />
-    <Build Include="processing\Tables\SubGraphs.sql" />
-    <Build Include="processing\Tables\OutstandingEdges.sql" />
-    <Build Include="processing\Tables\ClusterMeta.sql" />
-    <Build Include="processing\Tables\ClusterAssignment2.sql" />
-    <Build Include="processing\Tables\ClusterAssignment.sql" />
-    <Build Include="output\Tables\Clusters.sql" />
-    <Build Include="output\Tables\ClusterMembership.sql" />
-    <Build Include="output\Tables\Clusters_EdgeProbabilities.sql" />
-    <Build Include="input\Tables\Nodes.sql" />
-    <Build Include="input\Tables\EdgeProbabilities_Pass2.sql" />
-    <Build Include="input\Tables\EdgeProbabilities_Pass1.sql" />
-    <Build Include="processing\Stored Procedures\FlattenTables.sql" />
-    <Build Include="processing\Stored Procedures\RunThrough.sql" />
-    <Build Include="processing\Stored Procedures\Step3_GetPass2Edges.sql" />
-    <Build Include="processing\Stored Procedures\Step1_GetPass1Edges.sql" />
-    <Build Include="processing\Stored Procedures\Step4_ResolveGraphs.sql" />
-    <Build Include="Security\search.sql" />
-    <Build Include="Security\reference.sql" />
-    <Build Include="Security\processing.sql" />
-    <Build Include="Security\output.sql" />
-    <Build Include="Security\input.sql" />
-    <Build Include="Clustering\Views\RecordMatchingView.sql" />
-    <Build Include="processing\Stored Procedures\Phase2.sql" />
-    <Build Include="processing\Stored Procedures\Phase1.sql" />
-    <Build Include="Security\Clustering.sql" />
-    <Build Include="processing\Stored Procedures\PopulateReferenceTables.sql" />
-    <Build Include="processing\Stored Procedures\Step7_MaintainClusterSearchAttributes.sql" />
-    <Build Include="processing\Stored Procedures\Step6_UpdateClusterTable.sql" />
-    <Build Include="processing\Stored Procedures\Step5_MaintainNodeTable.sql" />
-    <Build Include="processing\Stored Procedures\Step2_CompleteEdges.sql" />
-    <Build Include="reference\Tables\StickyLocations.sql" />
-  </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\MatchingDb\MatchingDb.sqlproj">
       <Name>MatchingDb</Name>
@@ -148,5 +44,15 @@
       <DefaultValue>OfflocRunningPictureDb</DefaultValue>
       <Value>$(SqlCmdVar__5)</Value>
     </SqlCmdVariable>
+    <SqlCmdVariable Include="PopulateReferenceTables">
+      <DefaultValue>True</DefaultValue>
+      <Value>$(SqlCmdVar__6)</Value>
+    </SqlCmdVariable>
+  </ItemGroup>
+  <ItemGroup>
+    <PostDeploy Include="scripts\populate-reference-tables.sql" />
+  </ItemGroup>
+  <ItemGroup>
+    <Build Remove="scripts\populate-reference-tables.sql" />
   </ItemGroup>
 </Project>

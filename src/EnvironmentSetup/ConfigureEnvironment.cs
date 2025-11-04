@@ -1,4 +1,4 @@
-﻿using DotNetEnv.Configuration;
+using DotNetEnv.Configuration;
 using FileStorage;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -29,7 +29,7 @@ public static class ConfigureEnvironment
 
     public static ConfigurationManager ConfigureEnv(this ConfigurationManager configManager)
     {
-        string envFilePath = $@"{envFileBasePath}\development.local.env";
+        string envFilePath = Path.Combine(envFileBasePath, "development.local.env");
 
         if (File.Exists(envFilePath))
         {
@@ -77,11 +77,23 @@ public static class ServiceConfiguration
 
     private static IServiceCollection ConfigureRabbit(this IServiceCollection services, IConfiguration config)
     {
-        string? hosting = config.GetValue<string>("RABBIT_HOSTING");
-        string? username = config.GetValue<string>("RABBIT_USERNAME");
-        string? password = config.GetValue<string>("RABBIT_PASSWORD");
+        RabbitHostingContextWrapper rabbit;
 
-        services.AddSingleton(new RabbitHostingContextWrapper(hosting, username, password));
+        // Prefer connection string if available
+        if (config.GetConnectionString("RabbitMQ") is { Length: > 0 } connectionString)
+        {
+            rabbit = new RabbitHostingContextWrapper(new Uri(connectionString));
+        }
+        else
+        {
+            string? hosting = config.GetValue<string>("RABBIT_HOSTING");
+            string? username = config.GetValue<string>("RABBIT_USERNAME");
+            string? password = config.GetValue<string>("RABBIT_PASSWORD");
+
+            rabbit = new RabbitHostingContextWrapper(hosting, username, password);
+        }
+
+        services.AddSingleton(rabbit);
 
         return services;
     }

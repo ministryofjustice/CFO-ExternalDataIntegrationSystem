@@ -264,7 +264,7 @@ __pycache__/
 .ionide/
 .nuget/
 NuGet/
-.vscode/
+
 
 # Exclude sql lite databases
 *.db
@@ -280,3 +280,6 @@ LocalFiles/
 *.dat
 *~lock.*
 *.pubxml
+
+# Mac
+.DS_STORE

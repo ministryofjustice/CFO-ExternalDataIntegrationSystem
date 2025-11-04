@@ -3,54 +3,90 @@
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
   </PropertyGroup>
   <ItemGroup>
-    <!--<PackageVersion Include="Newtonsoft.Json" Version="13.0.1" />-->
-    <PackageVersion Include="DevExpress.Data" Version="23.2.3" />
-    <PackageVersion Include="DocumentFormat.OpenXml" Version="3.0.0" />
-    <PackageVersion Include="DotNetEnv" Version="3.0.0" />
-    <PackageVersion Include="HtmlAgilityPack" Version="1.11.57" />
-    <PackageVersion Include="Microsoft.AspNetCore" Version="2.2.0" />
-    <PackageVersion Include="Microsoft.AspNetCore.Components" Version="8.0.1" />
-    <PackageVersion Include="Microsoft.AspNetCore.DataProtection" Version="8.0.0" />
-    <PackageVersion Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="8.0.0" />
-    <PackageVersion Include="Microsoft.Extensions.Hosting" Version="8.0.0" />
-    <PackageVersion Include="Microsoft.Extensions.Hosting.Abstractions" Version="8.0.0" />
-    <PackageVersion Include="Microsoft.Extensions.Hosting.WindowsServices" Version="8.0.0" />
-    <PackageVersion Include="Microsoft.Extensions.Configuration.UserSecrets" Version="8.0.0" />
-    <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="9.0.10" />
-    <PackageVersion Include="Microsoft.Extensions.Configuration.Json" Version="8.0.0" />
-    <PackageVersion Include="Microsoft.Extensions.Configuration.Abstractions" Version="8.0.0" />
-    <PackageVersion Include="Microsoft.Extensions.Configuration" Version="8.0.0" />
-    <PackageVersion Include="Microsoft.PowerShell.SDK" Version="7.4.3" />
-    <PackageVersion Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.19.5" />
-    <PackageVersion Include="Microsoft.VisualStudio.Shell.Framework" Version="17.8.37221" />
-    <PackageVersion Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.1" />
-    <PackageVersion Include="AWSSDK.S3" Version="3.7.305.12" />
-    <PackageVersion Include="Newtonsoft.Json" Version="13.0.3" />
-    <PackageVersion Include="pythonnet" Version="3.0.3" />
-    <PackageVersion Include="RabbitMQ.Client" Version="6.8.1" />
-    <PackageVersion Include="Microsoft.Data.SqlClient" Version="5.1.4" />
-    <PackageVersion Include="Serilog.Extensions.Hosting" Version="8.0.0" />
-    <PackageVersion Include="Serilog.Settings.Configuration" Version="8.0.0" />
-    <PackageVersion Include="Serilog.Sinks.Console" Version="5.0.1" />
-    <PackageVersion Include="Serilog.Sinks.File" Version="6.0.0" />
-    <PackageVersion Include="Sentry.Serilog" Version="5.15.0" />
-    <PackageVersion Include="System.Management.Automation" Version="7.4.3" />
-    <PackageVersion Include="WebDAVClient" Version="2.2.1" />
-    <PackageVersion Include="FluentValidation" Version="11.8.0" />
-    <PackageVersion Include="MimeTypes" Version="2.4.1" />
-    <!--Below packages are for DMS API. Don't know if it's needed or not anymore.-->
+    <PackageVersion Include="Aspire.Hosting.AppHost" Version="9.5.2" />
+    <PackageVersion Include="Aspire.Hosting.RabbitMQ" Version="9.5.2" />
+    <PackageVersion Include="Aspire.Hosting.Redis" Version="9.5.2" />
+    <PackageVersion Include="Aspire.Hosting.SqlServer" Version="9.5.2" />
     <PackageVersion Include="Aspire.Microsoft.EntityFrameworkCore.SqlServer" Version="9.5.2" />
+    <PackageVersion Include="Aspire.RabbitMQ.Client" Version="9.5.2" />
+    <PackageVersion Include="CommunityToolkit.Aspire.Hosting.SqlDatabaseProjects" Version="9.8.1-beta.424" />
+    <PackageVersion Include="Autofac" Version="8.4.0" />
+    <PackageVersion Include="Autofac.Extensions.DependencyInjection" Version="10.0.0" />
+    <PackageVersion Include="AWSSDK.S3" Version="4.0.9.1" />
     <PackageVersion Include="AutoMapper" Version="12.0.1" />
     <PackageVersion Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="12.0.1" />
+    <PackageVersion Include="coverlet.collector" Version="6.0.4">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageVersion>
+    <PackageVersion Include="Dapper" Version="2.1.66" />
+    <PackageVersion Include="DevExpress.Data" Version="23.2.3" />
+    <PackageVersion Include="DocumentFormat.OpenXml" Version="3.3.0" />
+    <PackageVersion Include="DotNetEnv" Version="3.1.1" />
+    <PackageVersion Include="FluentValidation" Version="11.8.0" />
+    <PackageVersion Include="HtmlAgilityPack" Version="1.11.57" />
     <PackageVersion Include="Microsoft.AspNet.WebApi.Core" Version="5.3.0" />
-    <PackageVersion Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.1" />
-    <PackageVersion Include="Microsoft.AspNetCore.OpenApi" Version="8.0.1" />
-    <PackageVersion Include="Microsoft.EntityFrameworkCore" Version="9.0.10" />
-    <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.4" />
-    <PackageVersion Include="Microsoft.EntityFrameworkCore.InMemory" Version="8.0.1" />
-    <PackageVersion Include="Microsoft.EntityFrameworkCore.Sqlite" Version="8.0.1" />
-    <PackageVersion Include="Microsoft.EntityFrameworkCore.SqlServer" Version="9.0.10" />
+    <PackageVersion Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.0-rc.2.25502.107" NoWarn="NU1605" />
+    <PackageVersion Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="10.0.0-rc.2.25502.107" NoWarn="NU1605" />
+    <PackageVersion Include="Microsoft.AspNetCore.Blazor" Version="9.0.10" />
+    <PackageVersion Include="Microsoft.AspNetCore.Components" Version="10.0.0-rc.2.25502.107" />
+    <PackageVersion Include="Microsoft.AspNetCore.DataProtection" Version="8.0.0" />
+    <PackageVersion Include="Microsoft.AspNetCore.OpenApi" Version="10.0.0-rc.2.25502.107" />
+    <PackageVersion Include="Microsoft.Data.SqlClient" Version="7.0.0-preview2.25289.6" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore" Version="10.0.0-rc.2.25502.107" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.0-rc.2.25502.107">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageVersion>
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.SqlServer" Version="10.0.0-rc.2.25502.107" />
+    <PackageVersion Include="Microsoft.Extensions.Configuration" Version="10.0.0-rc.2.25502.107" />
+    <PackageVersion Include="Microsoft.Extensions.Configuration.Abstractions" Version="8.0.0" />
+    <PackageVersion Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="10.0.0-rc.2.25502.107" />
+    <PackageVersion Include="Microsoft.Extensions.Configuration.Json" Version="8.0.0" />
+    <PackageVersion Include="Microsoft.Extensions.Configuration.UserSecrets" Version="10.0.0-rc.2.25502.107" />
+    <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="10.0.0-rc.2.25502.107" />
+    <PackageVersion Include="Microsoft.Extensions.Hosting" Version="10.0.0-rc.2.25502.107" />
+    <PackageVersion Include="Microsoft.Extensions.Hosting.Abstractions" Version="10.0.0-rc.2.25502.107" />
+    <PackageVersion Include="Microsoft.Extensions.Hosting.WindowsServices" Version="10.0.0-rc.2.25502.107" />
+    <PackageVersion Include="Microsoft.Extensions.Http.Resilience" Version="9.10.0" />
+    <PackageVersion Include="Microsoft.Extensions.ServiceDiscovery" Version="9.5.2" />
+    <PackageVersion Include="Microsoft.Identity.Web" Version="4.0.1" />
+    <PackageVersion Include="Microsoft.Identity.Web.DownstreamApi" Version="4.0.1" />
+    <PackageVersion Include="Microsoft.Identity.Web.UI" Version="4.0.1" />
+    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.0.0" />
+    <PackageVersion Include="Microsoft.PowerShell.SDK" Version="7.5.4" />
+    <PackageVersion Include="Microsoft.SqlServer.Dac" Version="1.0.1" />
+    <PackageVersion Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.23.0-preview.4" />
+    <PackageVersion Include="Microsoft.VisualStudio.Shell.Framework" Version="17.14.40264" />
+    <PackageVersion Include="MimeTypes" Version="2.4.1" />
+    <PackageVersion Include="NSwag.AspNetCore" Version="14.6.1" />
+    <PackageVersion Include="Newtonsoft.Json" Version="13.0.4" />
+    <PackageVersion Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.14.0-rc.1" />
+    <PackageVersion Include="OpenTelemetry.Extensions.Hosting" Version="1.14.0-rc.1" />
+    <PackageVersion Include="OpenTelemetry.Instrumentation.AspNetCore" Version="1.13.0" />
+    <PackageVersion Include="OpenTelemetry.Instrumentation.Http" Version="1.13.0" />
+    <PackageVersion Include="OpenTelemetry.Instrumentation.Runtime" Version="1.13.0" />
+    <PackageVersion Include="Phonix" Version="1.0.2" />
     <PackageVersion Include="Polly" Version="8.6.1" />
+    <PackageVersion Include="Pythonnet" Version="3.0.3" />
+    <PackageVersion Include="RabbitMQ.Client" Version="6.8.1" />
+    <PackageVersion Include="Rebus" Version="8.9.0" />
+    <PackageVersion Include="Rebus.RabbitMq" Version="10.1.0" />
+    <PackageVersion Include="Rebus.ServiceProvider" Version="10.6.0" />
+    <PackageVersion Include="Sentry.Serilog" Version="6.0.0-preview.2-prerelease" />
+    <PackageVersion Include="Serilog.Extensions.Hosting" Version="9.0.1-dev-02307" />
+    <PackageVersion Include="Serilog.Settings.Configuration" Version="9.0.1-dev-02319" />
+    <PackageVersion Include="Serilog.Sinks.Console" Version="6.0.1-dev-00953" />
+    <PackageVersion Include="Serilog.Sinks.File" Version="7.0.0" />
+    <PackageVersion Include="SimMetrics.Net" Version="1.0.5" />
     <PackageVersion Include="Swashbuckle.AspNetCore" Version="6.5.0" />
+    <PackageVersion Include="System.Data.SqlClient" Version="4.9.0" />
+    <PackageVersion Include="System.Management.Automation" Version="7.6.0-preview.5" />
+    <PackageVersion Include="WebDAVClient" Version="2.2.1" />
+    <PackageVersion Include="xunit" Version="2.9.3" />
+    <PackageVersion Include="xunit.runner.visualstudio" Version="3.1.5">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageVersion>
   </ItemGroup>
 </Project>

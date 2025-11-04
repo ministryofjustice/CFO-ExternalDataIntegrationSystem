@@ -54,7 +54,9 @@ public class ClusteringRepository(
     {
         // Most recently inserted cluster
         var id = await context.Clusters
-            .MaxAsync(c => c.ClusterId);
+            .Select(x => x.ClusterId)
+            .DefaultIfEmpty()
+            .MaxAsync();
 
         // Id of new cluster
         var newId = id + 1;
