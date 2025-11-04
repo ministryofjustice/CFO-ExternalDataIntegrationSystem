@@ -5,7 +5,7 @@ HMPPS CFO DMS
 HMPPS CFO DMS
 =============
 
-HMPPS Co-Financing Organisation (CFO) - Data Management System (DMS). It is intended for internal use only and is used to process PNOMIS and NDelius offender data to supply CATS+ (Case Assessment and Tracking System - also used by HMPPS CFO) with accurate offender movements and updates.
+HMPPS Creating Future Opportunities (CFO) - Data Management System (DMS). It is intended for internal use only and is used to process PNOMIS and NDelius offender data to supply CATS (Case Assessment and Tracking System - also used by HMPPS CFO) with accurate offender movements and updates.
 
 # Queries
 
