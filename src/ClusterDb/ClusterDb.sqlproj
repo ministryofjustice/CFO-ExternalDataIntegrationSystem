@@ -1,12 +1,13 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build">
   <Sdk Name="Microsoft.Build.Sql" Version="2.0.0" />
   <PropertyGroup>
-		<Name>ClusterDb</Name>
-		<DSP>Microsoft.Data.Tools.Schema.Sql.Sql160DatabaseSchemaProvider</DSP>
-		<ModelCollation>1033, CI</ModelCollation>
-		<RootNamespace>ClusterDb</RootNamespace>
-		<AssemblyName>ClusterDb</AssemblyName>
+    <Name>ClusterDb</Name>
+    <DSP>Microsoft.Data.Tools.Schema.Sql.Sql160DatabaseSchemaProvider</DSP>
+    <ModelCollation>1033, CI</ModelCollation>
+    <RootNamespace>ClusterDb</RootNamespace>
+    <AssemblyName>ClusterDb</AssemblyName>
+    <ProjectGuid>{00000000-0000-0000-0000-000000000000}</ProjectGuid>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\MatchingDb\MatchingDb.sqlproj">
