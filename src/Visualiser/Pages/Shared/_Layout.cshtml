@@ -1,4 +1,6 @@
-﻿<!DOCTYPE html>
+﻿@inject Microsoft.AspNetCore.Hosting.IWebHostEnvironment Env
+
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
@@ -13,7 +15,17 @@
     <header>
         <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow">
             <div class="container">
-                <a class="navbar-brand" asp-area="" asp-page="/Index">Visualiser</a>
+                @{
+                    string envName = Env.EnvironmentName;
+                    string bgClass = envName switch
+                    {
+                        "Development" => "bg-primary",
+                        "PreProduction" => "bg-warning text-dark",
+                        "Production" => "bg-error",
+                        _ => "bg-secondary"
+                    };
+                }
+                <a class="navbar-brand" asp-area="" asp-page="/Index">Visualiser <span class="badge @bgClass">@envName</span></a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
                         aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
