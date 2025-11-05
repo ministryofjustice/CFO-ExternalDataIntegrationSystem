@@ -27,18 +27,7 @@ public class DbInteractionService : IDbInteractionService
     {
         this.statusService = messageService;
         this.serverConfig = serverConfig;
-
-        //Sql Server runs in docker all of the time so the docker implementation
-        //of IFileLocations is always needed.
-        //check if SQL is runnig in container
-        if (config.GetValue<string>("DOTNET_ENVIRONMENT") == "Development")
-        {
-            this.fileLocations = new DockerFileLocations();
-        }
-        else
-        {
-            this.fileLocations = fileLocations;
-        }
+        this.fileLocations = fileLocations;
 
         deliusStagingConnString = connStrings.deliusStagingConnectionString;
         offlocStagingConnString = connStrings.offlocStagingConnectionString;

@@ -3,7 +3,6 @@ using FileStorage;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Hosting.WindowsServices;
 using Microsoft.Extensions.Logging;
 using Serilog;
 
@@ -52,18 +51,11 @@ public static class ServiceConfiguration
 {
     public static IServiceCollection ConfigureServices(this IServiceCollection services, ConfigurationManager configManager)
     {
-        if (configManager.GetValue<bool>("RUNNING_IN_CONTAINER"))
-        {
-            //Path splitter registration goes here.
-            services.AddSingleton<IFileLocations, DockerFileLocations>();
-        }
-        else
-        {
-            services.AddSingleton<IFileLocations, LocalFileLocations>( 
-                f => new LocalFileLocations(configManager.GetValue<string>("DMSFilesBasePath")!)
-            );
-        }
-
+        services.AddSingleton<IFileLocations, FileLocations>(
+            f => new FileLocations(configManager.GetValue<string>("DMSFilesBasePath")!)
+        );
+        
+        services.AddWindowsService();
 
         services.ConfigureRabbit(configManager);
         services.ConfigureLogging(configManager);
@@ -99,7 +91,7 @@ public static class ServiceConfiguration
     {
         Log.Logger = new LoggerConfiguration()
                 .ReadFrom.Configuration(config)
-                .WriteTo.File(@".\logs\fatal.txt", Serilog.Events.LogEventLevel.Fatal)
+                .WriteTo.File(Path.Combine("logs", "fatal.txt"), Serilog.Events.LogEventLevel.Fatal)
                 .CreateLogger();
 
         var loggerFactory = LoggerFactory.Create(builder =>
