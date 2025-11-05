@@ -68,7 +68,7 @@ jobs:
           image: ${{ steps.build-image.outputs.image }}
           environment-variables: |
             VERY_IMPORTANT=DO_NOT_DELETE_ME
-            ASPNETCORE_ENVIRONMENT=Development
+            DOTNET_ENVIRONMENT=PreProduction
           secrets: |
             AzureAd__ClientId=${{ secrets.AWS_SECRETS_ARN }}:Client_ID::
             AzureAd__ClientSecret=${{ secrets.AWS_SECRETS_ARN }}:Client_Secret::
