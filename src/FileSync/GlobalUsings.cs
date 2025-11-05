@@ -1,5 +1,6 @@
-﻿global using EnvironmentSetup;
-global using Orchestrator;
+﻿global using Amazon.S3;
+global using EnvironmentSetup;
+global using FileSync;
 global using Messaging.Interfaces;
 global using Messaging.Services;
 global using Microsoft.Extensions.Configuration;
