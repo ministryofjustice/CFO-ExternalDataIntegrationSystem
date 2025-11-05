@@ -5,6 +5,8 @@ var dataset = {
     edges: new vis.DataSet(),
 };
 
+const changeTracker = [];
+
 dataset.nodes.forEach(saturateNode);
 dataset.edges.forEach(saturateEdge);
 
@@ -79,6 +81,10 @@ $("#editNodeForm").on("submit", function (event) {
         reassignNode(node, toClusterId);
     }
 
+    if(node.hardLink != hardLink) {
+        changeTracker.push(`Hardlink ${hardLink ? 'added to' : 'removed from'} ${node.id} (${node.group})`);
+    }
+
     node.hardLink = hardLink;
 
     saturateNode(node);
@@ -137,6 +143,8 @@ document.getElementById("findClusterForm").addEventListener("submit", async even
         dataset.nodes.add(cluster.nodes);
         dataset.edges.add(cluster.edges);
 
+        changeTracker.push(`Cluster ${cluster.upci} added to network`);
+
         findClusterModal.hide();
     })
     .catch(error => {
@@ -162,6 +170,7 @@ $("#reassignCheckbox").on('change', event => {
 })
 
 $("#saveNetworkButton").on("click", function() {
+    $("#changeTracker").html(`<ul class="list-group list-group-flush list-group-numbered">${changeTracker.map(change => `<li class="list-group-item">${change}</li>`).join('')}</ul>`);
     saveNetworkModal.show();
 });
 
@@ -245,6 +254,8 @@ function addEdge(node, callback) {
     node.probability = 1.0;
     saturateEdge(node);
 
+    changeTracker.push(`Edge added from ${node.from} to ${node.to}`);
+
     callback(node);
 }
 
@@ -268,8 +279,6 @@ function edgeExists(fromNodeId, toNodeId) {
 }
 
 function editNode(node, callback) {
-    let clusters = getClusters();
-
     if (node.type === "cluster") {
         alert("You cannot edit an empty cluster. Reassign nodes to it instead.");
         callback(null);
@@ -451,6 +460,8 @@ function reassignNode(node, toClusterId) {
     let edges = dataset.edges.get({ filter: (edge) => edge.from === node.id || edge.to === node.id });
     edges.forEach(edge => dataset.edges.remove(edge.id));
 
+    const fromClusterId = node.id;
+
     // Destroy target cluster
     if (isCluster(toClusterId)) {
         dataset.nodes.remove(toClusterId);
@@ -478,6 +489,8 @@ function reassignNode(node, toClusterId) {
         dataset.edges.add(edge);
         saturateEdge(edge);
     });
+
+    changeTracker.push(`${node.id} reassigned from ${fromClusterId} to ${toClusterId}`);
 
     // Move the node to target group
     node.group = toClusterId;
