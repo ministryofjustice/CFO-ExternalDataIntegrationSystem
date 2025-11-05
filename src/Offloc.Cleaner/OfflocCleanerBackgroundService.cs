@@ -56,7 +56,7 @@ public class OfflocCleanerBackgroundService : BackgroundService
     //Returns files that fit validation checks (ie. not already been processed).
     private async Task<string[]> GetFilesAsync()
     {
-        string[] files = Directory.GetFiles(fileLocations.offlocInput).Where(f => !f.Contains("LineFeeds")).ToArray();
+        string[] files = Directory.GetFiles(fileLocations.offlocInput, "*.dat").Where(f => !f.Contains("LineFeeds")).ToArray();
 
         for (int i = 0; i < files.Length; i++)
         {

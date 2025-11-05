@@ -58,7 +58,7 @@ public class DeliusParserBackgroundService : BackgroundService
     //Gets a list of files in the target directory.
     private async Task<string[]> GetFilesAsync()
     {
-        var files = Directory.GetFiles(fileLocations.deliusInput);
+        var files = Directory.GetFiles(fileLocations.deliusInput, "*.txt");
 
         for (int i = 0; i<files.Length; i++)
         {
