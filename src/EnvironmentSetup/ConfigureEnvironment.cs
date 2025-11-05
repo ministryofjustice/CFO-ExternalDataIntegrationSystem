@@ -64,10 +64,6 @@ public static class ServiceConfiguration
             );
         }
 
-        if(WindowsServiceHelpers.IsWindowsService())
-        {
-            services.AddWindowsService();
-        }
 
         services.ConfigureRabbit(configManager);
         services.ConfigureLogging(configManager);
