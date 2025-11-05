@@ -34,7 +34,10 @@ public static class AppExtensions
     {
         builder.AddDmsService<Blocking>("Blocking", rabbit, databases);
         builder.AddDmsService<Cleanup>("Cleanup", rabbit, databases);
-        builder.AddDmsService<DbInteractions>("DbInteractions", rabbit, databases);
+
+        builder.AddDmsService<DbInteractions>("DbInteractions", rabbit, databases)
+            .WithEnvironment("DmsFilesBasePath", "/app/"); // Override default with linux (sql container) path
+        
         builder.AddDmsService<Delius_Parser>("Delius-Parser", rabbit, databases);
         builder.AddDmsService<Import>("Import", rabbit, databases);
         builder.AddDmsService<Logging>("Logging", rabbit, databases);
