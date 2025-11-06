@@ -26,16 +26,8 @@ try
     builder.Configuration.AddJsonFile("appsettings.json").AddEnvironmentVariables();
     builder.Configuration.ConfigureByEnvironment();
 
-    bool parallel = builder.Configuration.GetValue<bool>("Parallel");
-    if (parallel)
-    {
-        builder.Services.AddSingleton<IParsingStrategy, ParallelParsingStrategy>();
-    }
-    else
-    {
-        builder.Services.AddSingleton<IParsingStrategy, SequentialParsingStrategy>();
-    }
-
+    builder.Services.AddSingleton<IParsingStrategy, SequentialParsingStrategy>();
+    
     //Extremely bad practice but just 
     builder.Services.AddSingleton<IConfiguration>(builder.Configuration);
 

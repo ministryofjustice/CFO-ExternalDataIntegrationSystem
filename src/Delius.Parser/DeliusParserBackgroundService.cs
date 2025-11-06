@@ -15,55 +15,32 @@ public class DeliusParserBackgroundService(
     IStagingMessagingService messageService,
     IDbMessagingService dbService,
     IStatusMessagingService statusService,
-    IParsingStrategy parseService,
-    IFileLocations fileLocations,
-    SystemFileSource systemFileSource) : BackgroundService
+    IParsingStrategy parseService) : BackgroundService
 {
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         await Task.Run(() => 
         {
-            messageService.StagingSubscribe<DeliusDownloadFinishedMessage>(async (message) => await ParseFilesAsync(), TStagingQueue.DeliusParser);
+            messageService.StagingSubscribe<DeliusDownloadFinishedMessage>(async (message) => await ParseFileAsync(message.File), TStagingQueue.DeliusParser);
         }, stoppingToken);
     }
 
-    private async Task ParseFilesAsync()
+    private async Task ParseFileAsync(string file)
     {
-        string[] files = await GetFilesAsync();
-
-        if (files.Length == 0)
+        if (await HasAlreadyBeenProcessedAsync(file))
         {
-            statusService.StatusPublish(new StatusUpdateMessage($"No files found in {fileLocations.deliusInput}"));
-            messageService.StagingPublish(new DeliusParserFinishedMessage("No Files", "No Path", true));            
+            statusService.StatusPublish(new StatusUpdateMessage($"File {file} has already been processed"));
+            messageService.StagingPublish(new DeliusParserFinishedMessage("File already processed", "No Path", true));    
         }
         else
         {
-            await parseService.ParseFiles(files);
+            await parseService.ParseFileAsync(file);
         }
     }
 
-    //Gets a list of files in the target directory.
-    private async Task<string[]> GetFilesAsync()
-    {
-        var filesWithPath = await systemFileSource.ListDeliusFilesAsync(fileLocations.deliusInput);
-
-        var fileNames = filesWithPath.Select(file => Path.GetFileName(file)!);
-        
-        var processedFiles = await GetAlreadyProcessedFiles();
-
-        var unprocessedFiles = fileNames.Except(processedFiles);
-
-        // cfoextract_0001_...dat -> will return files in (unique) id ascending order (0001, 0002, 0003, etc)
-        // Newer files appear later in the collection
-        return unprocessedFiles
-            .OrderBy(fileName => fileName)
-            .ToArray();
-    }
-
-    private async Task<string[]> GetAlreadyProcessedFiles()
+    private async Task<bool> HasAlreadyBeenProcessedAsync(string file)
     {
         var res = await dbService.DbTransientSubscribe<GetDeliusFilesMessage, DeliusFilesReturnMessage>(new GetDeliusFilesMessage());
-
-        return res.fileNames;
+        return res.fileNames.Contains(file);
     }
 }

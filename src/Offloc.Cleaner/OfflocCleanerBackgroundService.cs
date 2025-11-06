@@ -16,76 +16,31 @@ public class OfflocCleanerBackgroundService(
     IStagingMessagingService stagingService,
     IDbMessagingService dbService,
     ICleaningStrategy cleaningService,
-    IStatusMessagingService statusService,
-    IFileLocations fileLocations,
-    SystemFileSource fileSource) : BackgroundService
+    IStatusMessagingService statusService) : BackgroundService
 {
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         await Task.Run(() =>
         {
-            stagingService.StagingSubscribe<OfflocDownloadFinished>(async (message) => await ParseFilesAsync(), TStagingQueue.OfflocCleaner);
+            stagingService.StagingSubscribe<OfflocDownloadFinished>(async (message) => await ParseFileAsync(message.File), TStagingQueue.OfflocCleaner);
         }, stoppingToken);
     }
 
-    private async Task ParseFilesAsync()
+    private async Task ParseFileAsync(string file)
     {
-        string[] files = await GetFilesAsync();
-
-        if (files == null || files.Length == 0)
+        if (await HasAlreadyBeenProcessedAsync(file))
         {
-            statusService.StatusPublish(new StatusUpdateMessage($"No files found in '{fileLocations.offlocInput}'"));
-            stagingService.StagingPublish(new OfflocParserFinishedMessage("No Path", true));
+            statusService.StatusPublish(new StatusUpdateMessage($"File {file} has already been processed"));
+            stagingService.StagingPublish(new OfflocParserFinishedMessage("File already processed", true));
         }
         else
         {
-            await cleaningService.CleanFiles(files);
+            await cleaningService.CleanFile(file);
         }
     }
-
-    //Returns files that fit validation checks (ie. not already been processed).
-    private async Task<string[]> GetFilesAsync()
-    {
-        var filesWithPath = await fileSource.ListOfflocFilesAsync(fileLocations.offlocInput);
-
-        var fileNames = filesWithPath.Select(file => Path.GetFileName(file)!);
-
-        var processedFiles = await GetAlreadyProcessedFilesAsync();
-
-        var unprocessedFiles = fileNames.Except(processedFiles);
-    
-        // Newer files appear later in the collection
-        return unprocessedFiles
-            .OrderBy(Datestamp)
-            .ThenBy(Index)
-            .ToArray();
-    }
-
-    private int Index(string fileName)
-    {
-        var name = Path.GetFileNameWithoutExtension(fileName);
-        var parts = name.Split('_');
-        return int.Parse(parts[4]);
-    }
-
-    private DateOnly Datestamp(string fileName)
-    {
-        // C_NOMIS_OFFENDER_ddMMyyyy_01.dat
-        var parts = fileName.Split('_');
-
-        // 0. C
-        // 1. NOMIS
-        // 2. OFFENDER
-        // 3. ddMMyyyy
-        // 4. 01 (or 02, 03, 03, etc,.)
-        var datePart = parts[3];
-
-        return DateOnly.ParseExact(datePart, "ddMMyyyy", CultureInfo.InvariantCulture);
-    }
-
-    private async Task<string[]> GetAlreadyProcessedFilesAsync()
+    private async Task<bool> HasAlreadyBeenProcessedAsync(string file)
     {
         var res = await dbService.DbTransientSubscribe<GetOfflocFilesMessage, OfflocFilesReturnMessage>(new GetOfflocFilesMessage());
-        return res.offlocFiles;
+        return res.offlocFiles.Contains(file);
     }
 }

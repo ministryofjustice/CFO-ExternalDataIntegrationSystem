@@ -1,5 +1,4 @@
-﻿using Kickoff.Options;
-using Messaging.Interfaces;
+﻿using Messaging.Interfaces;
 using Messaging.Messages.DbMessages.Receiving;
 using Messaging.Messages.DbMessages.Sending;
 using Messaging.Messages.StagingMessages;
@@ -16,7 +15,6 @@ public class KickoffService(
 	IStagingMessagingService messageService, 
 	IStatusMessagingService statusService,
 	IDbMessagingService dbService,
-    IOptions<StagingOptions> stagingOptions,
     IHostApplicationLifetime lifetime) : IHostedService
 {
 
@@ -24,32 +22,18 @@ public class KickoffService(
     {
         LogStatus("Performing pre-kickoff tasks...");
 
-        await PreKickoffTasks();
+        // await PreKickoffTasks();
 
-        LogStatus("All pre-kickoff tasks complete. Begin staging message publish...");
+        // LogStatus("All pre-kickoff tasks complete. Begin staging message publish...");
 
-        var options = stagingOptions.Value;
+        // StagingMessage offlocStagingMessage = new OfflocDownloadFinished();
+        // StagingMessage deliusStagingMessage = new DeliusDownloadFinishedMessage();
 
-        StagingMessage offlocStagingMessage = new OfflocKickoffMessage();
-        StagingMessage deliusStagingMessage = new DeliusKickoffMessage();
+        // LogStatus($"Publishing {offlocStagingMessage.GetType().Name}...");
+        // messageService.StagingPublish(offlocStagingMessage);
 
-        if(options.DownloadOfflocFiles is false)
-        {
-            LogStatus("Offloc file download is disabled, skipping download process.");
-            offlocStagingMessage = new OfflocDownloadFinished();
-        }
-
-        if (options.DownloadDeliusFiles is false)
-        {
-            LogStatus("Delius file download is disabled, skipping download process.");
-            deliusStagingMessage = new DeliusDownloadFinishedMessage();
-        }
-
-        LogStatus($"Publishing {offlocStagingMessage.GetType().Name}...");
-        messageService.StagingPublish(offlocStagingMessage);
-
-        LogStatus($"Publishing {deliusStagingMessage.GetType().Name}...");
-        messageService.StagingPublish(deliusStagingMessage);
+        // LogStatus($"Publishing {deliusStagingMessage.GetType().Name}...");
+        // messageService.StagingPublish(deliusStagingMessage);
 
         lifetime.StopApplication();
     }

@@ -3,7 +3,6 @@ using EnvironmentSetup;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.DependencyInjection;
-using Kickoff.Options;
 using Messaging.Interfaces;
 using Messaging.Services;
 using Kickoff;
@@ -22,8 +21,6 @@ try
 	builder.Configuration.ConfigureByEnvironment();
 
 	builder.Services.ConfigureServices(builder.Configuration);
-
-	builder.Services.Configure<StagingOptions>(builder.Configuration.GetSection("Staging"));
 
 	builder.Services.AddSingleton<IStagingMessagingService, RabbitService>();
 	builder.Services.AddSingleton<IStatusMessagingService, RabbitService>();

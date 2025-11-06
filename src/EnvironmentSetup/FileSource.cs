@@ -15,6 +15,6 @@ public abstract class FileSource
     public abstract Task RetrieveFileAsync(string source, string target, CancellationToken cancellationToken = default);
 
     public virtual string DeliusFilePattern => @"^.*\.(txt)$";
-    public virtual string OfflocFilePattern => @"^.*\\.(dat)$";
+    public virtual string OfflocFilePattern => @"^.*\.(dat)$";
 
 }

@@ -9,9 +9,12 @@ public class OfflocDownloadFinished : StagingMessage
 {
     public override StatusUpdateMessage StatusMessage => new();
 
+    public string File { get; }
+
     [JsonConstructor]
-    public OfflocDownloadFinished()
+    public OfflocDownloadFinished(string file)
     {
         routingKey = TStagingQueue.OfflocCleaner;
+        File = file;
     }
 }

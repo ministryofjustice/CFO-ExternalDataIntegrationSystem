@@ -28,16 +28,8 @@ try
             builder.Configuration.GetValue<string>("RedundantOfflocFields")!
         ));
 
-    bool parallel = builder.Configuration.GetValue<bool>("Parallel");
-    if (parallel)
-    {
-        builder.Services.AddSingleton<ICleaningStrategy, ParallelCleaningStrategy>();
-    }
-    else
-    {
-        builder.Services.AddSingleton<ICleaningStrategy, SequentialCleaningStrategy>();
-    }
-
+    builder.Services.AddSingleton<ICleaningStrategy, SequentialCleaningStrategy>();
+    
     builder.Services.ConfigureServices(builder.Configuration);
     builder.Services.AddSingleton<IStagingMessagingService, RabbitService>();
     builder.Services.AddSingleton<IStatusMessagingService, RabbitService>();

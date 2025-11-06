@@ -23,7 +23,7 @@ public abstract class CleaningStrategyBase
         this.fileLocations = fileLocations;
     }
 
-    public async Task CleanFile(string file)
+    public virtual async Task ProcessFile(string file)
     {
         await Task.CompletedTask;
 
