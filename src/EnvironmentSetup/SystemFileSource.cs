@@ -8,7 +8,7 @@ public class SystemFileSource : FileSource
     public override Task RetrieveFileAsync(string source, string target, CancellationToken cancellationToken = default)
     {
         var sourcePath = Path.GetFullPath(source);
-        var targetPath = Path.GetFullPath(target);
+        var targetPath = Path.GetFullPath(Path.Combine(target, Path.GetFileName(source)));
 
         if (sourcePath != targetPath)
         {

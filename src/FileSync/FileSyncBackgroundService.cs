@@ -1,3 +1,4 @@
+using System.Globalization;
 using FileStorage;
 using Messaging.Messages;
 using Messaging.Messages.DbMessages.Receiving;
@@ -37,7 +38,11 @@ public class FileSyncBackgroundService(
             if (syncOptions.Value.ProcessOnCompletion)
             {
                 matchingMessagingService.MatchingSubscribe<ClusteringPostProcessingFinishedMessage>(
-                    async msg => await ProcessMessageAsync(msg, stoppingToken), TMatchingQueue.ClusteringPostProcessingFinished);
+                    async msg =>
+                    {
+                        gate.Release();
+                        await ProcessMessageAsync(msg, stoppingToken);
+                    }, TMatchingQueue.ClusteringPostProcessingFinished);
             }
 
             if (syncOptions.Value is { ProcessOnTimer: true, ProcessTimerIntervalSeconds: > 0 })
@@ -65,45 +70,33 @@ public class FileSyncBackgroundService(
     async Task ProcessAsync(CancellationToken cancellationToken = default)
     {
         if (!await gate.WaitAsync(0, cancellationToken))
+        {
+            logger.LogWarning("Unable to process any new files, never received ClusteringPostProcessingFinishedMessage");
             return;
-
-        try
-        {
-            logger.LogInformation("Executing ProcessAsync...");
-
-            var unprocessedDeliusFiles = await GetUnprocessedDeliusFilesAsync(cancellationToken);
-            var unprocessedOfflocFiles = await GetUnprocessedOfflocFilesAsync(cancellationToken);
-
-            // No files to process
-            if (unprocessedDeliusFiles is not { Count: > 0 } && unprocessedOfflocFiles is not { Count: > 0 })
-            {
-                return;
-            }
-
-            // Perform pre-kickoff tasks here
-
-            foreach (var unprocessedDeliusFile in unprocessedDeliusFiles)
-            {
-                await fileSource.RetrieveFileAsync(unprocessedDeliusFile, fileLocations.deliusInput, cancellationToken);
-                // stagingMessagingService.StagingPublish(new DeliusDownloadFinishedMessage(unprocessedDeliusFile));
-                stagingMessagingService.StagingPublish(new DeliusDownloadFinishedMessage());
-            }
-
-            foreach (var unprocessedOfflocFile in unprocessedOfflocFiles)
-            {
-                await fileSource.RetrieveFileAsync(unprocessedOfflocFile, fileLocations.offlocInput, cancellationToken);
-                // stagingMessagingService.StagingPublish(new OfflocDownloadFinished(unprocessedOfflocFile));
-                stagingMessagingService.StagingPublish(new OfflocDownloadFinished());
-            }
-            
         }
-        finally
+
+        logger.LogInformation("Executing ProcessAsync...");
+
+        var unprocessedDeliusFile = await GetNextUnprocessedDeliusFileAsync(cancellationToken);
+        var unprocessedOfflocFile = await GetNextUnprocessedOfflocFileAsync(cancellationToken);
+
+        // No files to process
+        if (unprocessedDeliusFile is null || unprocessedOfflocFile is null)
         {
-            gate.Release();
+            return;
         }
+
+        // Perform pre-kickoff tasks here?
+
+        await fileSource.RetrieveFileAsync(unprocessedDeliusFile, fileLocations.deliusInput, cancellationToken);
+        stagingMessagingService.StagingPublish(new DeliusDownloadFinishedMessage(Path.GetFileName(unprocessedDeliusFile)));
+
+        await fileSource.RetrieveFileAsync(unprocessedOfflocFile, fileLocations.offlocInput, cancellationToken);
+        stagingMessagingService.StagingPublish(new OfflocDownloadFinished(Path.GetFileName(unprocessedOfflocFile)));
+
     }
 
-    private async Task<IReadOnlyList<string>> GetUnprocessedOfflocFilesAsync(CancellationToken cancellationToken = default)
+    private async Task<string?> GetNextUnprocessedOfflocFileAsync(CancellationToken cancellationToken = default)
     {
         // Get files from file store (s3 / local file system)
         var offlocFileStore = await fileSource.ListOfflocFilesAsync(fileSourceOptions.Source, cancellationToken);
@@ -116,13 +109,38 @@ public class FileSyncBackgroundService(
         processedOfflocFiles.AddRange(stagedOfflocFiles);
 
         // Return unprocessed files
-        var unprocessedOfflocFiles = offlocFileStore.Select(file => Path.GetFileName(file)!).Except(processedOfflocFiles).ToList();
-        
-        // TODO: Need to order
-        return unprocessedOfflocFiles.AsReadOnly();
+        var unprocessedOfflocFile = offlocFileStore
+            .ExceptBy(processedOfflocFiles, file => Path.GetFileName(file))
+            .OrderBy(Datestamp).ThenBy(Index)
+            .ToList()
+            .FirstOrDefault();
+
+        int Index(string fileName)
+        {
+            var name = Path.GetFileNameWithoutExtension(fileName);
+            var parts = name.Split('_');
+            return int.Parse(parts[4]);
+        }
+
+        DateOnly Datestamp(string fileName)
+        {
+            // C_NOMIS_OFFENDER_ddMMyyyy_01.dat
+            var parts = fileName.Split('_');
+
+            // 0. C
+            // 1. NOMIS
+            // 2. OFFENDER
+            // 3. ddMMyyyy
+            // 4. 01 (or 02, 03, 03, etc,.)
+            var datePart = parts[3];
+
+            return DateOnly.ParseExact(datePart, "ddMMyyyy", CultureInfo.InvariantCulture);
+        }
+
+        return unprocessedOfflocFile;
     }
     
-    private async Task<IReadOnlyList<string>> GetUnprocessedDeliusFilesAsync(CancellationToken cancellationToken = default)
+    private async Task<string?> GetNextUnprocessedDeliusFileAsync(CancellationToken cancellationToken = default)
     {
         // Get files from file store (s3 / local file system)
         var deliusFileStore = await fileSource.ListDeliusFilesAsync(fileSourceOptions.Source, cancellationToken);
@@ -135,10 +153,13 @@ public class FileSyncBackgroundService(
         processedDeliusFiles.AddRange(stagedDeliusFiles);
 
         // Return unprocessed files
-        var unprocessedDeliusFiles = deliusFileStore.Select(file => Path.GetFileName(file)!).Except(processedDeliusFiles).ToList();
+        var unprocessedDeliusFiles = deliusFileStore
+            .ExceptBy(processedDeliusFiles, file => Path.GetFileName(file))
+            .OrderBy(file => file)
+            .ToList()
+            .FirstOrDefault();
         
-        // TODO: Need to order
-        return unprocessedDeliusFiles.AsReadOnly();
+        return unprocessedDeliusFiles;
     }
     
     private async Task<List<string>> GetAlreadyProcessedOfflocFilesAsync()
