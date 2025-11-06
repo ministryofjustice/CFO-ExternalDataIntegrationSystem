@@ -12,15 +12,31 @@ try
 
     builder.Services.ConfigureServices(builder.Configuration);
 
+	builder.Services.AddSingleton<IStagingMessagingService, RabbitService>();
     builder.Services.AddSingleton<IStatusMessagingService, RabbitService>();
     builder.Services.AddSingleton<IMatchingMessagingService, RabbitService>();
     builder.Services.AddSingleton<IDbMessagingService, RabbitService>();
 
-    // builder.Services.AddDefaultAWSOptions(builder.Configuration.GetAWSOptions());
-    // builder.Services.AddAWSService<IAmazonS3>();
-
-    builder.Services.AddOptions<S3Options>().BindConfiguration("S3");
     builder.Services.AddOptions<SyncOptions>().BindConfiguration("SyncOptions");
+
+    var source = builder.Configuration.GetValue<string>("FileSourceProvider")?.ToLowerInvariant();
+
+    if (source == "s3")
+    {
+        builder.Services.AddDefaultAWSOptions(builder.Configuration.GetAWSOptions());
+        builder.Services.AddAWSService<IAmazonS3>();
+        builder.Services.AddSingleton<FileSource, S3FileSource>();
+        builder.Services.AddSingleton(sp => new FileSourceOptions(builder.Configuration.GetValue<string>("AWS:S3")!));
+    }
+    else if (source == "filesystem")
+    {
+        builder.Services.AddSingleton<FileSource, SystemFileSource>();
+        builder.Services.AddSingleton(sp => new FileSourceOptions(builder.Configuration.GetValue<string>("FileSystem:SourceLocation")!));
+    }
+    else
+    {
+        throw new InvalidOperationException("Set 'FileSource' to 'S3' or 'FileSystem' in configuration.");
+    }
 
     builder.Services.AddHostedService<FileSyncBackgroundService>();
 

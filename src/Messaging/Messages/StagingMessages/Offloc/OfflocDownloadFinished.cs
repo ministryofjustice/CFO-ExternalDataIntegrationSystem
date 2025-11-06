@@ -7,8 +7,7 @@ namespace Messaging.Messages.StagingMessages;
 
 public class OfflocDownloadFinished : StagingMessage
 {
-    public override StatusUpdateMessage StatusMessage => 
-        new StatusUpdateMessage();
+    public override StatusUpdateMessage StatusMessage => new();
 
     [JsonConstructor]
     public OfflocDownloadFinished()
