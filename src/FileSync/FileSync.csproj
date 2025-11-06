@@ -8,6 +8,12 @@
   </PropertyGroup>
 
 	<ItemGroup>
+		<Content Include="appsettings.json">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
+	</ItemGroup>
+
+	<ItemGroup>
 		<ProjectReference Include="..\EnvironmentSetup\EnvironmentSetup.csproj" />
 		<ProjectReference Include="..\Messaging\Messaging.csproj" />
 	</ItemGroup>

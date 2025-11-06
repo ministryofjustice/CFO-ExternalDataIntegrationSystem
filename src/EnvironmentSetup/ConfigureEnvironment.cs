@@ -54,6 +54,8 @@ public static class ServiceConfiguration
         services.AddSingleton<IFileLocations, FileLocations>(
             f => new FileLocations(configManager.GetValue<string>("DMSFilesBasePath")!)
         );
+
+        services.AddSingleton<SystemFileSource>();
         
         services.AddWindowsService();
 

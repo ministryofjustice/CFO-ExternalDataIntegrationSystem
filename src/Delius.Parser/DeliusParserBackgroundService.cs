@@ -1,4 +1,5 @@
 ﻿using Delius.Parser.Services;
+using EnvironmentSetup;
 using FileStorage;
 using Messaging.Interfaces;
 using Messaging.Messages.DbMessages.Receiving;
@@ -7,31 +8,17 @@ using Messaging.Messages.StagingMessages;
 using Messaging.Messages.StatusMessages;
 using Messaging.Queues;
 using Microsoft.Extensions.Hosting;
-using System.Globalization;
 
 namespace Delius.Parser;
 
-public class DeliusParserBackgroundService : BackgroundService
+public class DeliusParserBackgroundService(
+    IStagingMessagingService messageService,
+    IDbMessagingService dbService,
+    IStatusMessagingService statusService,
+    IParsingStrategy parseService,
+    IFileLocations fileLocations,
+    SystemFileSource systemFileSource) : BackgroundService
 {
-    private readonly IStagingMessagingService messageService;
-    private readonly IDbMessagingService dbService;
-    private readonly IStatusMessagingService statusService;
-    private readonly IParsingStrategy parseService;
-    private readonly IFileLocations fileLocations;
-
-    private CultureInfo cultureInfo = new CultureInfo("en-GB");
-    
-    public DeliusParserBackgroundService(IStagingMessagingService messageService, 
-        IDbMessagingService dbService, IStatusMessagingService statusService, 
-        IParsingStrategy parseStrategy, IFileLocations fileLocations)
-    {
-        this.messageService = messageService;
-        this.statusService = statusService;
-        this.dbService = dbService;
-        parseService = parseStrategy;
-        this.fileLocations = fileLocations;
-    }
-
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         await Task.Run(() => 
@@ -58,19 +45,18 @@ public class DeliusParserBackgroundService : BackgroundService
     //Gets a list of files in the target directory.
     private async Task<string[]> GetFilesAsync()
     {
-        var files = Directory.GetFiles(fileLocations.deliusInput, "*.txt");
+        var filesWithPath = await systemFileSource.ListDeliusFilesAsync(fileLocations.deliusInput);
 
-        for (int i = 0; i<files.Length; i++)
-        {
-            FileInfo f = new FileInfo(files[i]); //TEST- Use to order sequential processing of files.
-            files[i] = files[i][(fileLocations.deliusInput.Length+1)..];
-        }
+        var fileNames = filesWithPath.Select(file => Path.GetFileName(file)!);
         
-        var res = await GetAlreadyProcessedFiles();
+        var processedFiles = await GetAlreadyProcessedFiles();
 
-        return files
-            .Where(f => !res.Contains(f))
-            .OrderBy(f => DateOnly.Parse($"{f[27..29]}/{f[25..27]}/{f[21..25]}", cultureInfo))
+        var unprocessedFiles = fileNames.Except(processedFiles);
+
+        // cfoextract_0001_...dat -> will return files in (unique) id ascending order (0001, 0002, 0003, etc)
+        // Newer files appear later in the collection
+        return unprocessedFiles
+            .OrderBy(fileName => fileName)
             .ToArray();
     }
 
