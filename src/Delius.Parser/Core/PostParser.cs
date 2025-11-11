@@ -53,15 +53,19 @@ public class PostParser
 			await PostParseFile(linkedConfigs);
 
             DisposeStreams();
+
+            var oldFile = Path.Combine(outputFolderPath, $"{baseFileName}.txt");
+            var newFile = Path.Combine(outputFolderPath, $"{baseFileName}_new.txt");
             
-            if (File.Exists($"{outputFolderPath}/{baseFileName}_new.txt"))
+            if (File.Exists(newFile))
             {
-                File.Replace($"{outputFolderPath}/{baseFileName}_new.txt", $"{outputFolderPath}/{baseFileName}.txt", null);
+                File.Delete(oldFile);
+                File.Move(newFile, oldFile);
             }
             else
             {
 				//Deletes original file afterwards.
-				File.Delete($"{outputFolderPath}/{baseFileName}.txt");
+                File.Delete(oldFile);
 			}
         }
     } 
@@ -146,7 +150,9 @@ public class PostParser
                 postParsingConfigs[i].NewFileName += "_new";
             }
 
-            newFileWriters[i] = new StreamWriter($"{outputFolderPath}/{postParsingConfigs[i].NewFileName}.txt");
+            newFileWriters[i] = new StreamWriter($"{outputFolderPath}/{postParsingConfigs[i].NewFileName}.txt", append: false, encoding: Encoding.Unicode);
+            newFileWriters[i].NewLine = "\r\n";
+            
             NewFileWriters.Add(postParsingConfigs[i].NewFileName, newFileWriters[i]);
             NewFilePreviousLines.Add(postParsingConfigs[i].NewFileName, new HashSet<string>(2500));
         }
