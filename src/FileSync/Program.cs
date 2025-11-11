@@ -26,16 +26,22 @@ try
         builder.Services.AddDefaultAWSOptions(builder.Configuration.GetAWSOptions());
         builder.Services.AddAWSService<IAmazonS3>();
         builder.Services.AddSingleton<FileSource, S3FileSource>();
-        builder.Services.AddSingleton(sp => new FileSourceOptions(builder.Configuration.GetValue<string>("AWS:S3")!));
+        builder.Services.AddSingleton(sp => new FileSourceOptions(builder.Configuration.GetValue<string>("AWS:S3:BucketName")!));
     }
     else if (source == "filesystem")
     {
         builder.Services.AddSingleton<FileSource, SystemFileSource>();
         builder.Services.AddSingleton(sp => new FileSourceOptions(builder.Configuration.GetValue<string>("FileSystem:SourceLocation")!));
     }
+    else if(source == "minio")
+    {
+        builder.AddMinioClient("minio");
+        builder.Services.AddSingleton<FileSource, MinioFileSource>();
+        builder.Services.AddSingleton(sp => new FileSourceOptions(builder.Configuration.GetValue<string>("MinIO:BucketName")!));
+    }
     else
     {
-        throw new InvalidOperationException("Set 'FileSource' to 'S3' or 'FileSystem' in configuration.");
+        throw new InvalidOperationException("Set 'FileSource' to 'S3', 'FileSystem', or 'MinIO' in configuration.");
     }
 
     builder.Services.AddHostedService<FileSyncBackgroundService>();

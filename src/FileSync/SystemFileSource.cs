@@ -1,9 +1,10 @@
 
 using System.Text.RegularExpressions;
+using Microsoft.Extensions.Options;
 
-namespace EnvironmentSetup;
+namespace FileSync;
 
-public class SystemFileSource : FileSource
+public class SystemFileSource(FileSourceOptions options) : FileSource
 {
     public override Task RetrieveFileAsync(string source, string target, CancellationToken cancellationToken = default)
     {
@@ -18,15 +19,15 @@ public class SystemFileSource : FileSource
         return Task.CompletedTask;
     }
 
-    public override Task<IReadOnlyList<string>> ListDeliusFilesAsync(string source, CancellationToken cancellationToken = default)
-        => GetFiles(source, DeliusFilePattern);
+    public override Task<IReadOnlyList<string>> ListDeliusFilesAsync(CancellationToken cancellationToken = default)
+        => GetFiles(options.Source, DeliusFilePattern);
 
-    public override Task<IReadOnlyList<string>> ListOfflocFilesAsync(string source, CancellationToken cancellationToken = default)
-        => GetFiles(source, OfflocFilePattern);
+    public override Task<IReadOnlyList<string>> ListOfflocFilesAsync(CancellationToken cancellationToken = default)
+        => GetFiles(options.Source, OfflocFilePattern);
     
     private static Task<IReadOnlyList<string>> GetFiles(string location, string pattern)
     {
-        IReadOnlyList<string> files = Directory.GetFiles(location).Where(file =>
+        IReadOnlyList<string> files = Directory.GetFiles(location, "*", SearchOption.AllDirectories).Where(file =>
         {
             var fileName = Path.GetFileName(file);
             return Regex.IsMatch(fileName, pattern);
