@@ -18,7 +18,6 @@ public class FileSyncBackgroundService(
 	IStagingMessagingService stagingMessagingService,
     IFileLocations fileLocations,
     FileSource fileSource,
-    FileSourceOptions fileSourceOptions,
     IOptions<SyncOptions> syncOptions) : BackgroundService, IDisposable
 {
     private readonly SemaphoreSlim gate = new(1, 1);
@@ -30,11 +29,6 @@ public class FileSyncBackgroundService(
 
         try
         {
-            if (syncOptions.Value.ProcessOnStartup)
-            {
-                await ProcessAsync(stoppingToken);
-            }
-
             if (syncOptions.Value.ProcessOnCompletion)
             {
                 matchingMessagingService.MatchingSubscribe<ClusteringPostProcessingFinishedMessage>(
@@ -52,6 +46,11 @@ public class FileSyncBackgroundService(
                     state: null,
                     dueTime: Timeout.InfiniteTimeSpan,
                     period: TimeSpan.FromSeconds(syncOptions.Value.ProcessTimerIntervalSeconds));
+            }
+
+            if (syncOptions.Value.ProcessOnStartup)
+            {
+                await ProcessAsync(stoppingToken);
             }
 
         }
@@ -99,7 +98,7 @@ public class FileSyncBackgroundService(
     private async Task<string?> GetNextUnprocessedOfflocFileAsync(CancellationToken cancellationToken = default)
     {
         // Get files from file store (s3 / local file system)
-        var offlocFileStore = await fileSource.ListOfflocFilesAsync(fileSourceOptions.Source, cancellationToken);
+        var offlocFileStore = await fileSource.ListOfflocFilesAsync(cancellationToken);
 
         // Get already processed files
         var processedOfflocFiles = await GetAlreadyProcessedOfflocFilesAsync();
@@ -143,7 +142,7 @@ public class FileSyncBackgroundService(
     private async Task<string?> GetNextUnprocessedDeliusFileAsync(CancellationToken cancellationToken = default)
     {
         // Get files from file store (s3 / local file system)
-        var deliusFileStore = await fileSource.ListDeliusFilesAsync(fileSourceOptions.Source, cancellationToken);
+        var deliusFileStore = await fileSource.ListDeliusFilesAsync(cancellationToken);
         
         // Get already processed files
         var processedDeliusFiles = await GetAlreadyProcessedDeliusFilesAsync();

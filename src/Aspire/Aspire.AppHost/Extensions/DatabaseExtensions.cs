@@ -13,7 +13,6 @@ public static class DatabaseExtensions
 #pragma warning disable ASPIREPROXYENDPOINTS001
         return builder.AddSqlServer("sql", password, 61749)
             .WithDataVolume("dms-data")
-            .WithBindMount($"{home}/DMS", "/app/")
             .WithLifetime(ContainerLifetime.Persistent)
             .WithEndpointProxySupport(false)
             .WithImageTag("2022-latest");

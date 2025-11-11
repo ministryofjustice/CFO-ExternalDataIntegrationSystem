@@ -1,30 +1,33 @@
 using System.Text.RegularExpressions;
 using Amazon.S3.Model;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace FileSync;
 
 public class S3FileSource(
     ILogger<S3FileSource> logger,
+    FileSourceOptions options,
     IAmazonS3 client) : FileSource
 {
     public override async Task RetrieveFileAsync(string source, string target, CancellationToken cancellationToken = default)
     {
         var uri = new Uri(source);
+        var fileName = uri.AbsolutePath.TrimStart('/');
 
         await client.DownloadToFilePathAsync(
             bucketName: uri.Host,
-            objectKey: uri.AbsolutePath.TrimStart('/'),
-            filepath: target,
+            objectKey: fileName,
+            filepath: Path.Combine(target, fileName),
             new Dictionary<string, object> { },
             cancellationToken);
     }
 
-    public override Task<IReadOnlyList<string>> ListDeliusFilesAsync(string bucketName, CancellationToken cancellationToken = default)
-        => GetFilesAsync(bucketName, DeliusFilePattern, cancellationToken);
+    public override Task<IReadOnlyList<string>> ListDeliusFilesAsync(CancellationToken cancellationToken = default)
+        => GetFilesAsync(options.Source, DeliusFilePattern, cancellationToken);
         
-    public override Task<IReadOnlyList<string>> ListOfflocFilesAsync(string bucketName, CancellationToken cancellationToken = default)
-        => GetFilesAsync(bucketName, OfflocFilePattern, cancellationToken);
+    public override Task<IReadOnlyList<string>> ListOfflocFilesAsync(CancellationToken cancellationToken = default)
+        => GetFilesAsync(options.Source, OfflocFilePattern, cancellationToken);
 
     private async Task<IReadOnlyList<string>> GetFilesAsync(string bucketName, string pattern, CancellationToken cancellationToken = default)
     {

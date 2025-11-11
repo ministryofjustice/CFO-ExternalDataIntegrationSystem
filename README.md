@@ -12,11 +12,7 @@ Any queries, please contact andrew.grocott@justice.gov.uk or visit our slack cha
 # Development Setup and Execution Guide
 
 ## Setup (development)
-1. From the **project root**, run the setup script. This will automatically create the required folder structure in your devices home directory:
-    ```sh
-    ./setup.sh
-    ```
-2. Configure secret(s) for applications in the *src* directory:
+1. Configure secret(s) for applications in the *src* directory:
     - *Visualiser.csproj* → Manage User Secrets
         ```json
         {
