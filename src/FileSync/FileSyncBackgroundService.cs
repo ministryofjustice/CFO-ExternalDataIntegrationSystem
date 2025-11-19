@@ -73,7 +73,7 @@ public class FileSyncBackgroundService(
 
     async Task ProcessAsync(CancellationToken cancellationToken = default)
     {
-        // await PreKickoffTasks();
+        await PreKickoffTasks();
 
         var unprocessedDeliusFile = await GetNextUnprocessedDeliusFileAsync(cancellationToken);
         var unprocessedOfflocFile = await GetNextUnprocessedOfflocFileAsync(cancellationToken);
