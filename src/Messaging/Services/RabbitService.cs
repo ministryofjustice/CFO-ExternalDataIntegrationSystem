@@ -1,4 +1,4 @@
-﻿using RabbitMQ.Client;
+using RabbitMQ.Client;
 using System.Text;
 using RabbitMQ.Client.Events;
 using System.Text.Json;
@@ -160,8 +160,7 @@ public class RabbitService : IMessageService
 		AssociatedMessagePublish(message);
 	}
 
-    //Subscriptions when waiting for requests are long-lived.
-    public void DbLongSubscribe<T>(Action<T> handler, TDbQueue queue) where T : DbRequestMessage
+    public void SubscribeToDbRequest<T>(Action<T> handler, TDbQueue queue) where T : DbRequestMessage
     {        
         var consumer = new EventingBasicConsumer(channel);
         channel.BasicConsume(queue.ToString(), true, consumer);
@@ -173,7 +172,7 @@ public class RabbitService : IMessageService
         };
     }
 
-    public async Task<TResponse> DbTransientSubscribe<TRequest, TResponse>(TRequest message) 
+    public async Task<TResponse> SendDbRequestAndWaitForResponse<TRequest, TResponse>(TRequest message) 
         where TRequest : DbRequestMessage 
         where TResponse : DbResponseMessage 
     {

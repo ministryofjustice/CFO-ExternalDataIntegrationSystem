@@ -8,13 +8,14 @@ public class DeliusDownloadFinishedMessage : StagingMessage
 {
     public override StatusUpdateMessage StatusMessage => new();
 
-    public string File { get; }
+    public string FileId { get; set; }
 
     [JsonConstructor]
-    public DeliusDownloadFinishedMessage(string file)
+    public DeliusDownloadFinishedMessage(string fileName, string fileId)
     {
         routingKey = TStagingQueue.DeliusParser;
-        File = file;
+        base.fileName = fileName;
+        FileId = fileId;
     }
     
 }

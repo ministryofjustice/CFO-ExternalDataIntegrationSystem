@@ -139,7 +139,11 @@ public class DbInteractionService : IDbInteractionService
         {
             await conn.OpenAsync();
 
-            SqlCommand cmd = new SqlCommand("SELECT FileName FROM [OfflocRunningPicture].[ProcessedFiles];", conn);
+            SqlCommand cmd = new SqlCommand(@"
+                SELECT FileName as [Name] FROM [OfflocRunningPicture].[ProcessedFiles] 
+                UNION 
+                SELECT ArchiveFileName as [Name] FROM [OfflocRunningPicture].[ProcessedFiles]", conn);
+
             var reader = await cmd.ExecuteReaderAsync();
 
             List<string> fileNames = new List<string>();
@@ -248,7 +252,7 @@ public class DbInteractionService : IDbInteractionService
         statusService.StatusPublish(new StatusUpdateMessage("Delius staging database standardisation complete."));
     }
     //Calls merge and then on completion
-    public async Task MergeDeliusPicture()
+    public async Task MergeDeliusPicture(string fileName)
     {
         SqlConnection conn = new SqlConnection(deliusPictureConnString);
 
@@ -259,6 +263,8 @@ public class DbInteractionService : IDbInteractionService
             SqlCommand command = new SqlCommand(serverConfig.DeliusRunningPictureMergeProcedure, conn);
             command.CommandType = CommandType.StoredProcedure;
             command.CommandTimeout = 1200;
+
+            command.Parameters.AddWithValue("@fileName", fileName);
 
             try
             {
@@ -298,7 +304,7 @@ public class DbInteractionService : IDbInteractionService
         statusService.StatusPublish(new StatusUpdateMessage("Delius staging database cleared."));
     }
 
-    public async Task MergeOfflocPicture()
+    public async Task MergeOfflocPicture(string fileName)
     {
         SqlConnection offlocConn = new SqlConnection(offlocPictureConnString);
 
@@ -309,6 +315,8 @@ public class DbInteractionService : IDbInteractionService
             SqlCommand command = new SqlCommand(serverConfig.OfflocRunningPictureMergeProcedure, offlocConn);
             command.CommandType = CommandType.StoredProcedure;
             command.CommandTimeout = 1200;
+
+            command.Parameters.AddWithValue("@fileName", fileName);
 
             try
             {
@@ -346,5 +354,98 @@ public class DbInteractionService : IDbInteractionService
         }
 
         statusService.StatusPublish(new StatusUpdateMessage("Offloc staging database cleared."));
+    }
+
+    public async Task CreateOfflocProcessedFileEntry(string fileName, int fileId, string? archiveName = null)
+    {
+        SqlConnection offlocConn = new(offlocPictureConnString);
+
+        using (offlocConn)
+        {
+            await offlocConn.OpenAsync();
+
+            var command = new SqlCommand(@"
+                INSERT INTO [OfflocRunningPicture].[ProcessedFiles] (FileName, FileId, ArchiveFileName, Status) VALUES (@fileName, @fileId, @archiveName, @status)", offlocConn)
+            {
+                CommandType = CommandType.Text,
+                CommandTimeout = 1200
+            };
+
+            command.Parameters.AddWithValue("@fileName", fileName);
+            command.Parameters.AddWithValue("@fileId", fileId);
+            command.Parameters.AddWithValue("@archiveName", archiveName);
+            command.Parameters.AddWithValue("@status", "Processing");
+
+            try
+            {
+                var res = await command.ExecuteNonQueryAsync();
+            }
+            catch (SqlException e)
+            {
+                statusService.StatusPublish(new StatusUpdateMessage(e.Message));
+                return;
+            }
+        }
+    }
+
+    public async Task CreateDeliusProcessedFileEntry(string fileName, string fileId)
+    {
+        SqlConnection deliusConn = new(deliusPictureConnString);
+
+        using (deliusConn)
+        {
+            await deliusConn.OpenAsync();
+            var command = new SqlCommand(@"INSERT INTO [DeliusRunningPicture].[ProcessedFiles] (FileName, FileId, Status) VALUES (@fileName, @fileId, @status)", deliusConn)
+            {
+                CommandType = CommandType.Text,
+                CommandTimeout = 1200
+            };
+
+            command.Parameters.AddWithValue("@fileName", fileName);
+            command.Parameters.AddWithValue("@fileId", fileId);
+            command.Parameters.AddWithValue("@status", "Processing");
+
+            try
+            {
+                var res = await command.ExecuteNonQueryAsync();
+            }
+            catch (SqlException e)
+            {
+                statusService.StatusPublish(new StatusUpdateMessage(e.Message));
+                return;
+            }
+        }
+    }
+
+    public async Task AssociateOfflocFileWithArchive(string fileName, string archiveName)
+    {
+        SqlConnection offlocConn = new(offlocPictureConnString);
+
+        using (offlocConn)
+        {
+            await offlocConn.OpenAsync();
+
+            var command = new SqlCommand(@"
+                UPDATE [OfflocRunningPicture].[ProcessedFiles]
+                SET ArchiveFileName = @archiveName
+                WHERE FileName = @fileName", offlocConn)
+            {
+                CommandType = CommandType.Text,
+                CommandTimeout = 1200
+            };
+            
+            command.Parameters.AddWithValue("@fileName", fileName);
+            command.Parameters.AddWithValue("@archiveName", archiveName);
+
+            try
+            {
+                var res = await command.ExecuteNonQueryAsync();
+            }
+            catch (SqlException e)
+            {
+                statusService.StatusPublish(new StatusUpdateMessage(e.Message));
+                return;
+            }
+        }
     }
 }

@@ -21,26 +21,35 @@ public class DeliusParserBackgroundService(
     {
         await Task.Run(() => 
         {
-            messageService.StagingSubscribe<DeliusDownloadFinishedMessage>(async (message) => await ParseFileAsync(message.File), TStagingQueue.DeliusParser);
+            messageService.StagingSubscribe<DeliusDownloadFinishedMessage>(async (message) => await ParseFileAsync(message), TStagingQueue.DeliusParser);
         }, stoppingToken);
     }
 
-    private async Task ParseFileAsync(string file)
+    private async Task ParseFileAsync(DeliusDownloadFinishedMessage message)
     {
+        var file = message.fileName;
+
         if (await HasAlreadyBeenProcessedAsync(file))
         {
             statusService.StatusPublish(new StatusUpdateMessage($"File {file} has already been processed"));
-            messageService.StagingPublish(new DeliusParserFinishedMessage("File already processed", "No Path", true));    
+            messageService.StagingPublish(new DeliusParserFinishedMessage("File already processed", "No Path", true));
         }
         else
         {
-            await parseService.ParseFileAsync(file);
+            await BeginProcessing(file, message.FileId);
         }
+    }
+    
+    private async Task BeginProcessing(string fileName, string fileId)
+    {
+        var request = new DeliusFileProcessingStarted(fileName, fileId);
+        await dbService.SendDbRequestAndWaitForResponse<DeliusFileProcessingStarted, ResultDeliusFileProcessingStarted>(request);
+        await parseService.ParseFileAsync(fileName);
     }
 
     private async Task<bool> HasAlreadyBeenProcessedAsync(string file)
     {
-        var res = await dbService.DbTransientSubscribe<GetDeliusFilesMessage, DeliusFilesReturnMessage>(new GetDeliusFilesMessage());
+        var res = await dbService.SendDbRequestAndWaitForResponse<GetDeliusFilesMessage, DeliusFilesReturnMessage>(new GetDeliusFilesMessage());
         return res.fileNames.Contains(file);
     }
 }

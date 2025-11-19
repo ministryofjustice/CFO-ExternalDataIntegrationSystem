@@ -53,8 +53,8 @@ public class KickoffService(
         messageService.StagingPublish(new ClearTemporaryDeliusFiles());
 
         LogStatus("Pre-kickoff messages published. Beginning staging database tear down...");
-        await dbService.DbTransientSubscribe<ClearDeliusStaging, ResultClearDeliusStaging>(new ClearDeliusStaging());
-        await dbService.DbTransientSubscribe<ClearOfflocStaging, ResultClearOfflocStaging>(new ClearOfflocStaging());
+        await dbService.SendDbRequestAndWaitForResponse<ClearDeliusStaging, ResultClearDeliusStaging>(new ClearDeliusStaging());
+        await dbService.SendDbRequestAndWaitForResponse<ClearOfflocStaging, ResultClearOfflocStaging>(new ClearOfflocStaging());
         LogStatus("Staging database tear down complete.");
     }
 

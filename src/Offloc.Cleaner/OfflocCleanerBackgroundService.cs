@@ -22,12 +22,14 @@ public class OfflocCleanerBackgroundService(
     {
         await Task.Run(() =>
         {
-            stagingService.StagingSubscribe<OfflocDownloadFinished>(async (message) => await ParseFileAsync(message.File), TStagingQueue.OfflocCleaner);
+            stagingService.StagingSubscribe<OfflocDownloadFinished>(async (message) => await ParseFileAsync(message), TStagingQueue.OfflocCleaner);
         }, stoppingToken);
     }
 
-    private async Task ParseFileAsync(string file)
+    private async Task ParseFileAsync(OfflocDownloadFinished message)
     {
+        string file = message.fileName;
+
         if (await HasAlreadyBeenProcessedAsync(file))
         {
             statusService.StatusPublish(new StatusUpdateMessage($"File {file} has already been processed"));
@@ -35,12 +37,14 @@ public class OfflocCleanerBackgroundService(
         }
         else
         {
+            var request = new OfflocFileProcessingStarted(message.fileName, message.FileId, message.ArchiveFileName);
+            await dbService.SendDbRequestAndWaitForResponse<OfflocFileProcessingStarted, ResultOfflocFileProcessingStarted>(request);
             await cleaningService.CleanFile(file);
         }
     }
     private async Task<bool> HasAlreadyBeenProcessedAsync(string file)
     {
-        var res = await dbService.DbTransientSubscribe<GetOfflocFilesMessage, OfflocFilesReturnMessage>(new GetOfflocFilesMessage());
+        var res = await dbService.SendDbRequestAndWaitForResponse<GetOfflocFilesMessage, OfflocFilesReturnMessage>(new GetOfflocFilesMessage());
         return res.offlocFiles.Contains(file);
     }
 }

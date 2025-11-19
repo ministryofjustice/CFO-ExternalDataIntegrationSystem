@@ -12,9 +12,12 @@ public interface IDbInteractionService
     Task<int[]> GetProcessedOfflocIds();
     Task StageDelius(string fileName, string filePath);
     Task StageOffloc(string fileName);
-    Task MergeDeliusPicture();
-    Task MergeOfflocPicture();
+    Task MergeDeliusPicture(string fileName);
+    Task MergeOfflocPicture(string fileName);
     Task StandardiseDeliusStaging();
     Task ClearDeliusStaging();
     Task ClearOfflocStaging();
+    Task CreateOfflocProcessedFileEntry(string fileName, int fileId, string? archiveName = null);
+    Task CreateDeliusProcessedFileEntry(string fileName, string fileId);
+    Task AssociateOfflocFileWithArchive(string fileName, string archiveName);
 }

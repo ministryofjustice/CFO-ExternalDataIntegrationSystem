@@ -1,4 +1,4 @@
-namespace FileSync;
+namespace FileSync.Configuration;
 
 public class SyncOptions
 {

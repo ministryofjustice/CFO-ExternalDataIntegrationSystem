@@ -10,10 +10,13 @@ public class MergeOfflocRunningPictureMessage : DbRequestMessage
     public override StatusUpdateMessage StatusMessage =>
         new StatusUpdateMessage("Merging into Offloc running picture started.");
 
+    public string fileName { get; set; }
+
     [JsonConstructor]
-    public MergeOfflocRunningPictureMessage()
+    public MergeOfflocRunningPictureMessage(string fileName)
     {
         Queue = TDbQueue.MergeOffloc;
         ReplyQueue = TDbQueue.ResultMergeOffloc;
+        this.fileName = fileName;
     }
 }
