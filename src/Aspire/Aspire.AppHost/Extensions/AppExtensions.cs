@@ -51,7 +51,8 @@ public static class AppExtensions
 
         builder.AddDmsService<FileSync>("FileSync", rabbit, databases, hostMount)
             .WithReference(minio).WaitFor(minio)
-            .WithExplicitStart();
+            .WithExplicitStart()
+            .WithEnvironment("MinIO:BucketName", "cfo-dms-files");
             
         return builder;
     }
