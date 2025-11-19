@@ -12,7 +12,7 @@ Any queries, please contact andrew.grocott@justice.gov.uk or visit our slack cha
 # Development Setup and Execution Guide
 
 ## Setup (development)
-1. Configure secret(s) for applications in the *src* directory:
+1. To use the Visualiser app, you must configure secret(s) for applications in the *src* directory:
     - *Visualiser.csproj* → Manage User Secrets
         ```json
         {
