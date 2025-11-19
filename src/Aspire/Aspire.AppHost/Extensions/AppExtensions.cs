@@ -72,7 +72,8 @@ public static class AppExtensions
             .WithDmsDatabaseReference(databases.Audit)
             .WithDmsDatabaseReference(databases.Cluster)
             .WithDmsDatabaseReference(databases.Matching)
-            .WithEnvironment("DmsFilesBasePath", hostMount);
+            .WithEnvironment("DmsFilesBasePath", hostMount)
+            .WithEnvironment("DOTNET_ENVIRONMENT", "Development");
 
         return project;
     }
