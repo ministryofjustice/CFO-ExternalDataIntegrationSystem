@@ -142,7 +142,7 @@ public class DbInteractionService : IDbInteractionService
             SqlCommand cmd = new SqlCommand(@"
                 SELECT FileName as [Name] FROM [OfflocRunningPicture].[ProcessedFiles] 
                 UNION 
-                SELECT ArchiveFileName as [Name] FROM [OfflocRunningPicture].[ProcessedFiles]", conn);
+                SELECT ArchiveFileName as [Name] FROM [OfflocRunningPicture].[ProcessedFiles] WHERE ArchiveFileName IS NOT NULL", conn);
 
             var reader = await cmd.ExecuteReaderAsync();
 
@@ -364,16 +364,14 @@ public class DbInteractionService : IDbInteractionService
         {
             await offlocConn.OpenAsync();
 
-            var command = new SqlCommand(@"
-                INSERT INTO [OfflocRunningPicture].[ProcessedFiles] (FileName, FileId, ArchiveFileName, Status) VALUES (@fileName, @fileId, @archiveName, @status)", offlocConn)
+            var command = new SqlCommand(@"INSERT INTO [OfflocRunningPicture].[ProcessedFiles] (FileName, FileId, ArchiveFileName, Status) VALUES (@fileName, @fileId, @archiveName, @status)", offlocConn)
             {
                 CommandType = CommandType.Text,
                 CommandTimeout = 1200
             };
-
             command.Parameters.AddWithValue("@fileName", fileName);
             command.Parameters.AddWithValue("@fileId", fileId);
-            command.Parameters.AddWithValue("@archiveName", archiveName);
+            command.Parameters.AddWithValue("@archiveName", (object?)archiveName ?? DBNull.Value);
             command.Parameters.AddWithValue("@status", "Processing");
 
             try
