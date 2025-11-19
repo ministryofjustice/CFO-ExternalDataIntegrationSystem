@@ -38,7 +38,8 @@ public static class FileExtensions
         else
         {
             var id = file.GetFileId();
-            return DateOnly.ParseExact(id.ToString()!, "ddMMyyyy", CultureInfo.InvariantCulture);
+            var datePart = id.ToString()!.PadLeft(8, '0'); // 01/01/2024 becomes 1/01/2025, add leading zero to mitigate
+            return DateOnly.ParseExact(datePart, "ddMMyyyy", CultureInfo.InvariantCulture);
         }
     }
 

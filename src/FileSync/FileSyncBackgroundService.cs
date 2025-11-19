@@ -166,7 +166,7 @@ public class FileSyncBackgroundService(
         // Return unprocessed files
         var unprocessedDeliusFiles = deliusFileStore
             .ExceptBy(response.fileNames, file => Path.GetFileName(file.Name))
-            .OrderBy(file => file)
+            .OrderBy(file => file.GetDatestamp())
             .ToList();
 
         logger.LogInformation($"Found {unprocessedDeliusFiles.Count} unprocessed Delius file(s).");
