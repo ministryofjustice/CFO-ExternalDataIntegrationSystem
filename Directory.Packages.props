@@ -10,6 +10,7 @@
     <PackageVersion Include="Aspire.RabbitMQ.Client" Version="9.5.2" />
     <PackageVersion Include="AWSSDK.Core" Version="4.0.1.3" />
     <PackageVersion Include="AWSSDK.Extensions.NETCore.Setup" Version="4.0.3.11" />
+    <PackageVersion Include="AWSSDK.SecurityToken" Version="4.0.4.1" />
     <PackageVersion Include="CommunityToolkit.Aspire.Hosting.Minio" Version="9.9.0" />
     <PackageVersion Include="CommunityToolkit.Aspire.Hosting.SqlDatabaseProjects" Version="9.8.1-beta.424" />
     <PackageVersion Include="Autofac" Version="8.4.0" />
