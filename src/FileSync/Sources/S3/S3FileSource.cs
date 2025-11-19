@@ -14,12 +14,12 @@ public class S3FileSource(
         logger.LogInformation($"Retrieving object from S3: {source}");
 
         var uri = new Uri(source);
-        var fileName = uri.AbsolutePath.TrimStart('/');
+        var fileName = Path.GetFileName(source);
         var targetPath = Path.Combine(target, fileName);
 
         await client.DownloadToFilePathAsync(
             bucketName: uri.Host,
-            objectKey: fileName,
+            objectKey: uri.LocalPath.TrimStart('/'),
             filepath: targetPath,
             new Dictionary<string, object> { },
             cancellationToken);
