@@ -163,10 +163,11 @@ public class FileSyncBackgroundService(
         await ZipFile.ExtractToDirectoryAsync(downloadedFile, fileLocations.offlocInput, cancellationToken);
         File.Delete(downloadedFile);
 
-        var file = Directory.GetFiles(fileLocations.offlocInput)
-            .Select(filePath => Path.GetFileName(filePath))
-            .Where(fileName => Regex.IsMatch(fileName, FileConstants.OfflocFilePattern))
+        var filePath = Directory.GetFiles(fileLocations.offlocInput)
+            .Where(filePath => Regex.IsMatch(Path.GetFileName(filePath), FileConstants.OfflocFilePattern))
             .Single();
+
+        var file = Path.GetFileName(filePath);
 
         logger.LogInformation("Extracted Offloc file: " + file);
 
@@ -176,6 +177,10 @@ public class FileSyncBackgroundService(
             // Associate the zip with the file name
             logger.LogWarning("Already processed contents of archive: " + file);
             await dbMessagingService.SendDbRequestAndWaitForResponse<AssociateOfflocFileWithArchiveMessage, ResultAssociateOfflocFileWithArchiveMessage>(new AssociateOfflocFileWithArchiveMessage(file, Path.GetFileName(downloadedFile)));
+            
+            // Remove the extracted file from the input directory - we have already processed it!
+            File.Delete(filePath);
+
             return await GetNextUnprocessedOfflocFileAsync(cancellationToken);
         }
 
