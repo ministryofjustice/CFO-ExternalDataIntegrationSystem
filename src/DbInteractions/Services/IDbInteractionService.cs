@@ -20,4 +20,6 @@ public interface IDbInteractionService
     Task CreateOfflocProcessedFileEntry(string fileName, int fileId, string? archiveName = null);
     Task CreateDeliusProcessedFileEntry(string fileName, string fileId);
     Task AssociateOfflocFileWithArchive(string fileName, string archiveName);
+    Task<bool> IsDeliusReadyForProcessing();
+    Task<bool> IsOfflocReadyForProcessing();
 }

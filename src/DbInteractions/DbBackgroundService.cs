@@ -111,5 +111,18 @@ public class DbBackgroundService : BackgroundService
             dbMessagingService.DbPublishResponse(new ResultAssociateOfflocFileWithArchiveMessage());
         }, TDbQueue.AssociateOfflocFileWithArchive);
 
+        dbMessagingService.SubscribeToDbRequest<IsDeliusReadyForProcessingMessage>(async (message) =>
+        {
+            bool result = await dbInteractionService.IsDeliusReadyForProcessing();
+            dbMessagingService.DbPublishResponse(new IsDeliusReadyForProcessingReturnMessage(result));
+        }, TDbQueue.IsDeliusReadyForProcessing);
+        
+        
+        dbMessagingService.SubscribeToDbRequest<IsOfflocReadyForProcessingMessage>(async (message) =>
+        {
+            bool result = await dbInteractionService.IsOfflocReadyForProcessing();
+            dbMessagingService.DbPublishResponse(new IsOfflocReadyForProcessingReturnMessage(result));
+        }, TDbQueue.IsOfflocReadyForProcessing);
+        
     }
 }

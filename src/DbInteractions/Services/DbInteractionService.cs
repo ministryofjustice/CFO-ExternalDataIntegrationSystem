@@ -446,4 +446,80 @@ public class DbInteractionService : IDbInteractionService
             }
         }
     }
+
+    public async Task<bool> IsDeliusReadyForProcessing()
+    {
+        SqlConnection deliusConn = new(deliusPictureConnString);
+
+        using (deliusConn)
+        {
+            await deliusConn.OpenAsync();
+
+            var command = new SqlCommand(@"
+            SELECT CAST(IIF(
+                NOT EXISTS (
+                    SELECT 1 
+                    FROM DeliusRunningPicture.ProcessedFiles 
+                    WHERE Status <> 'Merged'
+                ),
+                1,
+                0
+            ) AS BIT)", deliusConn)
+            {
+                CommandType = CommandType.Text,
+                CommandTimeout = 1200
+            };
+
+            try
+            {
+#pragma warning disable CS8605 // Unboxing a possibly null value.
+                bool result = (bool)await command.ExecuteScalarAsync();
+#pragma warning restore CS8605 // Unboxing a possibly null value.
+                return result;
+            }
+            catch (SqlException e)
+            {
+                statusService.StatusPublish(new StatusUpdateMessage(e.Message));
+                return false;
+            }
+        }
+    }
+
+    public async Task<bool> IsOfflocReadyForProcessing()
+    {
+        SqlConnection offlocConn = new(offlocPictureConnString);
+
+        using (offlocConn)
+        {
+            await offlocConn.OpenAsync();
+
+            var command = new SqlCommand(@"
+            SELECT CAST(IIF(
+                NOT EXISTS (
+                    SELECT 1 
+                    FROM OfflocRunningPicture.ProcessedFiles 
+                    WHERE Status <> 'Merged'
+                ),
+                1,
+                0
+            ) AS BIT)", offlocConn)
+            {
+                CommandType = CommandType.Text,
+                CommandTimeout = 1200
+            };
+
+            try
+            {
+#pragma warning disable CS8605 // Unboxing a possibly null value.
+                bool result = (bool)await command.ExecuteScalarAsync();
+#pragma warning restore CS8605 // Unboxing a possibly null value.
+                return result;
+            }
+            catch (SqlException e)
+            {
+                statusService.StatusPublish(new StatusUpdateMessage(e.Message));
+                return false;
+            }
+        }
+    }
 }

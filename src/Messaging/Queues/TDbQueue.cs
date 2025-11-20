@@ -20,6 +20,8 @@ public enum TDbQueue
     ClearDeliusStaging,
     OfflocFileProcessingStarted,
     DeliusFileProcessingStarted,
+    IsDeliusReadyForProcessing,
+    IsOfflocReadyForProcessing,
     //Incoming requests.
     ReturnedOfflocFiles,
     ReturnedOfflocFileDates,
@@ -35,4 +37,6 @@ public enum TDbQueue
     ResultOfflocFileProcessingStarted,
     ResultDeliusFileProcessingStarted,
     ResultAssociateOfflocFileWithArchive,
+    IsDeliusReadyForProcessingResult,
+    IsOfflocReadyForProcessingResult
 }

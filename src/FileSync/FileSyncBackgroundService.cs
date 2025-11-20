@@ -49,7 +49,7 @@ public class FileSyncBackgroundService(
                 timer = new Timer(
                     callback: async (state) => await ProcessAsync(stoppingToken),
                     state: null,
-                    dueTime: TimeSpan.Zero,
+                    dueTime: TimeSpan.FromSeconds(syncOptions.Value.ProcessTimerIntervalSeconds),
                     period: TimeSpan.FromSeconds(syncOptions.Value.ProcessTimerIntervalSeconds));
             }
 
@@ -73,6 +73,23 @@ public class FileSyncBackgroundService(
 
     async Task ProcessAsync(CancellationToken cancellationToken = default)
     {
+        var isDeliusReady = await IsDeliusReady();
+        var isOfflocReady = await IsOfflocReady();
+
+        var notReady = (isDeliusReady, isOfflocReady) switch
+        {
+            (false, false) => "Delius and Offloc are not ready for processing.",
+            (false, true) => "Delius is not ready for processing.",
+            (true, false) => "Offloc is not ready for processing.",
+            _ => null
+        };
+
+        if (!string.IsNullOrEmpty(notReady))
+        {               
+            logger.LogWarning($"{notReady} Exiting.");
+            return;
+        }
+
         await PreKickoffTasks();
 
         var unprocessedDeliusFile = await GetNextUnprocessedDeliusFileAsync(cancellationToken);
@@ -86,6 +103,18 @@ public class FileSyncBackgroundService(
 
         stagingMessagingService.StagingPublish(new DeliusDownloadFinishedMessage(unprocessedDeliusFile.Name, unprocessedDeliusFile.GetFileId()));
         stagingMessagingService.StagingPublish(new OfflocDownloadFinished(unprocessedOfflocFile.Name, unprocessedOfflocFile.GetFileId()!.Value, unprocessedOfflocFile.ParentArchiveName));
+    }
+
+    private async Task<bool> IsOfflocReady()
+    {
+        var response = await dbMessagingService.SendDbRequestAndWaitForResponse<IsOfflocReadyForProcessingMessage, IsOfflocReadyForProcessingReturnMessage>(new());
+        return response.isReady;
+    }
+
+    private async Task<bool> IsDeliusReady()
+    {
+        var response = await dbMessagingService.SendDbRequestAndWaitForResponse<IsDeliusReadyForProcessingMessage, IsDeliusReadyForProcessingReturnMessage>(new());
+        return response.isReady;
     }
     
     private async Task<OfflocFile?> GetNextUnprocessedOfflocFileAsync(CancellationToken cancellationToken = default)
