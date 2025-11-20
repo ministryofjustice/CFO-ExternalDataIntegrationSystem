@@ -15,8 +15,6 @@ public class TextFileProcessor : IFileProcessor
     {
         this.messageService = messageService;
         this.deliusProcessor = deliusProcessor;
-
-        //messageService.StagingSubscribe<DeliusDownloadFinishedMessage>(async(message) => await Process(), TStagingQueue.DeliusParser);
     }
 
     public async Task Process(string fileToBeParsed, string outputDirectory)

@@ -67,8 +67,8 @@ public class ImportBackgroundService : BackgroundService
         else
         {
             statusService.StatusPublish(new StatusUpdateMessage($"Importing Delius File....."));
-            var res = await dbService.DbTransientSubscribe<StageDeliusMessage, StageDeliusReturnMessage>(new StageDeliusMessage(message.fileName, message.filePath));
-            var msg = await dbService.DbTransientSubscribe<MergeDeliusRunningPictureMessage, MergeDeliusReturnMessage>(new MergeDeliusRunningPictureMessage());
+            var res = await dbService.SendDbRequestAndWaitForResponse<StageDeliusMessage, StageDeliusReturnMessage>(new StageDeliusMessage(message.fileName, message.filePath));
+            var msg = await dbService.SendDbRequestAndWaitForResponse<MergeDeliusRunningPictureMessage, MergeDeliusReturnMessage>(new MergeDeliusRunningPictureMessage(message.fileName));
         }
 
         deliusSem.Release();
@@ -89,9 +89,8 @@ public class ImportBackgroundService : BackgroundService
         else
         {
             statusService.StatusPublish(new StatusUpdateMessage($"Importing Offloc File....."));
-            var res = await dbService.DbTransientSubscribe<StageOfflocMessage, StageOfflocReturnMessage>(new StageOfflocMessage(message.filePath));
-            var msg = await dbService.DbTransientSubscribe<MergeOfflocRunningPictureMessage, MergeOfflocReturnMessage>
-                    (new MergeOfflocRunningPictureMessage());
+            var res = await dbService.SendDbRequestAndWaitForResponse<StageOfflocMessage, StageOfflocReturnMessage>(new StageOfflocMessage(message.filePath));
+            var msg = await dbService.SendDbRequestAndWaitForResponse<MergeOfflocRunningPictureMessage, MergeOfflocReturnMessage>(new MergeOfflocRunningPictureMessage(Path.GetFileName(message.filePath)));
         }
         offlocSem.Release();
         offlocParserCompleted = true;

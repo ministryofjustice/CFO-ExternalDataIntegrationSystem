@@ -9,15 +9,10 @@
     <PackageReference Include="DotNetEnv" />
     <PackageReference Include="Microsoft.Extensions.Configuration" />
     <PackageReference Include="Microsoft.Extensions.Hosting.WindowsServices" />
-	<PackageReference Include="Serilog.Extensions.Hosting" />
-	<PackageReference Include="Serilog.Settings.Configuration" />
-	<PackageReference Include="Serilog.Sinks.Console" />
-	<PackageReference Include="Serilog.Sinks.File" />
-	<PackageReference Include="Sentry.Serilog" />
+    <PackageReference Include="Serilog.Extensions.Hosting" />
+    <PackageReference Include="Serilog.Settings.Configuration" />
+    <PackageReference Include="Serilog.Sinks.Console" />
+    <PackageReference Include="Serilog.Sinks.File" />
+    <PackageReference Include="Sentry.Serilog" />
   </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\FileStorage\FileStorage.csproj" />
-  </ItemGroup>
-
 </Project>

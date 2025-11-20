@@ -38,7 +38,10 @@ AS
         Declare @retMessage varchar(500);
 		EXEC [DeliusStaging].[StandardiseData] @retMessage;
 
-		INSERT INTO [DeliusRunningPictureDb].[DeliusRunningPicture].[ProcessedFiles] (FileName, FileId) VALUES (@processedFile, CAST(SUBSTRING(@processedFile, 12, 4) AS int));
+		UPDATE [DeliusRunningPictureDb].[DeliusRunningPicture].[ProcessedFiles]
+		SET [Status] = 'Imported'
+		WHERE FileName = @processedFile;
+		
 		COMMIT TRANSACTION;
 	END TRY
 	BEGIN CATCH

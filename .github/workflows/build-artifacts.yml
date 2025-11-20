@@ -23,7 +23,7 @@ jobs:
         run: dotnet restore
 
       - name: Publish
-        run: dotnet publish -c Release --artifacts-path ./output
+        run: dotnet publish -c Release -r win-x64 --artifacts-path ./output
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4

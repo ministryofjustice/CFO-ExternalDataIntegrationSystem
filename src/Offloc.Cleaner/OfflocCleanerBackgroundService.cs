@@ -1,4 +1,6 @@
-﻿using FileStorage;
+﻿using System.Globalization;
+using EnvironmentSetup;
+using FileStorage;
 using Messaging.Interfaces;
 using Messaging.Messages.DbMessages.Receiving;
 using Messaging.Messages.DbMessages.Sending;
@@ -10,67 +12,39 @@ using Offloc.Cleaner.Services;
 
 namespace Offloc.Cleaner;
 
-public class OfflocCleanerBackgroundService : BackgroundService
-{    
-    private readonly IStagingMessagingService stagingService;
-    private readonly IDbMessagingService dbService;
-    private readonly IStatusMessagingService statusService;
-    private readonly IFileLocations fileLocations;
-    private readonly ICleaningStrategy cleaningService;
-
-    public OfflocCleanerBackgroundService(IStagingMessagingService stagingService, 
-        IDbMessagingService dbService, ICleaningStrategy cleaningService, 
-        IStatusMessagingService statusService, IFileLocations fileLocations)
-    {
-        this.stagingService = stagingService;
-        this.dbService = dbService;
-        this.statusService = statusService;
-        this.cleaningService = cleaningService;
-        this.fileLocations = fileLocations;
-    }
-
+public class OfflocCleanerBackgroundService(
+    IStagingMessagingService stagingService,
+    IDbMessagingService dbService,
+    ICleaningStrategy cleaningService,
+    IStatusMessagingService statusService) : BackgroundService
+{
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        //stagingService.StagingSubscribe<OfflocKickoffMessage>(async (message) => await ParseFile(), TStagingQueue.OfflocCleaner);
         await Task.Run(() =>
         {
-            stagingService.StagingSubscribe<OfflocDownloadFinished>(async (message) => await ParseFilesAsync(), TStagingQueue.OfflocCleaner);
+            stagingService.StagingSubscribe<OfflocDownloadFinished>(async (message) => await ParseFileAsync(message), TStagingQueue.OfflocCleaner);
         }, stoppingToken);
     }
 
-    private async Task ParseFilesAsync()
+    private async Task ParseFileAsync(OfflocDownloadFinished message)
     {
-        string[] files = await GetFilesAsync();
+        string file = message.fileName;
 
-        if (files == null || files.Length == 0)
+        if (await HasAlreadyBeenProcessedAsync(file))
         {
-            statusService.StatusPublish(new StatusUpdateMessage($"No files found in '{fileLocations.offlocInput}'"));
-            stagingService.StagingPublish(new OfflocParserFinishedMessage("No Path", true));
+            statusService.StatusPublish(new StatusUpdateMessage($"File {file} has already been processed"));
+            stagingService.StagingPublish(new OfflocParserFinishedMessage("File already processed", true));
         }
         else
         {
-            await cleaningService.CleanFiles(files);
+            var request = new OfflocFileProcessingStarted(message.fileName, message.FileId, message.ArchiveFileName);
+            await dbService.SendDbRequestAndWaitForResponse<OfflocFileProcessingStarted, ResultOfflocFileProcessingStarted>(request);
+            await cleaningService.CleanFile(file);
         }
     }
-
-    //Returns files that fit validation checks (ie. not already been processed).
-    private async Task<string[]> GetFilesAsync()
+    private async Task<bool> HasAlreadyBeenProcessedAsync(string file)
     {
-        string[] files = Directory.GetFiles(fileLocations.offlocInput).Where(f => !f.Contains("LineFeeds")).ToArray();
-
-        for (int i = 0; i < files.Length; i++)
-        {
-            files[i] = files[i][(fileLocations.offlocInput.Length + 1)..];
-        }
-
-        var res = await GetAlreadyProcessedFilesAsync();
-
-        return files.Where(f => !res.Contains(f)).ToArray();
-    }
-
-    private async Task<string[]> GetAlreadyProcessedFilesAsync()
-    {
-        var res = await dbService.DbTransientSubscribe<GetOfflocFilesMessage, OfflocFilesReturnMessage>(new GetOfflocFilesMessage());
-        return res.offlocFiles;
+        var res = await dbService.SendDbRequestAndWaitForResponse<GetOfflocFilesMessage, OfflocFilesReturnMessage>(new GetOfflocFilesMessage());
+        return res.offlocFiles.Contains(file);
     }
 }

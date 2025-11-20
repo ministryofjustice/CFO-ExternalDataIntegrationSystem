@@ -1,4 +1,5 @@
 ﻿
+using System.Diagnostics;
 using Delius.Parser.Core;
 using FileStorage;
 using Messaging.Interfaces;
@@ -12,12 +13,5 @@ public class SequentialParsingStrategy : ParsingStrategyBase, IParsingStrategy
         IFileLocations fileLocations) 
         : base(fileProcessor, statusMessagingService, stagingMessagingService, fileLocations) { }
 
-    public async Task ParseFiles(string[] files)
-    {
-        files = files.Order().ToArray();
-        for(int i = 0; i<files.Length; i++)
-        {
-            await ParseFile(files[i]);
-        }
-    }
+    public Task ParseFileAsync(string file) => ProcessFile(file);
 }

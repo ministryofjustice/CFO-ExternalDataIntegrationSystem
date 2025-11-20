@@ -1,4 +1,5 @@
 ﻿CREATE PROCEDURE [DeliusRunningPicture].[MergeAll]
+	@fileName NVARCHAR(255) NULL
 AS
 BEGIN
 	SET NOCOUNT ON;
@@ -29,6 +30,13 @@ BEGIN
 
 		--Non Temporal Table
 		EXEC [DeliusRunningPicture].[MergeStandardisationReference]
+
+		IF(@fileName IS NOT NULL)
+		BEGIN
+			UPDATE [DeliusRunningPicture].[ProcessedFiles]
+			SET [Status] = 'Merged'
+			WHERE [FileName] = @fileName;
+		END;
 
 		COMMIT TRANSACTION;
 	END TRY

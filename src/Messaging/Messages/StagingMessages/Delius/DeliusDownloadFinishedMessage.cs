@@ -1,16 +1,21 @@
-﻿using Messaging.Messages.StatusMessages;
+﻿using System.Text.Json.Serialization;
+using Messaging.Messages.StatusMessages;
 using Messaging.Queues;
 
 namespace Messaging.Messages.StagingMessages;
 
 public class DeliusDownloadFinishedMessage : StagingMessage
 {
-    //Make file specific in future.
-    public override StatusUpdateMessage StatusMessage =>
-        new StatusUpdateMessage();
+    public override StatusUpdateMessage StatusMessage => new();
 
-    public DeliusDownloadFinishedMessage()
+    public string FileId { get; set; }
+
+    [JsonConstructor]
+    public DeliusDownloadFinishedMessage(string fileName, string fileId)
     {
         routingKey = TStagingQueue.DeliusParser;
+        base.fileName = fileName;
+        FileId = fileId;
     }
+    
 }

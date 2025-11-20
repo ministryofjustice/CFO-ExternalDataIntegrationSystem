@@ -72,13 +72,10 @@ BEGIN
         Declare @retMessage varchar(500);
         EXEC [OfflocStaging].[StandardiseData] @retMessage;
 
-        INSERT INTO [OfflocRunningPictureDb].[OfflocRunningPicture].[ProcessedFiles]
-        (
-            FileName,
-            FileId
-        )
-        VALUES
-        (@processedFile, CAST(@stringDate AS INT));
+        UPDATE [OfflocRunningPictureDb].[OfflocRunningPicture].[ProcessedFiles]
+        SET [Status] = 'Imported'
+        WHERE FileName = @processedFile;
+
         COMMIT TRANSACTION;
     END TRY
     BEGIN CATCH

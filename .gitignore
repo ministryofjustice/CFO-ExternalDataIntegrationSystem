@@ -280,6 +280,9 @@ LocalFiles/
 *.dat
 *~lock.*
 *.pubxml
+cfoextract*
+C_NOMIS_OFFENDER*
+**/DMS_STAGING/
 
 # Mac
 .DS_STORE
