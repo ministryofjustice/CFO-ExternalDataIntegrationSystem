@@ -49,7 +49,7 @@ public class FileSyncBackgroundService(
                 timer = new Timer(
                     callback: async (state) => await ProcessAsync(stoppingToken),
                     state: null,
-                    dueTime: Timeout.InfiniteTimeSpan,
+                    dueTime: TimeSpan.Zero,
                     period: TimeSpan.FromSeconds(syncOptions.Value.ProcessTimerIntervalSeconds));
             }
 
