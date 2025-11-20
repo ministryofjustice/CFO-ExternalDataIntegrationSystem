@@ -15,6 +15,7 @@
         <PackageReference Include="Aspire.Hosting.Redis" />
         <PackageReference Include="Aspire.Hosting.SqlServer" />
         <PackageReference Include="Aspire.RabbitMQ.Client" />
+        <PackageReference Include="CommunityToolkit.Aspire.Hosting.Minio" />
         <PackageReference Include="CommunityToolkit.Aspire.Hosting.SqlDatabaseProjects" />
     </ItemGroup>
 
@@ -36,6 +37,7 @@
 		<ProjectReference Include="..\..\Cleanup\Cleanup.csproj" />
 		<ProjectReference Include="..\..\DbInteractions\DbInteractions.csproj" />
 		<ProjectReference Include="..\..\Delius.Parser\Delius.Parser.csproj" />
+		<ProjectReference Include="..\..\FileSync\FileSync.csproj" />
 		<ProjectReference Include="..\..\Import\Import.csproj" />
 		<ProjectReference Include="..\..\Kickoff\Kickoff.csproj" />
 		<ProjectReference Include="..\..\Logging\Logging.csproj" />
@@ -43,7 +45,6 @@
 		<ProjectReference Include="..\..\Meow\Meow.csproj" />
 		<ProjectReference Include="..\..\Offloc.Cleaner\Offloc.Cleaner.csproj" />
 		<ProjectReference Include="..\..\Offloc.Parser\Offloc.Parser.csproj" />
-		<ProjectReference Include="..\..\Orchestrator\Orchestrator.csproj" />
     </ItemGroup>
 
 </Project>

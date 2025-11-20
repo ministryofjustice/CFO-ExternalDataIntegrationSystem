@@ -1,0 +1,14 @@
+﻿global using Amazon.S3;
+global using EnvironmentSetup;
+global using FileSync;
+global using FileSync.Configuration;
+global using FileSync.Core;
+global using FileSync.Sources.Minio;
+global using FileSync.Sources.Local;
+global using FileSync.Sources.S3;
+global using Messaging.Interfaces;
+global using Messaging.Services;
+global using Microsoft.Extensions.Configuration;
+global using Microsoft.Extensions.DependencyInjection;
+global using Microsoft.Extensions.Hosting;
+global using Serilog;

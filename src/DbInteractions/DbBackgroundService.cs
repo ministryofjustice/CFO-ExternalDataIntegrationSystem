@@ -29,68 +29,100 @@ public class DbBackgroundService : BackgroundService
     {
         await Task.CompletedTask;
 
-        dbMessagingService.DbLongSubscribe<GetDeliusFilesMessage>(async(message) =>
+        dbMessagingService.SubscribeToDbRequest<GetDeliusFilesMessage>(async (message) =>
         {
             string[] results = await dbInteractionService.GetProcessedDeliusFileNames();
             DeliusFilesReturnMessage msg = new DeliusFilesReturnMessage(results);
             dbMessagingService.DbPublishResponse(msg);
         }, TDbQueue.GetProcessedDeliusFiles);
 
-        dbMessagingService.DbLongSubscribe<GetOfflocFilesMessage>(async(message) =>
+        dbMessagingService.SubscribeToDbRequest<GetOfflocFilesMessage>(async (message) =>
         {
             string[] results = await dbInteractionService.GetProcessedOfflocFileNames();
             dbMessagingService.DbPublishResponse(new OfflocFilesReturnMessage(results));
         }, TDbQueue.GetProcessedOfflocFiles);
 
-        dbMessagingService.DbLongSubscribe<StageDeliusMessage>(async (message) =>
+        dbMessagingService.SubscribeToDbRequest<StageDeliusMessage>(async (message) =>
         {
             await dbInteractionService.StageDelius(message.fileName, message.filePath);
             dbMessagingService.DbPublishResponse(new StageDeliusReturnMessage());
             mergingService.MergingPublish(new DeliusFilesCleanupMessage(message.fileName));
         }, TDbQueue.StageDelius);
 
-        dbMessagingService.DbLongSubscribe<MergeDeliusRunningPictureMessage>(async (message) =>
+        dbMessagingService.SubscribeToDbRequest<MergeDeliusRunningPictureMessage>(async (message) =>
         {
             //await dbInteractionService.StandardiseDeliusStaging();
-            await dbInteractionService.MergeDeliusPicture();
+            await dbInteractionService.MergeDeliusPicture(message.fileName);
             await dbInteractionService.ClearDeliusStaging();
 
-			dbMessagingService.DbPublishResponse(new MergeDeliusReturnMessage());
-		}, TDbQueue.MergeDelius);
+            dbMessagingService.DbPublishResponse(new MergeDeliusReturnMessage());
+        }, TDbQueue.MergeDelius);
 
-		dbMessagingService.DbLongSubscribe<ClearDeliusStaging>(async (message) =>
-		{
-			await dbInteractionService.ClearDeliusStaging();
-			dbMessagingService.DbPublishResponse(new ResultClearDeliusStaging());
-		}, TDbQueue.ClearDeliusStaging);
+        dbMessagingService.SubscribeToDbRequest<ClearDeliusStaging>(async (message) =>
+        {
+            await dbInteractionService.ClearDeliusStaging();
+            dbMessagingService.DbPublishResponse(new ResultClearDeliusStaging());
+        }, TDbQueue.ClearDeliusStaging);
 
-		dbMessagingService.DbLongSubscribe<StageOfflocMessage>(async (message) =>
+        dbMessagingService.SubscribeToDbRequest<StageOfflocMessage>(async (message) =>
         {
             await dbInteractionService.StageOffloc(message.fileName);
             dbMessagingService.DbPublishResponse(new StageOfflocReturnMessage());
 
-            mergingService.MergingPublish(new OfflocFilesCleanupMessage(message.fileName));       
+            mergingService.MergingPublish(new OfflocFilesCleanupMessage(message.fileName));
         }, TDbQueue.StageOffloc);
 
-        dbMessagingService.DbLongSubscribe<MergeOfflocRunningPictureMessage>(async (message) =>
+        dbMessagingService.SubscribeToDbRequest<MergeOfflocRunningPictureMessage>(async (message) =>
         {
-            await dbInteractionService.MergeOfflocPicture();
+            await dbInteractionService.MergeOfflocPicture(message.fileName);
             await dbInteractionService.ClearOfflocStaging();
 
             dbMessagingService.DbPublishResponse(new MergeOfflocReturnMessage());
 
         }, TDbQueue.MergeOffloc);
 
-        dbMessagingService.DbLongSubscribe<ClearOfflocStaging>(async (message) =>
+        dbMessagingService.SubscribeToDbRequest<ClearOfflocStaging>(async (message) =>
         {
             await dbInteractionService.ClearOfflocStaging();
             dbMessagingService.DbPublishResponse(new ResultClearOfflocStaging());
         }, TDbQueue.ClearOfflocStaging);
 
-        dbMessagingService.DbLongSubscribe<DeliusGetLastFullMessage>(async (message) =>
+        dbMessagingService.SubscribeToDbRequest<DeliusGetLastFullMessage>(async (message) =>
         {
             int res = await dbInteractionService.DeliusGetFileIdLastFull();
             dbMessagingService.DbPublishResponse(new ResultDeliusGetLastFullMessage(res));
         }, TDbQueue.DeliusGetLastFullId);
+
+        dbMessagingService.SubscribeToDbRequest<OfflocFileProcessingStarted>(async (message) =>
+        {
+            await dbInteractionService.CreateOfflocProcessedFileEntry(message.fileName, message.fileId, message.archiveName);
+            dbMessagingService.DbPublishResponse(new ResultOfflocFileProcessingStarted());
+        }, TDbQueue.OfflocFileProcessingStarted);
+
+        dbMessagingService.SubscribeToDbRequest<DeliusFileProcessingStarted>(async (message) =>
+        {
+            await dbInteractionService.CreateDeliusProcessedFileEntry(message.fileName, message.fileId);
+            dbMessagingService.DbPublishResponse(new ResultDeliusFileProcessingStarted());
+        }, TDbQueue.DeliusFileProcessingStarted);
+
+        dbMessagingService.SubscribeToDbRequest<AssociateOfflocFileWithArchiveMessage>(async (message) =>
+        {
+            await dbInteractionService.AssociateOfflocFileWithArchive(message.fileName, message.archiveName);
+            dbMessagingService.DbPublishResponse(new ResultAssociateOfflocFileWithArchiveMessage());
+        }, TDbQueue.AssociateOfflocFileWithArchive);
+
+        dbMessagingService.SubscribeToDbRequest<IsDeliusReadyForProcessingMessage>(async (message) =>
+        {
+            bool result = await dbInteractionService.IsDeliusReadyForProcessing();
+            dbMessagingService.DbPublishResponse(new IsDeliusReadyForProcessingReturnMessage(result));
+        }, TDbQueue.IsDeliusReadyForProcessing);
+        
+        
+        dbMessagingService.SubscribeToDbRequest<IsOfflocReadyForProcessingMessage>(async (message) =>
+        {
+            bool result = await dbInteractionService.IsOfflocReadyForProcessing();
+            dbMessagingService.DbPublishResponse(new IsOfflocReadyForProcessingReturnMessage(result));
+        }, TDbQueue.IsOfflocReadyForProcessing);
+        
     }
 }

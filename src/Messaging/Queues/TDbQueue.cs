@@ -6,6 +6,7 @@ public enum TDbQueue
     //These queues will use Rabbit RPC.
 
     //Outgoing requests.
+    AssociateOfflocFileWithArchive,
     GetProcessedOfflocFiles,
     GetOfflocFileDates,
     DeliusGetLastFullId,
@@ -17,6 +18,10 @@ public enum TDbQueue
     StandardiseDelius,
     ClearOfflocStaging,
     ClearDeliusStaging,
+    OfflocFileProcessingStarted,
+    DeliusFileProcessingStarted,
+    IsDeliusReadyForProcessing,
+    IsOfflocReadyForProcessing,
     //Incoming requests.
     ReturnedOfflocFiles,
     ReturnedOfflocFileDates,
@@ -28,5 +33,10 @@ public enum TDbQueue
     ResultMergeDelius,
     ResultStandardiseDelius,
     ResultClearDelius,
-    ResultClearOffloc
+    ResultClearOffloc,
+    ResultOfflocFileProcessingStarted,
+    ResultDeliusFileProcessingStarted,
+    ResultAssociateOfflocFileWithArchive,
+    IsDeliusReadyForProcessingResult,
+    IsOfflocReadyForProcessingResult
 }

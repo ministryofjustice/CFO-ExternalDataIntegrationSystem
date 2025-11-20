@@ -22,7 +22,7 @@ public abstract class ParsingStrategyBase
         this.fileLocations = fileLocations;
     }
 
-    public async Task ParseFile(string file)
+    public async Task ProcessFile(string file)
     {            
         statusService.StatusPublish(new StatusUpdateMessage($"Delius parser started on file {file}."));
 
