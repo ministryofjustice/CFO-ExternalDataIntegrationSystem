@@ -460,7 +460,7 @@ function reassignNode(node, toClusterId) {
     let edges = dataset.edges.get({ filter: (edge) => edge.from === node.id || edge.to === node.id });
     edges.forEach(edge => dataset.edges.remove(edge.id));
 
-    const fromClusterId = node.id;
+    const fromClusterId = node.group;
 
     // Destroy target cluster
     if (isCluster(toClusterId)) {
