@@ -29,6 +29,8 @@ public class FileSyncBackgroundService(
 {
     private Timer? timer = null;
 
+    private readonly SemaphoreSlim _lock = new(1, 1);
+
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         logger.LogInformation("Starting service...");
@@ -47,7 +49,11 @@ public class FileSyncBackgroundService(
             if (syncOptions.Value is { ProcessOnTimer: true, ProcessTimerIntervalSeconds: > 0 })
             {
                 timer = new Timer(
-                    callback: async (state) => await ProcessAsync(stoppingToken),
+                    callback: async (state) => 
+                    {
+                        logger.LogInformation("Timer elapsed, begin processing...");
+                        await ProcessAsync(stoppingToken);
+                    },
                     state: null,
                     dueTime: TimeSpan.FromSeconds(syncOptions.Value.ProcessTimerIntervalSeconds),
                     period: TimeSpan.FromSeconds(syncOptions.Value.ProcessTimerIntervalSeconds));
@@ -55,6 +61,7 @@ public class FileSyncBackgroundService(
 
             if (syncOptions.Value.ProcessOnStartup)
             {
+                logger.LogInformation("Processing on startup configured, beginning processing...");
                 await ProcessAsync(stoppingToken);
             }
 
@@ -73,36 +80,87 @@ public class FileSyncBackgroundService(
 
     async Task ProcessAsync(CancellationToken cancellationToken = default)
     {
-        var isDeliusReady = await IsDeliusReady();
-        var isOfflocReady = await IsOfflocReady();
-
-        var notReady = (isDeliusReady, isOfflocReady) switch
+        if (await _lock.WaitAsync(0, cancellationToken) is false)
         {
-            (false, false) => "Delius and Offloc are not ready for processing.",
-            (false, true) => "Delius is not ready for processing.",
-            (true, false) => "Offloc is not ready for processing.",
-            _ => null
-        };
-
-        if (!string.IsNullOrEmpty(notReady))
-        {               
-            logger.LogWarning($"{notReady} Exiting.");
+            logger.LogInformation("Previous processing still ongoing. Skipping this run.");
             return;
         }
 
-        await PreKickoffTasks();
-
-        var unprocessedDeliusFile = await GetNextUnprocessedDeliusFileAsync(cancellationToken);
-        var unprocessedOfflocFile = await GetNextUnprocessedOfflocFileAsync(cancellationToken);
-
-        // No files to process
-        if (unprocessedDeliusFile is null || unprocessedOfflocFile is null)
+        try
         {
-            return;
-        }
+            logger.LogInformation("Processing...");
 
-        stagingMessagingService.StagingPublish(new DeliusDownloadFinishedMessage(unprocessedDeliusFile.Name, unprocessedDeliusFile.GetFileId()));
-        stagingMessagingService.StagingPublish(new OfflocDownloadFinished(unprocessedOfflocFile.Name, unprocessedOfflocFile.GetFileId()!.Value, unprocessedOfflocFile.ParentArchiveName));
+            var isDeliusReady = await IsDeliusReady();
+            var isOfflocReady = await IsOfflocReady();
+
+            var notReady = (isDeliusReady, isOfflocReady) switch
+            {
+                (false, false) => "Delius and Offloc are not ready for processing.",
+                (false, true) => "Delius is not ready for processing.",
+                (true, false) => "Offloc is not ready for processing.",
+                _ => null
+            };
+
+            if (!string.IsNullOrEmpty(notReady))
+            {
+                logger.LogWarning($"{notReady} Exiting.");
+                return;
+            }
+
+            await PreKickoffTasks();
+
+            var unprocessedDeliusFile = await GetNextUnprocessedDeliusFileAsync(cancellationToken);
+            var unprocessedOfflocFile = await GetNextUnprocessedOfflocFileAsync(cancellationToken);
+
+            // No files to process
+            if (unprocessedDeliusFile is null || unprocessedOfflocFile is null)
+            {
+                var notAvailable = (unprocessedDeliusFile, unprocessedOfflocFile) switch
+                {
+                    (null, not null) => $"Delius file is not available, but Offloc file ({unprocessedOfflocFile.Name}) is ready.",
+                    (not null, null) => $"Offloc file is not available, but Delius file ({unprocessedDeliusFile.Name}) is ready.",
+                    _ => null
+                };
+
+                if (!string.IsNullOrEmpty(notAvailable))
+                {
+                    logger.LogWarning($"{notAvailable} Exiting.");
+                }
+
+                return;
+            }
+
+            // Check to see if a file newer than the unprocessed files have already been processed.
+            if (syncOptions.Value.AllowProcessingOlderFiles is false)
+            {
+                var isDeliusFileNewerThanLastProcessed = await IsDeliusFileNewerThanLastProcessed(unprocessedDeliusFile, cancellationToken);
+                var isOfflocFileNewerThanLastProcessed = await IsOfflocFileNewerThanLastProcessed(unprocessedOfflocFile, cancellationToken);
+
+                var isEitherFileOutdated = (isDeliusFileNewerThanLastProcessed, isOfflocFileNewerThanLastProcessed) switch
+                {
+                    (false, true) => "Delius file is older than the last processed Delius file.",
+                    (true, false) => "Offloc file is older than the last processed Offloc file.",
+                    (false, false) => "Both Delius and Offloc files are older than their last processed files.",
+                    _ => null
+                };
+
+                if (!string.IsNullOrEmpty(isEitherFileOutdated))
+                {
+                    logger.LogError($"{isEitherFileOutdated} Exiting.");
+                    return;
+                }
+            }
+
+            logger.LogInformation($"Targeting: Delius file ({unprocessedDeliusFile.Name}), Offloc file ({unprocessedOfflocFile.Name})");
+
+            stagingMessagingService.StagingPublish(new DeliusDownloadFinishedMessage(unprocessedDeliusFile.Name, unprocessedDeliusFile.GetFileId()));
+            stagingMessagingService.StagingPublish(new OfflocDownloadFinished(unprocessedOfflocFile.Name, unprocessedOfflocFile.GetFileId()!.Value, unprocessedOfflocFile.ParentArchiveName));
+        }
+        finally
+        {
+            logger.LogInformation("Processing complete.");
+            _lock.Release();
+        }
     }
 
     private async Task<bool> IsOfflocReady()
@@ -160,7 +218,7 @@ public class FileSyncBackgroundService(
         // If the downloaded file is an archive, extract it and check the contained file.
         // We only support archives containing a single Offloc (.dat) file.
         logger.LogInformation("Extracting Offloc archive: " + unprocessedOfflocFile.Name);
-        await ZipFile.ExtractToDirectoryAsync(downloadedFile, fileLocations.offlocInput, cancellationToken);
+        await ZipFile.ExtractToDirectoryAsync(downloadedFile, fileLocations.offlocInput, overwriteFiles: true, cancellationToken);
         File.Delete(downloadedFile);
 
         var filePath = Directory.GetFiles(fileLocations.offlocInput)
@@ -229,6 +287,24 @@ public class FileSyncBackgroundService(
         await dbMessagingService.SendDbRequestAndWaitForResponse<ClearDeliusStaging, ResultClearDeliusStaging>(new ClearDeliusStaging());
         await dbMessagingService.SendDbRequestAndWaitForResponse<ClearOfflocStaging, ResultClearOfflocStaging>(new ClearOfflocStaging());
         LogStatus("Staging database tear down complete.");
+
+        // Delete any files in input directories
+        LogStatus("Clearing input directories...");
+        int counter = 0;
+
+        foreach (var file in Directory.GetFiles(fileLocations.deliusInput))
+        {
+            File.Delete(file);
+            counter++;
+        }
+
+        foreach (var file in Directory.GetFiles(fileLocations.offlocInput))
+        {
+            File.Delete(file);
+            counter++;
+        }
+        
+        LogStatus("Input directories cleared. Deleted " + counter + " file(s).");
     }
 
     void LogStatus(string message)
@@ -240,5 +316,41 @@ public class FileSyncBackgroundService(
     public override void Dispose()
     {
         timer?.Dispose();
+    }
+
+    public async Task<bool> IsDeliusFileNewerThanLastProcessed(DeliusFile unprocessedDeliusFile, CancellationToken cancellationToken = default)
+    {
+        var lastProcessedDeliusFileName = await dbMessagingService.SendDbRequestAndWaitForResponse<GetLastProcessedDeliusFile, ResultGetLastProcessedDeliusFileMessage>(new());
+
+        if(!string.IsNullOrEmpty(lastProcessedDeliusFileName.fileName))
+        {
+            var file = new DeliusFile(lastProcessedDeliusFileName.fileName);
+            
+            if(file.GetDatestamp() >= unprocessedDeliusFile.GetDatestamp())
+            {
+                logger.LogWarning($"The last processed Delius file ({file.Name}) is newer than or the same as the targeted Delius file ({unprocessedDeliusFile.Name}).");
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    public async Task<bool> IsOfflocFileNewerThanLastProcessed(OfflocFile unprocessedOfflocFile, CancellationToken cancellationToken = default)
+    {
+        var lastProcessedOfflocFileName = await dbMessagingService.SendDbRequestAndWaitForResponse<GetLastProcessedOfflocFile, ResultGetLastProcessedOfflocFileMessage>(new());
+
+        if(!string.IsNullOrEmpty(lastProcessedOfflocFileName.fileName))
+        {
+            var file = new OfflocFile(lastProcessedOfflocFileName.fileName);
+            
+            if(file.GetDatestamp() >= unprocessedOfflocFile.GetDatestamp())
+            {
+                logger.LogWarning($"The last processed Offloc file ({file.Name}) is newer than or the same as the targeted Offloc file ({unprocessedOfflocFile.Name}).");
+                return false;
+            }
+        }
+
+        return true;
     }
 }

@@ -522,4 +522,68 @@ public class DbInteractionService : IDbInteractionService
             }
         }
     }
+
+    public async Task<string?> GetLastProcessedOfflocFileName()
+    {
+        SqlConnection offlocConn = new(offlocPictureConnString);
+
+        using (offlocConn)
+        {
+            await offlocConn.OpenAsync();
+
+            var command = new SqlCommand(@"
+            SELECT TOP 1 FileName 
+            FROM OfflocRunningPicture.ProcessedFiles 
+            ORDER BY ValidFrom DESC", offlocConn)
+            {
+                CommandType = CommandType.Text,
+                CommandTimeout = 1200
+            };
+
+            try
+            {
+#pragma warning disable CS8605 // Unboxing a possibly null value.
+                string? result = (string?)await command.ExecuteScalarAsync();
+#pragma warning restore CS8605 // Unboxing a possibly null value.
+                return result;
+            }
+            catch (SqlException e)
+            {
+                statusService.StatusPublish(new StatusUpdateMessage(e.Message));
+                return null;
+            }
+        }
+    }
+
+    public async Task<string?> GetLastProcessedDeliusFileName()
+    {
+        SqlConnection deliusConn = new(deliusPictureConnString);
+
+        using (deliusConn)
+        {
+            await deliusConn.OpenAsync();
+
+            var command = new SqlCommand(@"
+            SELECT TOP 1 FileName 
+            FROM DeliusRunningPicture.ProcessedFiles 
+            ORDER BY ValidFrom DESC", deliusConn)
+            {
+                CommandType = CommandType.Text,
+                CommandTimeout = 1200
+            };
+
+            try
+            {
+#pragma warning disable CS8605 // Unboxing a possibly null value.
+                string? result = (string?)await command.ExecuteScalarAsync();
+#pragma warning restore CS8605 // Unboxing a possibly null value.
+                return result;
+            }
+            catch (SqlException e)
+            {
+                statusService.StatusPublish(new StatusUpdateMessage(e.Message));
+                return null;
+            }
+        }
+    }
 }

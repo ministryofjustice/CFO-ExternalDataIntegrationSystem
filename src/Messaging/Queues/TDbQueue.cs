@@ -22,6 +22,8 @@ public enum TDbQueue
     DeliusFileProcessingStarted,
     IsDeliusReadyForProcessing,
     IsOfflocReadyForProcessing,
+    GetLastProcessedDeliusFile,
+    GetLastProcessedOfflocFile,
     //Incoming requests.
     ReturnedOfflocFiles,
     ReturnedOfflocFileDates,
@@ -38,5 +40,7 @@ public enum TDbQueue
     ResultDeliusFileProcessingStarted,
     ResultAssociateOfflocFileWithArchive,
     IsDeliusReadyForProcessingResult,
-    IsOfflocReadyForProcessingResult
+    IsOfflocReadyForProcessingResult,
+    ResultLastProcessedDeliusFile,
+    ResultLastProcessedOfflocFile
 }

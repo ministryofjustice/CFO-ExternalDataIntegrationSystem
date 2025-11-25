@@ -22,4 +22,6 @@ public interface IDbInteractionService
     Task AssociateOfflocFileWithArchive(string fileName, string archiveName);
     Task<bool> IsDeliusReadyForProcessing();
     Task<bool> IsOfflocReadyForProcessing();
+    Task<string?> GetLastProcessedOfflocFileName();
+    Task<string?> GetLastProcessedDeliusFileName();
 }
