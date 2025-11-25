@@ -49,7 +49,11 @@ public class FileSyncBackgroundService(
             if (syncOptions.Value is { ProcessOnTimer: true, ProcessTimerIntervalSeconds: > 0 })
             {
                 timer = new Timer(
-                    callback: async (state) => await ProcessAsync(stoppingToken),
+                    callback: async (state) => 
+                    {
+                        logger.LogInformation("Timer elapsed, begin processing...");
+                        await ProcessAsync(stoppingToken);
+                    },
                     state: null,
                     dueTime: TimeSpan.FromSeconds(syncOptions.Value.ProcessTimerIntervalSeconds),
                     period: TimeSpan.FromSeconds(syncOptions.Value.ProcessTimerIntervalSeconds));
@@ -57,6 +61,7 @@ public class FileSyncBackgroundService(
 
             if (syncOptions.Value.ProcessOnStartup)
             {
+                logger.LogInformation("Processing on startup configured, beginning processing...");
                 await ProcessAsync(stoppingToken);
             }
 
@@ -83,6 +88,8 @@ public class FileSyncBackgroundService(
 
         try
         {
+            logger.LogInformation("Processing...");
+
             var isDeliusReady = await IsDeliusReady();
             var isOfflocReady = await IsOfflocReady();
 
@@ -151,6 +158,7 @@ public class FileSyncBackgroundService(
         }
         finally
         {
+            logger.LogInformation("Processing complete.");
             _lock.Release();
         }
     }
