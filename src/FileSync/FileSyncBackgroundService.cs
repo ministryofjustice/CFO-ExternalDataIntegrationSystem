@@ -160,7 +160,7 @@ public class FileSyncBackgroundService(
         // If the downloaded file is an archive, extract it and check the contained file.
         // We only support archives containing a single Offloc (.dat) file.
         logger.LogInformation("Extracting Offloc archive: " + unprocessedOfflocFile.Name);
-        await ZipFile.ExtractToDirectoryAsync(downloadedFile, fileLocations.offlocInput, cancellationToken);
+        await ZipFile.ExtractToDirectoryAsync(downloadedFile, fileLocations.offlocInput, overwriteFiles: true, cancellationToken);
         File.Delete(downloadedFile);
 
         var filePath = Directory.GetFiles(fileLocations.offlocInput)
