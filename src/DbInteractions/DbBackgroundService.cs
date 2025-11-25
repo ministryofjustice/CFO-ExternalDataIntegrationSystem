@@ -123,6 +123,18 @@ public class DbBackgroundService : BackgroundService
             bool result = await dbInteractionService.IsOfflocReadyForProcessing();
             dbMessagingService.DbPublishResponse(new IsOfflocReadyForProcessingReturnMessage(result));
         }, TDbQueue.IsOfflocReadyForProcessing);
+
+        dbMessagingService.SubscribeToDbRequest<GetLastProcessedOfflocFile>(async (message) =>
+        {
+            string? result = await dbInteractionService.GetLastProcessedOfflocFileName();
+            dbMessagingService.DbPublishResponse(new ResultGetLastProcessedOfflocFileMessage(result));
+        }, TDbQueue.GetLastProcessedOfflocFile);
+
+        dbMessagingService.SubscribeToDbRequest<GetLastProcessedDeliusFile>(async (message) =>
+        {
+            string? result = await dbInteractionService.GetLastProcessedDeliusFileName();
+            dbMessagingService.DbPublishResponse(new ResultGetLastProcessedDeliusFileMessage(result));
+        }, TDbQueue.GetLastProcessedDeliusFile);
         
     }
 }

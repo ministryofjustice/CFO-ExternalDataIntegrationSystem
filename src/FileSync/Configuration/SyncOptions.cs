@@ -42,4 +42,16 @@ public class SyncOptions
     /// A value less than or equal to zero disables interval-based processing.
     /// </value>
     public required int ProcessTimerIntervalSeconds { get; init; }
+
+    /// <summary>
+    /// Indicates whether the application should allow processing of files with timestamps
+    /// older than previously processed files.
+    /// </summary>
+    /// <remarks>
+    /// When set to <c>false</c>, the application will throw an exception if it encounters a file
+    /// with a timestamp older than the most recently processed file, preventing potential
+    /// data inconsistencies.
+    /// When set to <c>true</c>, files will be processed regardless of their timestamp relative to previous runs.
+    /// </remarks>
+    public bool AllowProcessingOlderFiles { get; init; }
 }

@@ -113,6 +113,27 @@ public class FileSyncBackgroundService(
             return;
         }
 
+        // Check to see if a file newer than the unprocessed files have already been processed.
+        if(syncOptions.Value.AllowProcessingOlderFiles is false)
+        {
+            var isDeliusFileNewerThanLastProcessed = await IsDeliusFileNewerThanLastProcessed(unprocessedDeliusFile, cancellationToken);
+            var isOfflocFileNewerThanLastProcessed = await IsOfflocFileNewerThanLastProcessed(unprocessedOfflocFile, cancellationToken);
+
+            var isEitherFileOutdated = (isDeliusFileNewerThanLastProcessed, isOfflocFileNewerThanLastProcessed) switch
+            {
+                (false, true) => "Delius file is older than the last processed Delius file.",
+                (true, false) => "Offloc file is older than the last processed Offloc file.",
+                (false, false) => "Both Delius and Offloc files are older than their last processed files.",
+                _ => null
+            };
+
+            if (!string.IsNullOrEmpty(isEitherFileOutdated))
+            {
+                logger.LogError($"{isEitherFileOutdated} Exiting.");
+                return;
+            }
+        }
+
         logger.LogInformation($"Targeting: Delius file ({unprocessedDeliusFile.Name}), Offloc file ({unprocessedOfflocFile.Name})");
 
         stagingMessagingService.StagingPublish(new DeliusDownloadFinishedMessage(unprocessedDeliusFile.Name, unprocessedDeliusFile.GetFileId()));
@@ -272,5 +293,41 @@ public class FileSyncBackgroundService(
     public override void Dispose()
     {
         timer?.Dispose();
+    }
+
+    public async Task<bool> IsDeliusFileNewerThanLastProcessed(DeliusFile unprocessedDeliusFile, CancellationToken cancellationToken = default)
+    {
+        var lastProcessedDeliusFileName = await dbMessagingService.SendDbRequestAndWaitForResponse<GetLastProcessedDeliusFile, ResultGetLastProcessedDeliusFileMessage>(new());
+
+        if(!string.IsNullOrEmpty(lastProcessedDeliusFileName.fileName))
+        {
+            var file = new DeliusFile(lastProcessedDeliusFileName.fileName);
+            
+            if(file.GetDatestamp() >= unprocessedDeliusFile.GetDatestamp())
+            {
+                logger.LogWarning($"The last processed Delius file ({file.Name}) is newer than or the same as the targeted Delius file ({unprocessedDeliusFile.Name}).");
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    public async Task<bool> IsOfflocFileNewerThanLastProcessed(OfflocFile unprocessedOfflocFile, CancellationToken cancellationToken = default)
+    {
+        var lastProcessedOfflocFileName = await dbMessagingService.SendDbRequestAndWaitForResponse<GetLastProcessedOfflocFile, ResultGetLastProcessedOfflocFileMessage>(new());
+
+        if(!string.IsNullOrEmpty(lastProcessedOfflocFileName.fileName))
+        {
+            var file = new OfflocFile(lastProcessedOfflocFileName.fileName);
+            
+            if(file.GetDatestamp() >= unprocessedOfflocFile.GetDatestamp())
+            {
+                logger.LogWarning($"The last processed Offloc file ({file.Name}) is newer than or the same as the targeted Offloc file ({unprocessedOfflocFile.Name}).");
+                return false;
+            }
+        }
+
+        return true;
     }
 }
