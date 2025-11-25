@@ -243,6 +243,24 @@ public class FileSyncBackgroundService(
         await dbMessagingService.SendDbRequestAndWaitForResponse<ClearDeliusStaging, ResultClearDeliusStaging>(new ClearDeliusStaging());
         await dbMessagingService.SendDbRequestAndWaitForResponse<ClearOfflocStaging, ResultClearOfflocStaging>(new ClearOfflocStaging());
         LogStatus("Staging database tear down complete.");
+
+        // Delete any files in input directories
+        LogStatus("Clearing input directories...");
+        int counter = 0;
+
+        foreach (var file in Directory.GetFiles(fileLocations.deliusInput))
+        {
+            File.Delete(file);
+            counter++;
+        }
+
+        foreach (var file in Directory.GetFiles(fileLocations.offlocInput))
+        {
+            File.Delete(file);
+            counter++;
+        }
+        
+        LogStatus("Input directories cleared. Deleted " + counter + " file(s).");
     }
 
     void LogStatus(string message)
