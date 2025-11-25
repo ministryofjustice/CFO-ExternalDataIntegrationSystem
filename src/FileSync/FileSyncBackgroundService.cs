@@ -98,8 +98,22 @@ public class FileSyncBackgroundService(
         // No files to process
         if (unprocessedDeliusFile is null || unprocessedOfflocFile is null)
         {
+            var notAvailable = (unprocessedDeliusFile, unprocessedOfflocFile) switch
+            {
+                (null, not null) => $"Delius file is not available, but Offloc file ({unprocessedOfflocFile.Name}) is ready.",
+                (not null, null) => $"Offloc file is not available, but Delius file ({unprocessedDeliusFile.Name}) is ready.",
+                _ => null
+            };
+
+            if (!string.IsNullOrEmpty(notAvailable))
+            {
+                logger.LogWarning($"{notAvailable} Exiting.");
+            }
+            
             return;
         }
+
+        logger.LogInformation($"Targeting: Delius file ({unprocessedDeliusFile.Name}), Offloc file ({unprocessedOfflocFile.Name})");
 
         stagingMessagingService.StagingPublish(new DeliusDownloadFinishedMessage(unprocessedDeliusFile.Name, unprocessedDeliusFile.GetFileId()));
         stagingMessagingService.StagingPublish(new OfflocDownloadFinished(unprocessedOfflocFile.Name, unprocessedOfflocFile.GetFileId()!.Value, unprocessedOfflocFile.ParentArchiveName));
