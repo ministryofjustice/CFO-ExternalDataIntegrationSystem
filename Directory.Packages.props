@@ -60,7 +60,7 @@
     <PackageVersion Include="RabbitMQ.Client" Version="6.8.1" />
     <PackageVersion Include="Rebus" Version="8.9.0" />
     <PackageVersion Include="Rebus.RabbitMq" Version="10.1.0" />
-    <PackageVersion Include="Rebus.ServiceProvider" Version="10.6.0" />
+    <PackageVersion Include="Rebus.ServiceProvider" Version="10.7.0" />
     <PackageVersion Include="Sentry.Serilog" Version="6.0.0-preview.2-prerelease" />
     <PackageVersion Include="Serilog.Extensions.Hosting" Version="9.0.1-dev-02307" />
     <PackageVersion Include="Serilog.Settings.Configuration" Version="9.0.1-dev-02319" />
