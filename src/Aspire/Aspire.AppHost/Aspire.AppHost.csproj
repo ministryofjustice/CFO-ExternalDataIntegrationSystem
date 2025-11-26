@@ -38,7 +38,6 @@
 		<ProjectReference Include="..\..\Delius.Parser\Delius.Parser.csproj" />
 		<ProjectReference Include="..\..\FileSync\FileSync.csproj" />
 		<ProjectReference Include="..\..\Import\Import.csproj" />
-		<ProjectReference Include="..\..\Kickoff\Kickoff.csproj" />
 		<ProjectReference Include="..\..\Logging\Logging.csproj" />
 		<ProjectReference Include="..\..\Matching.Engine\Matching.Engine.csproj" />
 		<ProjectReference Include="..\..\Meow\Meow.csproj" />
