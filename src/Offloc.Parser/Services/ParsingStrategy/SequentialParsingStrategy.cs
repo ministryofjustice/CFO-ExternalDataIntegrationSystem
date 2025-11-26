@@ -25,7 +25,7 @@ public class SequentialParsingStrategy : ParsingStrategyBase, IParsingStrategy
             await sem.WaitAsync();
 
             await ParseFile(fileLocations.offlocInput + '/' + files[0]);
-            stagingService.StagingPublish(new OfflocParserFinishedMessage(files[0].Split('/').Last(), false));
+            await stagingService.StagingPublishAsync(new OfflocParserFinishedMessage(files[0].Split('/').Last(), false));
             
             sem.Release();
         }

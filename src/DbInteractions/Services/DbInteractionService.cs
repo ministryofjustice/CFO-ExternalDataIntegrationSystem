@@ -90,7 +90,7 @@ public class DbInteractionService : IDbInteractionService
             }
             catch (SqlException e)
             {
-                statusService.StatusPublish(new StatusUpdateMessage(e.Message));
+                await statusService.StatusPublishAsync(new StatusUpdateMessage(e.Message));
                 return 0;
             }
         }
@@ -160,7 +160,7 @@ public class DbInteractionService : IDbInteractionService
     {
         string folderName = filePath.Split('/').Last();
 
-        statusService.StatusPublish(new StatusUpdateMessage($"Delius staging started for file number {fileName}"));
+        await statusService.StatusPublishAsync(new StatusUpdateMessage($"Delius staging started for file number {fileName}"));
 
         string containerFlag = string.Empty;
         if (inContainer)
@@ -190,18 +190,18 @@ public class DbInteractionService : IDbInteractionService
             }
             catch (Exception e)
             {
-                statusService.StatusPublish(new StatusUpdateMessage(e.Message));
+                await statusService.StatusPublishAsync(new StatusUpdateMessage(e.Message));
                 return;
             }
         }
 
-        statusService.StatusPublish(new StatusUpdateMessage($"Delius staging finished for file {fileName}."));
+        await statusService.StatusPublishAsync(new StatusUpdateMessage($"Delius staging finished for file {fileName}."));
     }
 
     public async Task StageOffloc(string fileName)
     {
         string folderName = fileName.Split('.').First();
-        statusService.StatusPublish(new StatusUpdateMessage($"Offloc staging started for file {fileName}."));
+        await statusService.StatusPublishAsync(new StatusUpdateMessage($"Offloc staging started for file {fileName}."));
 
         var offlocConn = new SqlConnection(offlocStagingConnString);
         using (offlocConn)
@@ -219,12 +219,12 @@ public class DbInteractionService : IDbInteractionService
             }
             catch (Exception e)
             {
-                statusService.StatusPublish(new StatusUpdateMessage(e.Message));
+                await statusService.StatusPublishAsync(new StatusUpdateMessage(e.Message));
                 return;
             }
         }
 
-        statusService.StatusPublish(new StatusUpdateMessage($"Offloc staging finished for file {fileName}."));
+        await statusService.StatusPublishAsync(new StatusUpdateMessage($"Offloc staging finished for file {fileName}."));
     }
     //Calls merge and then on completion
     public async Task StandardiseDeliusStaging()
@@ -245,11 +245,11 @@ public class DbInteractionService : IDbInteractionService
             }
             catch (SqlException exception)
             {
-                statusService.StatusPublish(new StatusUpdateMessage(exception.Message));
+                await statusService.StatusPublishAsync(new StatusUpdateMessage(exception.Message));
                 return;
             }
         }
-        statusService.StatusPublish(new StatusUpdateMessage("Delius staging database standardisation complete."));
+        await statusService.StatusPublishAsync(new StatusUpdateMessage("Delius staging database standardisation complete."));
     }
     //Calls merge and then on completion
     public async Task MergeDeliusPicture(string fileName)
@@ -272,11 +272,11 @@ public class DbInteractionService : IDbInteractionService
             }
             catch (SqlException exception)
             {
-                statusService.StatusPublish(new StatusUpdateMessage(exception.Message));
+                await statusService.StatusPublishAsync(new StatusUpdateMessage(exception.Message));
                 return;
             }
         }
-        statusService.StatusPublish(new StatusUpdateMessage("Delius merging complete."));
+        await statusService.StatusPublishAsync(new StatusUpdateMessage("Delius merging complete."));
     }
 
     public async Task ClearDeliusStaging()
@@ -297,11 +297,11 @@ public class DbInteractionService : IDbInteractionService
             }
             catch (SqlException exception)
             {
-                statusService.StatusPublish(new StatusUpdateMessage(exception.Message));
+                await statusService.StatusPublishAsync(new StatusUpdateMessage(exception.Message));
                 return;
             }
         }
-        statusService.StatusPublish(new StatusUpdateMessage("Delius staging database cleared."));
+        await statusService.StatusPublishAsync(new StatusUpdateMessage("Delius staging database cleared."));
     }
 
     public async Task MergeOfflocPicture(string fileName)
@@ -324,11 +324,11 @@ public class DbInteractionService : IDbInteractionService
             }
             catch (SqlException e)
             {
-                statusService.StatusPublish(new StatusUpdateMessage(e.Message));
+                await statusService.StatusPublishAsync(new StatusUpdateMessage(e.Message));
                 return;
             }
         }
-        statusService.StatusPublish(new StatusUpdateMessage("Offloc merging complete."));
+        await statusService.StatusPublishAsync(new StatusUpdateMessage("Offloc merging complete."));
     }
 
     public async Task ClearOfflocStaging()
@@ -348,12 +348,12 @@ public class DbInteractionService : IDbInteractionService
             }
             catch (SqlException e)
             {
-                statusService.StatusPublish(new StatusUpdateMessage(e.Message));
+                await statusService.StatusPublishAsync(new StatusUpdateMessage(e.Message));
                 return;
             }
         }
 
-        statusService.StatusPublish(new StatusUpdateMessage("Offloc staging database cleared."));
+        await statusService.StatusPublishAsync(new StatusUpdateMessage("Offloc staging database cleared."));
     }
 
     public async Task CreateOfflocProcessedFileEntry(string fileName, int fileId, string? archiveName = null)
@@ -380,7 +380,7 @@ public class DbInteractionService : IDbInteractionService
             }
             catch (SqlException e)
             {
-                statusService.StatusPublish(new StatusUpdateMessage(e.Message));
+                await statusService.StatusPublishAsync(new StatusUpdateMessage(e.Message));
                 return;
             }
         }
@@ -409,7 +409,7 @@ public class DbInteractionService : IDbInteractionService
             }
             catch (SqlException e)
             {
-                statusService.StatusPublish(new StatusUpdateMessage(e.Message));
+                await statusService.StatusPublishAsync(new StatusUpdateMessage(e.Message));
                 return;
             }
         }
@@ -441,7 +441,7 @@ public class DbInteractionService : IDbInteractionService
             }
             catch (SqlException e)
             {
-                statusService.StatusPublish(new StatusUpdateMessage(e.Message));
+                await statusService.StatusPublishAsync(new StatusUpdateMessage(e.Message));
                 return;
             }
         }
@@ -479,7 +479,7 @@ public class DbInteractionService : IDbInteractionService
             }
             catch (SqlException e)
             {
-                statusService.StatusPublish(new StatusUpdateMessage(e.Message));
+                await statusService.StatusPublishAsync(new StatusUpdateMessage(e.Message));
                 return false;
             }
         }
@@ -517,7 +517,7 @@ public class DbInteractionService : IDbInteractionService
             }
             catch (SqlException e)
             {
-                statusService.StatusPublish(new StatusUpdateMessage(e.Message));
+                await statusService.StatusPublishAsync(new StatusUpdateMessage(e.Message));
                 return false;
             }
         }
@@ -549,7 +549,7 @@ public class DbInteractionService : IDbInteractionService
             }
             catch (SqlException e)
             {
-                statusService.StatusPublish(new StatusUpdateMessage(e.Message));
+                await statusService.StatusPublishAsync(new StatusUpdateMessage(e.Message));
                 return null;
             }
         }
@@ -581,7 +581,7 @@ public class DbInteractionService : IDbInteractionService
             }
             catch (SqlException e)
             {
-                statusService.StatusPublish(new StatusUpdateMessage(e.Message));
+                await statusService.StatusPublishAsync(new StatusUpdateMessage(e.Message));
                 return null;
             }
         }

@@ -5,7 +5,7 @@ namespace Messaging.Interfaces
 {
     public interface IBlockingMessagingService
     {
-        void BlockingPublish<T>(T message) where T : BlockingMessage;
-        void BlockingSubscribe<T>(Action<T> handler, TBlockingQueue queue) where T : BlockingMessage;
+        Task BlockingPublishAsync<T>(T message) where T : BlockingMessage;
+        Task BlockingSubscribeAsync<T>(Action<T> handler, TBlockingQueue queue) where T : BlockingMessage;
     }
 }

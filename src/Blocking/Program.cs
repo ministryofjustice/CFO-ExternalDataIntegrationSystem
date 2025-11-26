@@ -39,11 +39,16 @@ try
 
     builder.Services.AddSingleton<DatabaseInsert>();
 
-    builder.Services.AddSingleton<IMergingMessagingService, RabbitService>();
-    builder.Services.AddSingleton<IStatusMessagingService, RabbitService>();
-    builder.Services.AddSingleton<IDbMessagingService, RabbitService>();
-    builder.Services.AddSingleton<IImportMessagingService, RabbitService>();
-    builder.Services.AddSingleton<IBlockingMessagingService, RabbitService>();
+    builder.Services.AddSingleton<RabbitService>(sp =>
+    {
+        var rabbitContext = sp.GetRequiredService<RabbitHostingContextWrapper>();
+        return RabbitService.CreateAsync(rabbitContext).GetAwaiter().GetResult();
+    });
+    builder.Services.AddSingleton<IMergingMessagingService>(sp => sp.GetRequiredService<RabbitService>());
+    builder.Services.AddSingleton<IStatusMessagingService>(sp => sp.GetRequiredService<RabbitService>());
+    builder.Services.AddSingleton<IDbMessagingService>(sp => sp.GetRequiredService<RabbitService>());
+    builder.Services.AddSingleton<IImportMessagingService>(sp => sp.GetRequiredService<RabbitService>());
+    builder.Services.AddSingleton<IBlockingMessagingService>(sp => sp.GetRequiredService<RabbitService>());
 
 
     builder.Services.AddHostedService<BlockingBackgroundService>();

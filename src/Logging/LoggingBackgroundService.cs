@@ -10,13 +10,10 @@ public class LoggingBackgroundService(
 {
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
 	{
-        await Task.Run(() =>
-        {
-            statusService.StatusSubscribe<StatusUpdateMessage>(Log, TStatusQueue.StatusUpdate);
-            statusService.StatusSubscribe<StagingFinishedMessage>(Log, TStatusQueue.StagingFinished);
-        }, stoppingToken);
+        await statusService.StatusSubscribeAsync<StatusUpdateMessage>(Log, TStatusQueue.StatusUpdate);
+        await statusService.StatusSubscribeAsync<StagingFinishedMessage>(Log, TStatusQueue.StagingFinished);
 
-        statusService.StatusPublish(new StatusUpdateMessage("Logger configured."));
+        await statusService.StatusPublishAsync(new StatusUpdateMessage("Logger configured."));
 	}
 
     private void Log(StatusUpdateMessage statusUpdate)

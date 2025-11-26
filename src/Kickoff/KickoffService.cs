@@ -30,10 +30,10 @@ public class KickoffService(
         // StagingMessage deliusStagingMessage = new DeliusDownloadFinishedMessage();
 
         // LogStatus($"Publishing {offlocStagingMessage.GetType().Name}...");
-        // messageService.StagingPublish(offlocStagingMessage);
+        // messageService.StagingPublishAsync(offlocStagingMessage);
 
         // LogStatus($"Publishing {deliusStagingMessage.GetType().Name}...");
-        // messageService.StagingPublish(deliusStagingMessage);
+        // messageService.StagingPublishAsync(deliusStagingMessage);
 
         lifetime.StopApplication();
     }
@@ -49,19 +49,19 @@ public class KickoffService(
     private async Task PreKickoffTasks()
     {
         LogStatus("Publishing pre-kickoff messages...");
-        messageService.StagingPublish(new ClearHalfCleanedOfflocFiles());
-        messageService.StagingPublish(new ClearTemporaryDeliusFiles());
+        await messageService.StagingPublishAsync(new ClearHalfCleanedOfflocFiles());
+        await messageService.StagingPublishAsync(new ClearTemporaryDeliusFiles());
 
         LogStatus("Pre-kickoff messages published. Beginning staging database tear down...");
-        await dbService.SendDbRequestAndWaitForResponse<ClearDeliusStaging, ResultClearDeliusStaging>(new ClearDeliusStaging());
-        await dbService.SendDbRequestAndWaitForResponse<ClearOfflocStaging, ResultClearOfflocStaging>(new ClearOfflocStaging());
+        await dbService.SendDbRequestAndWaitForResponseAsync<ClearDeliusStaging, ResultClearDeliusStaging>(new ClearDeliusStaging());
+        await dbService.SendDbRequestAndWaitForResponseAsync<ClearOfflocStaging, ResultClearOfflocStaging>(new ClearOfflocStaging());
         LogStatus("Staging database tear down complete.");
     }
 
-    void LogStatus(string message)
+    async Task LogStatus(string message)
     {
         Log.Information(message);
-        statusService.StatusPublish(new StatusUpdateMessage(message));
+        await statusService.StatusPublishAsync(new StatusUpdateMessage(message));
     }
 
 }

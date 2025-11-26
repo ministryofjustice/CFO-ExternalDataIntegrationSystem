@@ -21,10 +21,15 @@ try
     builder.Configuration.ConfigureByEnvironment();
 
     builder.Services.ConfigureServices(builder.Configuration);
-    builder.Services.AddSingleton<IStagingMessagingService, RabbitService>();
-    builder.Services.AddSingleton<IStatusMessagingService, RabbitService>();
-    builder.Services.AddSingleton<IDbMessagingService, RabbitService>();
-    builder.Services.AddSingleton<IImportMessagingService, RabbitService>();
+    builder.Services.AddSingleton<RabbitService>(sp =>
+    {
+        var rabbitContext = sp.GetRequiredService<RabbitHostingContextWrapper>();
+        return RabbitService.CreateAsync(rabbitContext).GetAwaiter().GetResult();
+    });
+    builder.Services.AddSingleton<IStagingMessagingService>(sp => sp.GetRequiredService<RabbitService>());
+    builder.Services.AddSingleton<IStatusMessagingService>(sp => sp.GetRequiredService<RabbitService>());
+    builder.Services.AddSingleton<IDbMessagingService>(sp => sp.GetRequiredService<RabbitService>());
+    builder.Services.AddSingleton<IImportMessagingService>(sp => sp.GetRequiredService<RabbitService>());
     builder.Services.AddHostedService<ImportBackgroundService>();
 
     var app = builder.Build();

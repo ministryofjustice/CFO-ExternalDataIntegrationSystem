@@ -26,7 +26,7 @@ public class ParsingStrategyBase
 
     protected async Task ParseFile(string fileName)
     {
-        statusService.StatusPublish(new StatusUpdateMessage($"Offloc parser started for file {fileName.Split('/').Last()}."));
+        await statusService.StatusPublishAsync(new StatusUpdateMessage($"Offloc parser started for file {fileName.Split('/').Last()}."));
 
         OfflocProcessor op = new OfflocProcessor(fileName, $"{fileLocations.offlocOutput}/{fileName.Split('/').Last()}", trimmerContext);
         await op.Process();

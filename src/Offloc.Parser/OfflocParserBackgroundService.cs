@@ -25,7 +25,7 @@ public class OfflocParserBackgroundService : BackgroundService
     {
         await Task.CompletedTask;
 
-        messageService.StagingSubscribe<OfflocCleanerFinishedMessage>(async(message) =>
+        messageService.StagingSubscribeAsync<OfflocCleanerFinishedMessage>(async(message) =>
         {
             //For parallel processing, the file id is insignificant.
             //For sequential processing, filesToParse is always of length 1.

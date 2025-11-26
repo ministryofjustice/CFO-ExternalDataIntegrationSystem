@@ -27,9 +27,9 @@ public class BlockingBackgroundService : BackgroundService
     {
         await Task.Run(() =>
         {
-            importMessageService.ImportSubscribe<ImportFinishedMessage>(async (message) =>
+            importMessageService.ImportSubscribeAsync<ImportFinishedMessage>(async (message) =>
             {
-                statusMessagingService.StatusPublish(new StatusUpdateMessage("Blocking candidates..."));
+                await statusMessagingService.StatusPublishAsync(new StatusUpdateMessage("Blocking candidates..."));
                 await CallBlocking();
             }, TImportQueue.ImportFinished);
         }, stoppingToken);
@@ -38,6 +38,6 @@ public class BlockingBackgroundService : BackgroundService
     private async Task CallBlocking()
     {
         await matchingDbInsert.InsertCandidates();
-        blockingMessageService.BlockingPublish(new BlockingFinishedMessage());        
+        await blockingMessageService.BlockingPublishAsync(new BlockingFinishedMessage());        
     }
 }

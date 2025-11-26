@@ -16,9 +16,9 @@ public class SequentialCleaningStrategy : CleaningStrategyBase, ICleaningStrateg
     
     public async Task CleanFile(string file)
     {
-        statusService.StatusPublish(new StatusUpdateMessage($"Cleaning file: {file}"));
+        await statusService.StatusPublishAsync(new StatusUpdateMessage($"Cleaning file: {file}"));
         await base.ProcessFile(Path.Combine(fileLocations.offlocInput, file));
-        stagingService.StagingPublish(new OfflocCleanerFinishedMessage([file], redundantFieldIndexes));
+        await stagingService.StagingPublishAsync(new OfflocCleanerFinishedMessage([file], redundantFieldIndexes));
     }
 
 }
