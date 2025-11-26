@@ -70,7 +70,7 @@ Project("{42EA0DBD-9CF1-443E-919E-BE9C484E4577}") = "OfflocRunningPictureDb", "s
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "API", "src\API\API.csproj", "{EBFD06D5-A7B3-48B7-8646-3155538BC867}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Api.Tests", "src\Api.Tests\Api.Tests.csproj", "{A4247B60-97A2-4D5A-AE97-53E3D497675A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Api.Tests", "tests\Api.Tests\Api.Tests.csproj", "{A4247B60-97A2-4D5A-AE97-53E3D497675A}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Aspire.AppHost", "src\Aspire\Aspire.AppHost\Aspire.AppHost.csproj", "{F00FE6A0-A6B1-4877-B988-69690D11066B}"
 EndProject
