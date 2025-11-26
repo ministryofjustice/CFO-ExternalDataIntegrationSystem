@@ -21,7 +21,7 @@ public class DeliusParserBackgroundService(
     {
         await Task.Run(() => 
         {
-            messageService.StagingSubscribe<DeliusDownloadFinishedMessage>(async (message) => await ParseFileAsync(message), TStagingQueue.DeliusParser);
+            messageService.StagingSubscribeAsync<DeliusDownloadFinishedMessage>(async (message) => await ParseFileAsync(message), TStagingQueue.DeliusParser);
         }, stoppingToken);
     }
 
@@ -31,8 +31,8 @@ public class DeliusParserBackgroundService(
 
         if (await HasAlreadyBeenProcessedAsync(file))
         {
-            statusService.StatusPublish(new StatusUpdateMessage($"File {file} has already been processed"));
-            messageService.StagingPublish(new DeliusParserFinishedMessage("File already processed", "No Path", true));
+            await statusService.StatusPublishAsync(new StatusUpdateMessage($"File {file} has already been processed"));
+            await messageService.StagingPublishAsync(new DeliusParserFinishedMessage("File already processed", "No Path", true));
         }
         else
         {
@@ -43,13 +43,13 @@ public class DeliusParserBackgroundService(
     private async Task BeginProcessing(string fileName, string fileId)
     {
         var request = new DeliusFileProcessingStarted(fileName, fileId);
-        await dbService.SendDbRequestAndWaitForResponse<DeliusFileProcessingStarted, ResultDeliusFileProcessingStarted>(request);
+        await dbService.SendDbRequestAndWaitForResponseAsync<DeliusFileProcessingStarted, ResultDeliusFileProcessingStarted>(request);
         await parseService.ParseFileAsync(fileName);
     }
 
     private async Task<bool> HasAlreadyBeenProcessedAsync(string file)
     {
-        var res = await dbService.SendDbRequestAndWaitForResponse<GetDeliusFilesMessage, DeliusFilesReturnMessage>(new GetDeliusFilesMessage());
+        var res = await dbService.SendDbRequestAndWaitForResponseAsync<GetDeliusFilesMessage, DeliusFilesReturnMessage>(new GetDeliusFilesMessage());
         return res.fileNames.Contains(file);
     }
 }

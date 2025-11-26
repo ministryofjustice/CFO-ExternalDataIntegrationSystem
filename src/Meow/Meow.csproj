@@ -15,8 +15,8 @@
   </ItemGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\EnvironmentSetup\EnvironmentSetup.csproj" />
-		<ProjectReference Include="..\Infrastructure\Infrastructure.csproj" />
+		<ProjectReference Include="..\Libraries\EnvironmentSetup\EnvironmentSetup.csproj" />
+		<ProjectReference Include="..\Libraries\Infrastructure\Infrastructure.csproj" />
 	</ItemGroup>
 
 	<ItemGroup>

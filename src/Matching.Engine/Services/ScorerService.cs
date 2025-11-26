@@ -20,26 +20,26 @@ public class ScorerService(
     {
         try
         {
-            await Task.Run(() =>
+            await Task.Run(async () =>
             {
                 matchingOptions = options.Value.ToDictionary(o => o.MatchingKey);
 
-                matchingMessagingService.MatchingSubscribe<MatchingScoreCandidatesMessage>(async (message) =>
+                await matchingMessagingService.MatchingSubscribeAsync<MatchingScoreCandidatesMessage>(async (message) =>
                 {
                     var results = await ScoreAsync(stoppingToken);
                     await matchingRepository.BulkInsertAsync(results);
                     results = null;
 
-                    matchingMessagingService.MatchingPublish(new MatchingScoreCandidatesFinishedMessage());
+                    await matchingMessagingService.MatchingPublishAsync(new MatchingScoreCandidatesFinishedMessage());
                 }, TMatchingQueue.MatchingScoreCandidatesMessage);
 
-                matchingMessagingService.MatchingSubscribe<MatchingScoreOutstandingEdgesMessage>(async (message) =>
+                await matchingMessagingService.MatchingSubscribeAsync<MatchingScoreOutstandingEdgesMessage>(async (message) =>
                 {
                     var results = await ScoreAsync(stoppingToken);
                     await clusteringRepository.BulkInsertAsync(results);
                     results = null;
 
-                    matchingMessagingService.MatchingPublish(new ClusteringPreProcessingFinishedMessage());
+                    await matchingMessagingService.MatchingPublishAsync(new ClusteringPreProcessingFinishedMessage());
                 }, TMatchingQueue.MatchingScoreOutstandingEdgesMessage);
 
             }, stoppingToken);
