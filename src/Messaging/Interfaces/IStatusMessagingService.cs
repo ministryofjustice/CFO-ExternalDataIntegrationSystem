@@ -6,6 +6,6 @@ namespace Messaging.Interfaces;
 
 public interface IStatusMessagingService
 {
-    void StatusPublish<T>(T Message) where T : StatusUpdateMessage;
-    void StatusSubscribe<T>(Action<T> handler, TStatusQueue queue) where T : StatusUpdateMessage;
+    Task StatusPublishAsync<T>(T Message) where T : StatusUpdateMessage;
+    Task StatusSubscribeAsync<T>(Action<T> handler, TStatusQueue queue) where T : StatusUpdateMessage;
 }

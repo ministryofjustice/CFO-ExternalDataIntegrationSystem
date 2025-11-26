@@ -19,19 +19,26 @@ namespace Messaging.Services;
 
 public class RabbitService : IMessageService
 {
-    //Might not need to be a field.
-    private RabbitHostingContextWrapper rabbitContext; 
-
-    private ConnectionFactory factory;
-    private IModel channel;
+    private IChannel channel;
     private IConnection connection;
 
     private SemaphoreSlim dbSemaphore = new SemaphoreSlim(1, 1);
     private JsonSerializerOptions serializerOpts = new JsonSerializerOptions { IncludeFields = true };
 
-    public RabbitService(RabbitHostingContextWrapper hostingContext)
+    private RabbitService()
     {
-        this.rabbitContext = hostingContext;
+    }
+
+    public static async Task<RabbitService> CreateAsync(RabbitHostingContextWrapper hostingContext)
+    {
+        var service = new RabbitService();
+        await service.InitializeAsync(hostingContext);
+        return service;
+    }
+
+    private async Task InitializeAsync(RabbitHostingContextWrapper hostingContext)
+    {
+        ConnectionFactory factory;
 
         // Configures connection factory based on whether a full URI is provided or individual components.
         if (hostingContext.Uri is not null)
@@ -48,8 +55,8 @@ public class RabbitService : IMessageService
             };
         }
 
-        connection = factory.CreateConnection();
-        channel = connection.CreateModel();
+        connection = await factory.CreateConnectionAsync();
+        channel = await connection.CreateChannelAsync();
 
         //Declares separate exchanges for each group of messages and binds queue. 
         TStagingQueue[] stagingQueues = Enum.GetValues<TStagingQueue>();
@@ -60,140 +67,146 @@ public class RabbitService : IMessageService
         TBlockingQueue[] blockingQueues = Enum.GetValues<TBlockingQueue>();
         TMatchingQueue[] matchingQueues = Enum.GetValues<TMatchingQueue>();
 
-        channel.ExchangeDeclare(Exchanges.staging, ExchangeType.Direct);
-        channel.ExchangeDeclare(Exchanges.merging, ExchangeType.Direct);
-        channel.ExchangeDeclare(Exchanges.database, ExchangeType.Direct); 
-        channel.ExchangeDeclare(Exchanges.status, ExchangeType.Direct);
-        channel.ExchangeDeclare(Exchanges.import, ExchangeType.Direct);
-        channel.ExchangeDeclare(Exchanges.blocking, ExchangeType.Direct);
-        channel.ExchangeDeclare(Exchanges.matching, ExchangeType.Direct);
+        await channel.ExchangeDeclareAsync(Exchanges.staging, ExchangeType.Direct);
+        await channel.ExchangeDeclareAsync(Exchanges.merging, ExchangeType.Direct);
+        await channel.ExchangeDeclareAsync(Exchanges.database, ExchangeType.Direct); 
+        await channel.ExchangeDeclareAsync(Exchanges.status, ExchangeType.Direct);
+        await channel.ExchangeDeclareAsync(Exchanges.import, ExchangeType.Direct);
+        await channel.ExchangeDeclareAsync(Exchanges.blocking, ExchangeType.Direct);
+        await channel.ExchangeDeclareAsync(Exchanges.matching, ExchangeType.Direct);
 
-        InitializeQueue(stagingQueues, Exchanges.staging);
-        InitializeQueue(mergingQueues, Exchanges.merging);
-        InitializeQueue(dbQueues, Exchanges.database);
-        InitializeQueue(statusQueues, Exchanges.status);
-        InitializeQueue(importQueues, Exchanges.import);
-        InitializeQueue(blockingQueues, Exchanges.blocking);
-        InitializeQueue(matchingQueues, Exchanges.matching);
+        await InitializeQueueAsync(stagingQueues, Exchanges.staging);
+        await InitializeQueueAsync(mergingQueues, Exchanges.merging);
+        await InitializeQueueAsync(dbQueues, Exchanges.database);
+        await InitializeQueueAsync(statusQueues, Exchanges.status);
+        await InitializeQueueAsync(importQueues, Exchanges.import);
+        await InitializeQueueAsync(blockingQueues, Exchanges.blocking);
+        await InitializeQueueAsync(matchingQueues, Exchanges.matching);
     }
 
-    //Avoids code repetition in constructor.
-    private void InitializeQueue<T>(T[] queues, string exchange) where T : Enum
+    private async Task InitializeQueueAsync<T>(T[] queues, string exchange) where T : Enum
     {
         foreach (var queue in queues)
         {
-            channel.QueueDeclare(
+            await channel.QueueDeclareAsync(
                 queue: queue.ToString(),
                 durable: true,
                 exclusive: false,
                 autoDelete: false,
                 arguments: null
             );
-            channel.QueueBind(queue.ToString(), exchange, queue.ToString());
+            await channel.QueueBindAsync(queue.ToString(), exchange, queue.ToString());
         }
     }
 
-    public void StatusPublish<T>(T message) where T : StatusUpdateMessage
+    public async Task StatusPublishAsync<T>(T message) where T : StatusUpdateMessage
     {
-        channel.BasicPublish(
+        await channel.BasicPublishAsync(
             exchange: Exchanges.status,
             routingKey: message.RoutingKey.ToString(),
-            basicProperties: null,
+            mandatory: false,
             body: Encoding.UTF8.GetBytes(JsonSerializer.Serialize(message, serializerOpts))
             );
     }
 
-    public void StatusSubscribe<T>(Action<T> handler, TStatusQueue queue) where T : StatusUpdateMessage
+    public async Task StatusSubscribeAsync<T>(Action<T> handler, TStatusQueue queue) where T : StatusUpdateMessage
     {
-        var consumer = new EventingBasicConsumer(channel);
-        channel.BasicConsume(queue.ToString(), true, consumer);
+        var consumer = new AsyncEventingBasicConsumer(channel);
+        await channel.BasicConsumeAsync(queue.ToString(), true, consumer);
 
-        consumer.Received += (model, ea) => handler.Invoke(JsonSerializer.Deserialize<T>(Encoding.UTF8.GetString(ea.Body.ToArray()), new JsonSerializerOptions { IncludeFields = true })!);
+        consumer.ReceivedAsync += (model, ea) => { handler.Invoke(JsonSerializer.Deserialize<T>(Encoding.UTF8.GetString(ea.Body.ToArray()), new JsonSerializerOptions { IncludeFields = true })!); return Task.CompletedTask; };
     }
 
-    public void StagingPublish<T>(T message) where T : StagingMessage
+    public async Task StagingPublishAsync<T>(T message) where T : StagingMessage
     {
-        channel.BasicPublish(
+        await channel.BasicPublishAsync(
             exchange: Exchanges.staging,
             routingKey: message.routingKey.ToString(),
-            basicProperties: null,
+            mandatory: false,
             body: Encoding.UTF8.GetBytes(JsonSerializer.Serialize(message, serializerOpts))
             );
-        AssociatedMessagePublish(message);
+        await AssociatedMessagePublishAsync(message);
     }
 
-    public void StagingSubscribe<T>(Action<T> handler, TStagingQueue queue) where T : StagingMessage
+    public async Task StagingSubscribeAsync<T>(Action<T> handler, TStagingQueue queue) where T : StagingMessage
     {
-        var consumer = new EventingBasicConsumer(channel);
-        channel.BasicConsume(queue.ToString(), true, consumer);
+        var consumer = new AsyncEventingBasicConsumer(channel);
+        await channel.BasicConsumeAsync(queue.ToString(), true, consumer);
 
-        consumer.Received += (model, ea) => handler.Invoke(JsonSerializer.Deserialize<T>(Encoding.UTF8.GetString(ea.Body.ToArray()), new JsonSerializerOptions { IncludeFields = true })!);
+        consumer.ReceivedAsync += (model, ea) => { handler.Invoke(JsonSerializer.Deserialize<T>(Encoding.UTF8.GetString(ea.Body.ToArray()), new JsonSerializerOptions { IncludeFields = true })!); return Task.CompletedTask; };
     }
 
-    //The IDbInteractionService needs to listen to where these messages are published to.
-    private void DbPublishRequest<T>(T message) where T : DbRequestMessage
+    private async Task DbPublishRequestAsync<T>(T message) where T : DbRequestMessage
     {
-        //RPC pattern.
-        IBasicProperties props = channel.CreateBasicProperties();
-        props.ReplyTo = message.ReplyQueue.ToString(); 
+        var props = new BasicProperties
+        {
+            ReplyTo = message.ReplyQueue.ToString()
+        };
          
-        channel.BasicPublish(
+        await channel.BasicPublishAsync(
             exchange: Exchanges.database,
             routingKey: message.Queue.ToString(),
+            mandatory: false,
             basicProperties: props,
             body: Encoding.UTF8.GetBytes(JsonSerializer.Serialize(message, serializerOpts))
             );
 
-		AssociatedMessagePublish(message);
+		await AssociatedMessagePublishAsync(message);
 	}
 
-    //The client needs to listen to where these messages are published to.
-    public void DbPublishResponse<T>(T message) where T : DbResponseMessage
+    public async Task DbPublishResponseAsync<T>(T message) where T : DbResponseMessage
     {
-        channel.BasicPublish(
+        await channel.BasicPublishAsync(
             exchange: Exchanges.database,
             routingKey: message.Queue.ToString(),
-            basicProperties: null,
+            mandatory: false,
             body: Encoding.UTF8.GetBytes(JsonSerializer.Serialize(message, serializerOpts))
             );
 
-		AssociatedMessagePublish(message);
+		await AssociatedMessagePublishAsync(message);
 	}
 
-    public void SubscribeToDbRequest<T>(Action<T> handler, TDbQueue queue) where T : DbRequestMessage
+    public async Task SubscribeToDbRequestAsync<T>(Action<T> handler, TDbQueue queue) where T : DbRequestMessage
     {        
-        var consumer = new EventingBasicConsumer(channel);
-        channel.BasicConsume(queue.ToString(), true, consumer);
+        var consumer = new AsyncEventingBasicConsumer(channel);
+        await channel.BasicConsumeAsync(queue.ToString(), true, consumer);
 
-        consumer.Received += (model, ea) =>
+        consumer.ReceivedAsync += (model, ea) =>
         {
             var msg = JsonSerializer.Deserialize<T>(Encoding.UTF8.GetString(ea.Body.ToArray()), serializerOpts)!;
             handler.Invoke(msg);
+            return Task.CompletedTask;
         };
     }
 
-    public async Task<TResponse> SendDbRequestAndWaitForResponse<TRequest, TResponse>(TRequest message) 
+    public async Task<TResponse> SendDbRequestAndWaitForResponseAsync<TRequest, TResponse>(TRequest message) 
         where TRequest : DbRequestMessage 
         where TResponse : DbResponseMessage 
     {
         await dbSemaphore.WaitAsync();
 
-        var consumer = new EventingBasicConsumer(channel);
-        string tempConsumer = channel.BasicConsume(message.ReplyQueue.ToString(), true, consumer);
+        var consumer = new AsyncEventingBasicConsumer(channel);
+        string tempConsumer = await channel.BasicConsumeAsync(message.ReplyQueue.ToString(), true, consumer);
 
         var taskCompletion = new TaskCompletionSource<TResponse>(TaskCreationOptions.RunContinuationsAsynchronously);
 
-        consumer.Received += DbMessageReceivedCallback;
+        AsyncEventHandler<BasicDeliverEventArgs> eventHandler = (model, ea) =>
+        {
+            DbMessageReceivedCallback(model, ea);
+            return Task.CompletedTask;
+        };
+
+        consumer.ReceivedAsync += eventHandler;
 
         try
         {
-            DbPublishRequest(message);
+            await DbPublishRequestAsync(message);
             return await taskCompletion.Task;
         }
         finally
         {
-            consumer.Received -= DbMessageReceivedCallback;
-            channel.BasicCancel(tempConsumer);
+            consumer.ReceivedAsync -= eventHandler;
+            await channel.BasicCancelAsync(tempConsumer);
             dbSemaphore.Release();
         }
 
@@ -211,94 +224,104 @@ public class RabbitService : IMessageService
         }
     }
 
-    public void MergingPublish<T>(T message) where T : MergingMessage
+    public async Task MergingPublishAsync<T>(T message) where T : MergingMessage
     {
-        channel.BasicPublish(
+        await channel.BasicPublishAsync(
             exchange: Exchanges.merging,
             routingKey: message.routingKey.ToString(),
-            basicProperties: null,
+            mandatory: false,
             body: Encoding.UTF8.GetBytes(JsonSerializer.Serialize(message, serializerOpts))
         );
 
-		AssociatedMessagePublish(message);
+		await AssociatedMessagePublishAsync(message);
 	}
 
-    public void MergingSubscribe<T>(Action<T> handler, TMergingQueue queue) where T : MergingMessage
+    public async Task MergingSubscribeAsync<T>(Action<T> handler, TMergingQueue queue) where T : MergingMessage
     {
-        var consumer = new EventingBasicConsumer(channel);
-        channel.BasicConsume(queue.ToString(), true, consumer);
+        var consumer = new AsyncEventingBasicConsumer(channel);
+        await channel.BasicConsumeAsync(queue.ToString(), true, consumer);
 
-        consumer.Received += (model, ea) => 
-        handler.Invoke(JsonSerializer.Deserialize<T>(Encoding.UTF8.GetString(ea.Body.ToArray()), new JsonSerializerOptions { IncludeFields = true })!
-        );
+        consumer.ReceivedAsync += (model, ea) =>
+        {
+            handler.Invoke(JsonSerializer.Deserialize<T>(Encoding.UTF8.GetString(ea.Body.ToArray()), new JsonSerializerOptions { IncludeFields = true })!);
+            return Task.CompletedTask;
+        };
     }
 
-    public void ImportPublish<T>(T message) where T : ImportMessage
+    public async Task ImportPublishAsync<T>(T message) where T : ImportMessage
     {
-        channel.BasicPublish(
+        await channel.BasicPublishAsync(
             exchange: Exchanges.import,
             routingKey: message.routingKey.ToString(),
-            basicProperties: null,
+            mandatory: false,
             body: Encoding.UTF8.GetBytes(JsonSerializer.Serialize(message, serializerOpts))
             );
-        AssociatedMessagePublish(message);
+        await AssociatedMessagePublishAsync(message);
     }
 
-    public void ImportSubscribe<T>(Action<T> handler, TImportQueue queue) where T : ImportMessage
+    public async Task ImportSubscribeAsync<T>(Action<T> handler, TImportQueue queue) where T : ImportMessage
     {
-        var consumer = new EventingBasicConsumer(channel);
-        channel.BasicConsume(queue.ToString(), true, consumer);
+        var consumer = new AsyncEventingBasicConsumer(channel);
+        await channel.BasicConsumeAsync(queue.ToString(), true, consumer);
 
-        consumer.Received += (model, ea) => 
-        handler.Invoke(JsonSerializer.Deserialize<T>(Encoding.UTF8.GetString(ea.Body.ToArray()), new JsonSerializerOptions { IncludeFields = true })!);
+        consumer.ReceivedAsync += (model, ea) =>
+        {
+            handler.Invoke(JsonSerializer.Deserialize<T>(Encoding.UTF8.GetString(ea.Body.ToArray()), new JsonSerializerOptions { IncludeFields = true })!);
+            return Task.CompletedTask;
+        };
     }
 
-    public void BlockingPublish<T>(T message) where T : BlockingMessage
+    public async Task BlockingPublishAsync<T>(T message) where T : BlockingMessage
     {
-        channel.BasicPublish(
+        await channel.BasicPublishAsync(
             exchange: Exchanges.blocking,
             routingKey: message.routingKey.ToString(),
-            basicProperties: null,
+            mandatory: false,
             body: Encoding.UTF8.GetBytes(JsonSerializer.Serialize(message, serializerOpts))
             );
-        AssociatedMessagePublish(message);
+        await AssociatedMessagePublishAsync(message);
     }
 
-    public void BlockingSubscribe<T>(Action<T> handler, TBlockingQueue queue) where T : BlockingMessage
+    public async Task BlockingSubscribeAsync<T>(Action<T> handler, TBlockingQueue queue) where T : BlockingMessage
     {
-        var consumer = new EventingBasicConsumer(channel);
-        channel.BasicConsume(queue.ToString(), true, consumer);
+        var consumer = new AsyncEventingBasicConsumer(channel);
+        await channel.BasicConsumeAsync(queue.ToString(), true, consumer);
 
-        consumer.Received += (model, ea) =>
-        handler.Invoke(JsonSerializer.Deserialize<T>(Encoding.UTF8.GetString(ea.Body.ToArray()), new JsonSerializerOptions { IncludeFields = true })!);
+        consumer.ReceivedAsync += (model, ea) =>
+        {
+            handler.Invoke(JsonSerializer.Deserialize<T>(Encoding.UTF8.GetString(ea.Body.ToArray()), new JsonSerializerOptions { IncludeFields = true })!);
+            return Task.CompletedTask;
+        };
     }
 
-    //Used internally to publish status messages associated with core messages.
-    private void AssociatedMessagePublish<T>(T message) where T : Message
+    private async Task AssociatedMessagePublishAsync<T>(T message) where T : Message
     {
         if (message.StatusMessage.Message != string.Empty)
         {
-            StatusPublish(message.StatusMessage);
+            await StatusPublishAsync(message.StatusMessage);
         }
     }
 
-    public void MatchingPublish<T>(T message) where T : MatchingMessage
+    public async Task MatchingPublishAsync<T>(T message) where T : MatchingMessage
     {
-        channel.BasicPublish(
+        await channel.BasicPublishAsync(
             exchange: Exchanges.matching,
             routingKey: message.routingKey.ToString(),
-            basicProperties: null,
+            mandatory: false,
             body: Encoding.UTF8.GetBytes(JsonSerializer.Serialize(message, serializerOpts))
             );
-        AssociatedMessagePublish(message);
+        await AssociatedMessagePublishAsync(message);
     }
 
-    public void MatchingSubscribe<T>(Action<T> handler, TMatchingQueue queue) where T : MatchingMessage
+    public async Task MatchingSubscribeAsync<T>(Action<T> handler, TMatchingQueue queue) where T : MatchingMessage
     {
-        var consumer = new EventingBasicConsumer(channel);
-        channel.BasicConsume(queue.ToString(), true, consumer);
+        var consumer = new AsyncEventingBasicConsumer(channel);
+        await channel.BasicConsumeAsync(queue.ToString(), true, consumer);
 
-        consumer.Received += (model, ea) =>
-        handler.Invoke(JsonSerializer.Deserialize<T>(Encoding.UTF8.GetString(ea.Body.ToArray()), new JsonSerializerOptions { IncludeFields = true })!);
+        consumer.ReceivedAsync += (model, ea) =>
+        {
+            handler.Invoke(JsonSerializer.Deserialize<T>(Encoding.UTF8.GetString(ea.Body.ToArray()), new JsonSerializerOptions { IncludeFields = true })!);
+            return Task.CompletedTask;
+        };
     }
 }

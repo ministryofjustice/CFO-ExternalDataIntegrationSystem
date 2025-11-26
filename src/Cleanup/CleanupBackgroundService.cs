@@ -36,18 +36,18 @@ public class CleanupBackgroundService : BackgroundService
     {
         await Task.CompletedTask;
 
-        mergingMessagingService.MergingSubscribe<DeliusFilesCleanupMessage>(async(message) => 
+        mergingMessagingService.MergingSubscribeAsync<DeliusFilesCleanupMessage>(async(message) => 
             await CleanDelius(message), TMergingQueue.DeliusFilesCleanupQueue);
-        mergingMessagingService.MergingSubscribe<OfflocFilesCleanupMessage>(async(message) => 
+        mergingMessagingService.MergingSubscribeAsync<OfflocFilesCleanupMessage>(async(message) => 
             await CleanOffloc(message), TMergingQueue.OfflocFilesCleanupQueue);
 
-        stagingMessagingService.StagingSubscribe<ClearTemporaryDeliusFiles>(async (message) =>
+        stagingMessagingService.StagingSubscribeAsync<ClearTemporaryDeliusFiles>(async (message) =>
         {
             await Task.CompletedTask;
             deliusCleanup.ClearIllegalFiles();
         }, TStagingQueue.DeliusFilesClear);
 
-        stagingMessagingService.StagingSubscribe<ClearHalfCleanedOfflocFiles>(async (message) =>
+        stagingMessagingService.StagingSubscribeAsync<ClearHalfCleanedOfflocFiles>(async (message) =>
         {
             await Task.CompletedTask;
             offlocCleanup.ClearIllegalFiles();

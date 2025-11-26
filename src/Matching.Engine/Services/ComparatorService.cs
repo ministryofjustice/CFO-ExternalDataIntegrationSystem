@@ -25,11 +25,11 @@ public class ComparatorService(
     {
         try
         {
-            await Task.Run(() =>
+            await Task.Run(async () =>
             {
                 matchingOptions = options.Value.ToDictionary(o => o.MatchingKey);
 
-                blockingMessagingService.BlockingSubscribe<BlockingFinishedMessage>(async (message) =>
+                await blockingMessagingService.BlockingSubscribeAsync<BlockingFinishedMessage>(async (message) =>
                 {
                     var items = await matchingRepository.GetAllAsync();
 
@@ -41,11 +41,11 @@ public class ComparatorService(
 
                     records.Clear();
 
-                    matchingMessagingService.MatchingPublish(new MatchingScoreCandidatesMessage());
+                    await matchingMessagingService.MatchingPublishAsync(new MatchingScoreCandidatesMessage());
 
                 }, TBlockingQueue.BlockingFinished);
 
-                matchingMessagingService.MatchingSubscribe<ClusteringPreProcessingStartedMessage>(async (message) =>
+                await matchingMessagingService.MatchingSubscribeAsync<ClusteringPreProcessingStartedMessage>(async (message) =>
                 {
                     var items = await clusteringRepository.GetAllAsync();
 
@@ -57,7 +57,7 @@ public class ComparatorService(
 
                     records.Clear();
 
-                    matchingMessagingService.MatchingPublish(new MatchingScoreOutstandingEdgesMessage());
+                    await matchingMessagingService.MatchingPublishAsync(new MatchingScoreOutstandingEdgesMessage());
 
                 }, TMatchingQueue.ClusteringPreProcessingStarted);
             }, stoppingToken);
@@ -70,7 +70,7 @@ public class ComparatorService(
 
     private async Task ProcessAsync(IEnumerable<IDictionary<string, object>> records, CancellationToken stoppingToken)
     {
-        statusMessagingService.StatusPublish(new StatusUpdateMessage("Comparing candidates..."));
+        await statusMessagingService.StatusPublishAsync(new StatusUpdateMessage("Comparing candidates..."));
 
         queue.Results.Clear();
 

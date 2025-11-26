@@ -42,12 +42,12 @@ public class ImportBackgroundService : BackgroundService
     {
         await Task.Run(() =>
         {
-            messageService.StagingSubscribe<OfflocParserFinishedMessage>(async (message) =>
+            messageService.StagingSubscribeAsync<OfflocParserFinishedMessage>(async (message) =>
             {
                 await OnOfflocMessageReceived(message);
             }, TStagingQueue.OfflocImport);
 
-            messageService.StagingSubscribe<DeliusParserFinishedMessage>(async (message) =>
+            messageService.StagingSubscribeAsync<DeliusParserFinishedMessage>(async (message) =>
             {
                 await OnDeliusMessageReceived(message);
             }, TStagingQueue.DeliusImport);
@@ -62,13 +62,13 @@ public class ImportBackgroundService : BackgroundService
         if (message.emptyFile)
         {
             deliusFileEmpty = true;
-            statusService.StatusPublish(new StatusUpdateMessage($"No Delius File to import (staging or merging)"));
+            await statusService.StatusPublishAsync(new StatusUpdateMessage($"No Delius File to import (staging or merging)"));
         }
         else
         {
-            statusService.StatusPublish(new StatusUpdateMessage($"Importing Delius File....."));
-            var res = await dbService.SendDbRequestAndWaitForResponse<StageDeliusMessage, StageDeliusReturnMessage>(new StageDeliusMessage(message.fileName, message.filePath));
-            var msg = await dbService.SendDbRequestAndWaitForResponse<MergeDeliusRunningPictureMessage, MergeDeliusReturnMessage>(new MergeDeliusRunningPictureMessage(message.fileName));
+            await statusService.StatusPublishAsync(new StatusUpdateMessage($"Importing Delius File....."));
+            var res = await dbService.SendDbRequestAndWaitForResponseAsync<StageDeliusMessage, StageDeliusReturnMessage>(new StageDeliusMessage(message.fileName, message.filePath));
+            var msg = await dbService.SendDbRequestAndWaitForResponseAsync<MergeDeliusRunningPictureMessage, MergeDeliusReturnMessage>(new MergeDeliusRunningPictureMessage(message.fileName));
         }
 
         deliusSem.Release();
@@ -84,13 +84,13 @@ public class ImportBackgroundService : BackgroundService
         if (message.emptyFile)
         {
             offlocFileEmpty = true;
-            statusService.StatusPublish(new StatusUpdateMessage($"No Offloc File to import (staging or merging)"));
+            await statusService.StatusPublishAsync(new StatusUpdateMessage($"No Offloc File to import (staging or merging)"));
         }
         else
         {
-            statusService.StatusPublish(new StatusUpdateMessage($"Importing Offloc File....."));
-            var res = await dbService.SendDbRequestAndWaitForResponse<StageOfflocMessage, StageOfflocReturnMessage>(new StageOfflocMessage(message.filePath));
-            var msg = await dbService.SendDbRequestAndWaitForResponse<MergeOfflocRunningPictureMessage, MergeOfflocReturnMessage>(new MergeOfflocRunningPictureMessage(Path.GetFileName(message.filePath)));
+            await statusService.StatusPublishAsync(new StatusUpdateMessage($"Importing Offloc File....."));
+            var res = await dbService.SendDbRequestAndWaitForResponseAsync<StageOfflocMessage, StageOfflocReturnMessage>(new StageOfflocMessage(message.filePath));
+            var msg = await dbService.SendDbRequestAndWaitForResponseAsync<MergeOfflocRunningPictureMessage, MergeOfflocReturnMessage>(new MergeOfflocRunningPictureMessage(Path.GetFileName(message.filePath)));
         }
         offlocSem.Release();
         offlocParserCompleted = true;
@@ -110,14 +110,14 @@ public class ImportBackgroundService : BackgroundService
 
             if (filesEmpty.All(b => b == true))
             {
-                statusService.StatusPublish(new StatusUpdateMessage($"no Files imported"));
+                await statusService.StatusPublishAsync(new StatusUpdateMessage($"no Files imported"));
             }
             else
             {
                 //Clear staging Db after 10 minutes for testing purposes.
                 //await Task.Delay(new TimeSpan(0, 10, 0));
-                statusService.StatusPublish(new StatusUpdateMessage($"Files imported"));
-                importMessagingService.ImportPublish(new ImportFinishedMessage());                     
+                await statusService.StatusPublishAsync(new StatusUpdateMessage($"Files imported"));
+                await importMessagingService.ImportPublishAsync(new ImportFinishedMessage());                     
             }
         }
     }

@@ -6,6 +6,6 @@ namespace Messaging.Interfaces;
 
 public interface IStagingMessagingService
 {
-    void StagingPublish<T>(T message) where T : StagingMessage;
-    void StagingSubscribe<T>(Action<T> handler, TStagingQueue queue) where T : StagingMessage;
+    Task StagingPublishAsync<T>(T message) where T : StagingMessage;
+    Task StagingSubscribeAsync<T>(Action<T> handler, TStagingQueue queue) where T : StagingMessage;
 }

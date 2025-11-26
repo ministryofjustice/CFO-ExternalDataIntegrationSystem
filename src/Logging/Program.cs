@@ -14,7 +14,12 @@ try
 
     builder.Services.ConfigureServices(builder.Configuration);
 
-    builder.Services.AddSingleton<IStatusMessagingService, RabbitService>();
+    builder.Services.AddSingleton<RabbitService>(sp =>
+    {
+        var rabbitContext = sp.GetRequiredService<RabbitHostingContextWrapper>();
+        return RabbitService.CreateAsync(rabbitContext).GetAwaiter().GetResult();
+    });
+    builder.Services.AddSingleton<IStatusMessagingService>(sp => sp.GetRequiredService<RabbitService>());
     builder.Services.AddHostedService<LoggingBackgroundService>();
 
     var app = builder.Build();

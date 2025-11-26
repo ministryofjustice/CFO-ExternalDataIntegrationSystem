@@ -16,15 +16,15 @@ public class ClusteringService(
     {
         try
         {
-            await Task.Run(() =>
+            await Task.Run(async () =>
             {
-                matchingMessagingService.MatchingSubscribe<MatchingScoreCandidatesFinishedMessage>(async (message) =>
+                await matchingMessagingService.MatchingSubscribeAsync<MatchingScoreCandidatesFinishedMessage>(async (message) =>
                 {
                     await PreProcessAsync(stoppingToken);
 
                 }, TMatchingQueue.MatchingScoreCandidatesFinished);
 
-                matchingMessagingService.MatchingSubscribe<ClusteringPreProcessingFinishedMessage>(async (message) =>
+                await matchingMessagingService.MatchingSubscribeAsync<ClusteringPreProcessingFinishedMessage>(async (message) =>
                 {
                     await PostProcessAsync(stoppingToken);
                 }, TMatchingQueue.ClusteringPreProcessingFinished);
@@ -40,15 +40,15 @@ public class ClusteringService(
     private async Task PreProcessAsync(CancellationToken stoppingToken)
     {
         await clusteringRepository.ClusterPreProcessAsync();
-        matchingMessagingService.MatchingPublish(new ClusteringPreProcessingStartedMessage());
+        await matchingMessagingService.MatchingPublishAsync(new ClusteringPreProcessingStartedMessage());
     }
 
     private async Task PostProcessAsync(CancellationToken stoppingToken)
     {
-        statusMessagingService.StatusPublish(new StatusUpdateMessage("Clustering (post-processing) started..."));
+        await statusMessagingService.StatusPublishAsync(new StatusUpdateMessage("Clustering (post-processing) started..."));
 
         await clusteringRepository.ClusterPostProcessAsync();
-        matchingMessagingService.MatchingPublish(new ClusteringPostProcessingFinishedMessage());
+        await matchingMessagingService.MatchingPublishAsync(new ClusteringPostProcessingFinishedMessage());
     }
 
 }

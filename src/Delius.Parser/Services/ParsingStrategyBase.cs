@@ -24,10 +24,10 @@ public abstract class ParsingStrategyBase
 
     public async Task ProcessFile(string file)
     {            
-        statusService.StatusPublish(new StatusUpdateMessage($"Delius parser started on file {file}."));
+        await statusService.StatusPublishAsync(new StatusUpdateMessage($"Delius parser started on file {file}."));
 
         await fileProcessor.Process(fileLocations.deliusInput + '/' + file, $"{fileLocations.deliusOutput}/{file.Split('.').First()}");
 
-        stagingService.StagingPublish(new DeliusParserFinishedMessage(file, fileLocations.deliusInput + '/' + file.Split('.').First(), false));
+        await stagingService.StagingPublishAsync(new DeliusParserFinishedMessage(file, fileLocations.deliusInput + '/' + file.Split('.').First(), false));
     }
 }

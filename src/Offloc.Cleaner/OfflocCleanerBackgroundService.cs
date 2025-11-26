@@ -22,7 +22,7 @@ public class OfflocCleanerBackgroundService(
     {
         await Task.Run(() =>
         {
-            stagingService.StagingSubscribe<OfflocDownloadFinished>(async (message) => await ParseFileAsync(message), TStagingQueue.OfflocCleaner);
+            stagingService.StagingSubscribeAsync<OfflocDownloadFinished>(async (message) => await ParseFileAsync(message), TStagingQueue.OfflocCleaner);
         }, stoppingToken);
     }
 
@@ -32,19 +32,19 @@ public class OfflocCleanerBackgroundService(
 
         if (await HasAlreadyBeenProcessedAsync(file))
         {
-            statusService.StatusPublish(new StatusUpdateMessage($"File {file} has already been processed"));
-            stagingService.StagingPublish(new OfflocParserFinishedMessage("File already processed", true));
+            await statusService.StatusPublishAsync(new StatusUpdateMessage($"File {file} has already been processed"));
+            await stagingService.StagingPublishAsync(new OfflocParserFinishedMessage("File already processed", true));
         }
         else
         {
             var request = new OfflocFileProcessingStarted(message.fileName, message.FileId, message.ArchiveFileName);
-            await dbService.SendDbRequestAndWaitForResponse<OfflocFileProcessingStarted, ResultOfflocFileProcessingStarted>(request);
+            await dbService.SendDbRequestAndWaitForResponseAsync<OfflocFileProcessingStarted, ResultOfflocFileProcessingStarted>(request);
             await cleaningService.CleanFile(file);
         }
     }
     private async Task<bool> HasAlreadyBeenProcessedAsync(string file)
     {
-        var res = await dbService.SendDbRequestAndWaitForResponse<GetOfflocFilesMessage, OfflocFilesReturnMessage>(new GetOfflocFilesMessage());
+        var res = await dbService.SendDbRequestAndWaitForResponseAsync<GetOfflocFilesMessage, OfflocFilesReturnMessage>(new GetOfflocFilesMessage());
         return res.offlocFiles.Contains(file);
     }
 }
