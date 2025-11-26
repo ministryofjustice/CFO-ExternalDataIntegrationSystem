@@ -11,13 +11,13 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Offloc.Cleaner", "src\Offlo
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Offloc.Parser", "src\Offloc.Parser\Offloc.Parser.csproj", "{7691253C-BDDA-4BEE-ACEF-879B84F270F4}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Messaging", "src\Messaging\Messaging.csproj", "{AD41D2AA-7403-43A7-9D34-7700A4AF9F85}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Messaging", "src\Libraries\Messaging\Messaging.csproj", "{AD41D2AA-7403-43A7-9D34-7700A4AF9F85}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Import", "src\Import\Import.csproj", "{47A53A37-1E8C-479C-B3B5-276D2D05154E}"
 EndProject
-Project("{42EA0DBD-9CF1-443E-919E-BE9C484E4577}") = "OfflocStagingDb", "src\OfflocStagingDb\OfflocStagingDb.sqlproj", "{0FA34F76-91ED-4037-883D-5916258BA65A}"
+Project("{42EA0DBD-9CF1-443E-919E-BE9C484E4577}") = "OfflocStagingDb", "src\Database\OfflocStagingDb\OfflocStagingDb.sqlproj", "{0FA34F76-91ED-4037-883D-5916258BA65A}"
 EndProject
-Project("{42EA0DBD-9CF1-443E-919E-BE9C484E4577}") = "DeliusStagingDb", "src\DeliusStagingDb\DeliusStagingDb.sqlproj", "{5E86F978-BE47-458C-ADE7-D3B5B47C514A}"
+Project("{42EA0DBD-9CF1-443E-919E-BE9C484E4577}") = "DeliusStagingDb", "src\Database\DeliusStagingDb\DeliusStagingDb.sqlproj", "{5E86F978-BE47-458C-ADE7-D3B5B47C514A}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Cleanup", "src\Cleanup\Cleanup.csproj", "{4C0C21B2-853F-44FD-A867-66AC42F18665}"
 EndProject
@@ -33,7 +33,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Merging", "Merging", "{8242
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DbInteractions", "src\DbInteractions\DbInteractions.csproj", "{9C5EAA04-DC75-41BA-B602-9784F6212D25}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EnvironmentSetup", "src\EnvironmentSetup\EnvironmentSetup.csproj", "{10EB5D1A-9986-4919-9A68-8AF4489DFCA6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EnvironmentSetup", "src\Libraries\EnvironmentSetup\EnvironmentSetup.csproj", "{10EB5D1A-9986-4919-9A68-8AF4489DFCA6}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{D3DAF78A-03D7-42EC-8B73-4B4622E61EF8}"
 	ProjectSection(SolutionItems) = preProject
@@ -50,27 +50,25 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Logging", "src\Logging\Logging.csproj", "{F589600C-8148-4AE7-BC82-5E1D4BF9A2CF}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Kickoff", "src\Kickoff\Kickoff.csproj", "{A8990E93-3651-45E4-AC66-B0062ED551B8}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Blocking", "src\Blocking\Blocking.csproj", "{F08A806A-C1B9-40D7-9BE6-F47DBD66B259}"
 EndProject
-Project("{42EA0DBD-9CF1-443E-919E-BE9C484E4577}") = "MatchingDb", "src\MatchingDb\MatchingDb.sqlproj", "{128D9167-3DC4-4D91-9837-CC4FDC664B13}"
+Project("{42EA0DBD-9CF1-443E-919E-BE9C484E4577}") = "MatchingDb", "src\Database\MatchingDb\MatchingDb.sqlproj", "{128D9167-3DC4-4D91-9837-CC4FDC664B13}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Matching", "Matching", "{B6043229-B4C5-4DA1-9204-75875A6CF80F}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Matching.Engine", "src\Matching.Engine\Matching.Engine.csproj", "{D75540B8-FE85-47E0-83A4-D381C97559D0}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Matching.Core", "src\Matching.Core\Matching.Core.csproj", "{17500BC8-5DBF-415F-9454-C24EFA8EBC59}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Matching.Core", "src\Libraries\Matching.Core\Matching.Core.csproj", "{17500BC8-5DBF-415F-9454-C24EFA8EBC59}"
 EndProject
-Project("{42EA0DBD-9CF1-443E-919E-BE9C484E4577}") = "ClusterDb", "src\ClusterDb\ClusterDb.sqlproj", "{17582F6C-FC3E-427B-BDD0-FD721C6C318B}"
+Project("{42EA0DBD-9CF1-443E-919E-BE9C484E4577}") = "ClusterDb", "src\Database\ClusterDb\ClusterDb.sqlproj", "{17582F6C-FC3E-427B-BDD0-FD721C6C318B}"
 EndProject
-Project("{42EA0DBD-9CF1-443E-919E-BE9C484E4577}") = "DeliusRunningPictureDb", "src\DeliusRunningPictureDb\DeliusRunningPictureDb.sqlproj", "{F9C6ADBE-15FB-409E-BFED-A48EEBF393A7}"
+Project("{42EA0DBD-9CF1-443E-919E-BE9C484E4577}") = "DeliusRunningPictureDb", "src\Database\DeliusRunningPictureDb\DeliusRunningPictureDb.sqlproj", "{F9C6ADBE-15FB-409E-BFED-A48EEBF393A7}"
 EndProject
-Project("{42EA0DBD-9CF1-443E-919E-BE9C484E4577}") = "OfflocRunningPictureDb", "src\OfflocRunningPictureDb\OfflocRunningPictureDb.sqlproj", "{A1A8A7ED-D3D2-4916-866A-9AEB510840AC}"
+Project("{42EA0DBD-9CF1-443E-919E-BE9C484E4577}") = "OfflocRunningPictureDb", "src\Database\OfflocRunningPictureDb\OfflocRunningPictureDb.sqlproj", "{A1A8A7ED-D3D2-4916-866A-9AEB510840AC}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "API", "src\API\API.csproj", "{EBFD06D5-A7B3-48B7-8646-3155538BC867}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Api.Tests", "src\Api.Tests\Api.Tests.csproj", "{A4247B60-97A2-4D5A-AE97-53E3D497675A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Api.Tests", "tests\Api.Tests\Api.Tests.csproj", "{A4247B60-97A2-4D5A-AE97-53E3D497675A}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Aspire.AppHost", "src\Aspire\Aspire.AppHost\Aspire.AppHost.csproj", "{F00FE6A0-A6B1-4877-B988-69690D11066B}"
 EndProject
@@ -78,11 +76,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Aspire.ServiceDefaults", "s
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Meow", "src\Meow\Meow.csproj", "{F300A5B2-A029-F04C-F6BB-AD41877264E3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Infrastructure", "src\Infrastructure\Infrastructure.csproj", "{CBE1DCBE-419F-4F3B-ABDE-D1416A4A40F7}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Infrastructure", "src\Libraries\Infrastructure\Infrastructure.csproj", "{CBE1DCBE-419F-4F3B-ABDE-D1416A4A40F7}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Visualiser", "src\Visualiser\Visualiser.csproj", "{C512532D-ADF0-D460-B843-C239A2A093EC}"
 EndProject
-Project("{42EA0DBD-9CF1-443E-919E-BE9C484E4577}") = "AuditDb", "src\AuditDb\AuditDb.sqlproj", "{22A80A04-1AC5-46F1-BE57-DE9B1456B34E}"
+Project("{42EA0DBD-9CF1-443E-919E-BE9C484E4577}") = "AuditDb", "src\Database\AuditDb\AuditDb.sqlproj", "{22A80A04-1AC5-46F1-BE57-DE9B1456B34E}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FakeDataSeeder", "src\FakeDataSeeder\FakeDataSeeder.csproj", "{F7F37423-FFBD-4093-AC69-E1D38B208998}"
 EndProject
@@ -242,18 +240,6 @@ Global
 		{F589600C-8148-4AE7-BC82-5E1D4BF9A2CF}.Release|x64.Build.0 = Release|Any CPU
 		{F589600C-8148-4AE7-BC82-5E1D4BF9A2CF}.Release|x86.ActiveCfg = Release|Any CPU
 		{F589600C-8148-4AE7-BC82-5E1D4BF9A2CF}.Release|x86.Build.0 = Release|Any CPU
-		{A8990E93-3651-45E4-AC66-B0062ED551B8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{A8990E93-3651-45E4-AC66-B0062ED551B8}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{A8990E93-3651-45E4-AC66-B0062ED551B8}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{A8990E93-3651-45E4-AC66-B0062ED551B8}.Debug|x64.Build.0 = Debug|Any CPU
-		{A8990E93-3651-45E4-AC66-B0062ED551B8}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{A8990E93-3651-45E4-AC66-B0062ED551B8}.Debug|x86.Build.0 = Debug|Any CPU
-		{A8990E93-3651-45E4-AC66-B0062ED551B8}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{A8990E93-3651-45E4-AC66-B0062ED551B8}.Release|Any CPU.Build.0 = Release|Any CPU
-		{A8990E93-3651-45E4-AC66-B0062ED551B8}.Release|x64.ActiveCfg = Release|Any CPU
-		{A8990E93-3651-45E4-AC66-B0062ED551B8}.Release|x64.Build.0 = Release|Any CPU
-		{A8990E93-3651-45E4-AC66-B0062ED551B8}.Release|x86.ActiveCfg = Release|Any CPU
-		{A8990E93-3651-45E4-AC66-B0062ED551B8}.Release|x86.Build.0 = Release|Any CPU
 		{F08A806A-C1B9-40D7-9BE6-F47DBD66B259}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{F08A806A-C1B9-40D7-9BE6-F47DBD66B259}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F08A806A-C1B9-40D7-9BE6-F47DBD66B259}.Debug|x64.ActiveCfg = Debug|Any CPU
@@ -509,7 +495,6 @@ Global
 		{9C5EAA04-DC75-41BA-B602-9784F6212D25} = {C4AA533A-1A3C-4BBC-BA2B-A678FB784CA2}
 		{10EB5D1A-9986-4919-9A68-8AF4489DFCA6} = {605FBD70-9552-462C-BAC2-90D4655F1A27}
 		{F589600C-8148-4AE7-BC82-5E1D4BF9A2CF} = {D30CBF2D-71E6-43EE-85EC-BF193B03782D}
-		{A8990E93-3651-45E4-AC66-B0062ED551B8} = {D30CBF2D-71E6-43EE-85EC-BF193B03782D}
 		{F08A806A-C1B9-40D7-9BE6-F47DBD66B259} = {8242D833-6E75-4EAA-9EB1-57B7EC128354}
 		{128D9167-3DC4-4D91-9837-CC4FDC664B13} = {8242D833-6E75-4EAA-9EB1-57B7EC128354}
 		{B6043229-B4C5-4DA1-9204-75875A6CF80F} = {D30CBF2D-71E6-43EE-85EC-BF193B03782D}

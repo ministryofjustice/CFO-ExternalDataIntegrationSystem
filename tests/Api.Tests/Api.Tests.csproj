@@ -15,7 +15,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\API\API.csproj" />
+    <ProjectReference Include="..\..\src\API\API.csproj" />
   </ItemGroup>
 
   <ItemGroup>

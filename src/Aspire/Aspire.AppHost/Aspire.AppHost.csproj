@@ -21,15 +21,15 @@
 
     <ItemGroup>
         <ProjectReference Include="..\..\API\API.csproj" />
-        <ProjectReference Include="..\..\DeliusRunningPictureDb\DeliusRunningPictureDb.sqlproj" />
-        <ProjectReference Include="..\..\DeliusStagingDb\DeliusStagingDb.sqlproj" />
-        <ProjectReference Include="..\..\MatchingDb\MatchingDb.sqlproj" />
+        <ProjectReference Include="..\..\Database\DeliusRunningPictureDb\DeliusRunningPictureDb.sqlproj" />
+        <ProjectReference Include="..\..\Database\DeliusStagingDb\DeliusStagingDb.sqlproj" />
+        <ProjectReference Include="..\..\Database\MatchingDb\MatchingDb.sqlproj" />
         <ProjectReference Include="..\..\Meow\Meow.csproj" />
-        <ProjectReference Include="..\..\OfflocRunningPictureDb\OfflocRunningPictureDb.sqlproj" />
+        <ProjectReference Include="..\..\Database\OfflocRunningPictureDb\OfflocRunningPictureDb.sqlproj" />
         <ProjectReference Include="..\..\Visualiser\Visualiser.csproj" />
-        <ProjectReference Include="..\..\AuditDb\AuditDb.sqlproj" />
-        <ProjectReference Include="..\..\OfflocStagingDb\OfflocStagingDb.sqlproj" />
-		<ProjectReference Include="..\..\ClusterDb\ClusterDb.sqlproj" />
+        <ProjectReference Include="..\..\Database\AuditDb\AuditDb.sqlproj" />
+        <ProjectReference Include="..\..\Database\OfflocStagingDb\OfflocStagingDb.sqlproj" />
+		<ProjectReference Include="..\..\Database\ClusterDb\ClusterDb.sqlproj" />
 		<ProjectReference Include="..\..\FakeDataSeeder\FakeDataSeeder.csproj" />
 		<!-- DMS APPS -->
 		<ProjectReference Include="..\..\Blocking\Blocking.csproj" />
@@ -38,7 +38,6 @@
 		<ProjectReference Include="..\..\Delius.Parser\Delius.Parser.csproj" />
 		<ProjectReference Include="..\..\FileSync\FileSync.csproj" />
 		<ProjectReference Include="..\..\Import\Import.csproj" />
-		<ProjectReference Include="..\..\Kickoff\Kickoff.csproj" />
 		<ProjectReference Include="..\..\Logging\Logging.csproj" />
 		<ProjectReference Include="..\..\Matching.Engine\Matching.Engine.csproj" />
 		<ProjectReference Include="..\..\Meow\Meow.csproj" />
