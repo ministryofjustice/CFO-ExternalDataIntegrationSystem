@@ -13,7 +13,6 @@
 		<PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" />
 		<PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" />
 		<PackageReference Include="Microsoft.Extensions.Hosting" />
-		<PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" />
 	</ItemGroup>
 
 	<ItemGroup>

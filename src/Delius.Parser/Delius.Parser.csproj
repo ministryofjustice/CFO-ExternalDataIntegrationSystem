@@ -8,11 +8,7 @@
     <DockerfileContext>..\..\..</DockerfileContext>
     <UserSecretsId>bed042b3-1d10-47f8-9b97-b516f3ae5895</UserSecretsId>
   </PropertyGroup>
-
-  <ItemGroup>
-    <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" />
-  </ItemGroup>
-
+  
   <ItemGroup>
     <None Update="appsettings.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
