@@ -30,9 +30,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Matching.Core\Matching.Core.csproj" />
-	<ProjectReference Include="..\EnvironmentSetup\EnvironmentSetup.csproj" />
-	<ProjectReference Include="..\Messaging\Messaging.csproj" />
+    <ProjectReference Include="..\Libraries\Matching.Core\Matching.Core.csproj" />
+	<ProjectReference Include="..\Libraries\EnvironmentSetup\EnvironmentSetup.csproj" />
+	<ProjectReference Include="..\Libraries\Messaging\Messaging.csproj" />
   </ItemGroup>
 
 </Project>
