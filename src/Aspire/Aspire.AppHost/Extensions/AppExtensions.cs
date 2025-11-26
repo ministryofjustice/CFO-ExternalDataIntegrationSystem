@@ -29,33 +29,40 @@ public static class AppExtensions
 
     public static IDistributedApplicationBuilder AddDmsServices(
         this IDistributedApplicationBuilder builder,
+        IResourceBuilder<MinioContainerResource> minio,
         IResourceBuilder<RabbitMQServerResource> rabbit,
-        DmsDatabaseResources databases)
+        DmsDatabaseResources databases,
+        string hostMount,
+        string targetMount)
     {
-        builder.AddDmsService<Blocking>("Blocking", rabbit, databases);
-        builder.AddDmsService<Cleanup>("Cleanup", rabbit, databases);
-        builder.AddDmsService<DbInteractions>("DbInteractions", rabbit, databases);
-        builder.AddDmsService<Delius_Parser>("Delius-Parser", rabbit, databases);
-        builder.AddDmsService<Import>("Import", rabbit, databases);
-        builder.AddDmsService<Logging>("Logging", rabbit, databases);
-        builder.AddDmsService<Matching_Engine>("Matching-Engine", rabbit, databases);
-        //builder.AddDmsService<Meow>("Meow", rabbit, databases);
-        builder.AddDmsService<Offloc_Cleaner>("Offloc-Cleaner", rabbit, databases);
-        builder.AddDmsService<Offloc_Parser>("Offloc-Parser", rabbit, databases);
-        //builder.AddDmsService<Orchestrator>("Orchestrator", rabbit, databases);
+        builder.AddDmsService<Blocking>("Blocking", rabbit, databases, hostMount);
+        builder.AddDmsService<Cleanup>("Cleanup", rabbit, databases, hostMount);
 
-        // Entry point - start the app to 'kick off' DMS
-        builder.AddDmsService<Kickoff>("Kickoff", rabbit, databases)
-            .WithExplicitStart();
+        builder.AddDmsService<DbInteractions>("DbInteractions", rabbit, databases, hostMount)
+            .WithEnvironment("DmsFilesBasePath", targetMount); // Override default with linux (sql container) path
+        
+        builder.AddDmsService<Delius_Parser>("Delius-Parser", rabbit, databases, hostMount);
+        builder.AddDmsService<Import>("Import", rabbit, databases, hostMount);
+        builder.AddDmsService<Logging>("Logging", rabbit, databases, hostMount);
+        builder.AddDmsService<Matching_Engine>("Matching-Engine", rabbit, databases, hostMount);
+        //builder.AddDmsService<Meow>("Meow", rabbit, databases, hostMount);
+        builder.AddDmsService<Offloc_Cleaner>("Offloc-Cleaner", rabbit, databases, hostMount);
+        builder.AddDmsService<Offloc_Parser>("Offloc-Parser", rabbit, databases, hostMount);
 
+        builder.AddDmsService<FileSync>("FileSync", rabbit, databases, hostMount)
+            .WithReference(minio).WaitFor(minio)
+            .WithExplicitStart()
+            .WithEnvironment("MinIO:BucketName", "cfo-dms-files");
+            
         return builder;
     }
 
     private static IResourceBuilder<ProjectResource> AddDmsService<TDmsProject>(
-        this IDistributedApplicationBuilder builder, 
+        this IDistributedApplicationBuilder builder,
         string name,
         IResourceBuilder<RabbitMQServerResource> rabbit,
-        DmsDatabaseResources databases) where TDmsProject : IProjectMetadata, new()
+        DmsDatabaseResources databases,
+        string hostMount) where TDmsProject : IProjectMetadata, new()
     {
         var project = builder.AddProject<TDmsProject>(name)
             .WithReference(rabbit).WaitFor(rabbit)
@@ -66,7 +73,8 @@ public static class AppExtensions
             .WithDmsDatabaseReference(databases.Audit)
             .WithDmsDatabaseReference(databases.Cluster)
             .WithDmsDatabaseReference(databases.Matching)
-            .WithEnvironment("DmsFilesBasePath", "~/DMS/");
+            .WithEnvironment("DmsFilesBasePath", hostMount)
+            .WithEnvironment("DOTNET_ENVIRONMENT", "Development");
 
         return project;
     }

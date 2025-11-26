@@ -11,13 +11,10 @@
 
 	<ItemGroup>
 		<PackageReference Include="DocumentFormat.OpenXml" />
-		<PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" />
-		<PackageReference Include="Microsoft.VisualStudio.Shell.Framework" />
 	</ItemGroup>
 
 	<ItemGroup>
 	  <ProjectReference Include="..\EnvironmentSetup\EnvironmentSetup.csproj" />
-	  <ProjectReference Include="..\FileStorage\FileStorage.csproj" />
 	  <ProjectReference Include="..\Messaging\Messaging.csproj" />
 	</ItemGroup>
 

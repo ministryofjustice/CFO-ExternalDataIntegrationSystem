@@ -21,7 +21,6 @@
 
   <ItemGroup>
 	<PackageReference Include="Microsoft.Data.SqlClient" />
-    <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" />
     <PackageReference Include="Newtonsoft.Json" />
   </ItemGroup>
 

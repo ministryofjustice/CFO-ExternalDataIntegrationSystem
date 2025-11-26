@@ -31,16 +31,9 @@ try
     builder.Services.AddSingleton<IDbMessagingService, RabbitService>();
     builder.Services.AddSingleton<IStatusMessagingService, RabbitService>();
 
-    bool parallel = builder.Configuration.GetValue<bool>("Parallel");
-    if (parallel)
-    {
-        builder.Services.AddSingleton<IParsingStrategy, ParallelParsingStrategy>();
-    }
-    else
-    {
-        builder.Services.AddSingleton<IParsingStrategy, SequentialParsingStrategy>();
-    }
 
+    builder.Services.AddSingleton<IParsingStrategy, SequentialParsingStrategy>();
+        
     //Ordering here v. important.
     builder.Services.AddSingleton<PostParser>();
     builder.Services.AddSingleton<DeliusOutputter>();
