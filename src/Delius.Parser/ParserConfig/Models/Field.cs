@@ -44,7 +44,7 @@ public class Field
                 else
                 {
                     var date = ParseDatetime(d);
-                    return date.ToString();
+                    return date.ToString(cultureInfo);
                 }
             case FieldType.ShortDate:
                 string sd = text.Substring(StartingPoint, Length).Replace("~", "");
@@ -55,7 +55,7 @@ public class Field
                 else
                 {
                     var date = ParseDate(sd);
-                    return date.ToString();
+                    return date.ToString(cultureInfo);
                 }
         }
         throw new ApplicationException("Unknown field type: " + Type);
