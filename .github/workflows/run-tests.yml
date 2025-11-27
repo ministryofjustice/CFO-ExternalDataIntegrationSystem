@@ -1,0 +1,43 @@
+name: Run Tests
+
+on:
+  pull_request:
+    branches:
+      - main
+      - develop
+
+jobs:
+  test-linux:
+    runs-on: ubuntu-latest
+    container:
+      image: mcr.microsoft.com/dotnet/sdk:10.0
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Restore Dependencies (ubuntu)
+        run: dotnet restore
+    
+      - name: Build (ubuntu)
+        run: dotnet build --configuration Release --no-restore
+
+      - name: Test (ubuntu)
+        run: dotnet test --configuration Release --no-build
+
+  test-windows:
+    runs-on: windows-2022
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Restore Dependencies (windows)
+        run: dotnet restore
+    
+      - name: Build (windows)
+        run: dotnet build --configuration Release --no-restore
+
+      - name: Test (windows)
+        run: dotnet test --configuration Release --no-build
