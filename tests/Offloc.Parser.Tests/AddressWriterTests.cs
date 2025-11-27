@@ -308,7 +308,14 @@ public class AddressWriterTests : IDisposable
     {
         if (Directory.Exists(_testDirectory))
         {
-            Directory.Delete(_testDirectory, recursive: true);
+            try
+            {
+                Directory.Delete(_testDirectory, recursive: true);
+            }
+            catch
+            {
+                // Ignore cleanup errors
+            }
         }
     }
 }
