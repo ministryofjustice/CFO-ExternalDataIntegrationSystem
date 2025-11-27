@@ -90,12 +90,40 @@ public class AgenciesWriterTests : IDisposable
         Assert.Contains(lines, l => l.Contains("AGY002"));
         Assert.DoesNotContain(lines, l => l.Contains("Duplicate"));
     }
+
+    [Fact]
+    public async Task WriteAsync_UsesCrlfLineEndings()
+    {
+        // Arrange
+        var writer = new AgenciesWriter(_testDirectory, []);
+        
+        var record1 = new[]{ string.Empty, "Agency One", "AGY001" };
+        var record2 = new[]{ string.Empty, "Agency Two", "AGY002" };
+
+        // Act
+        await writer.WriteAsync("NOMS001", record1);
+        await writer.WriteAsync("NOMS002", record2);
+        writer.Dispose();
+
+        // Assert
+        var outputFile = Path.Combine(_testDirectory, "Agencies.txt");
+        var fileContent = await File.ReadAllTextAsync(outputFile);
+        Assert.Contains("\r\n", fileContent);
+        Assert.DoesNotContain("\n", fileContent.Replace("\r\n", string.Empty));
+    }
     
     public void Dispose()
     {
         if (Directory.Exists(_testDirectory))
         {
-            Directory.Delete(_testDirectory, recursive: true);
+            try
+            {
+                Directory.Delete(_testDirectory, recursive: true);
+            }
+            catch
+            {
+                // Ignore cleanup errors
+            }
         }
     }
 }
