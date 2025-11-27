@@ -304,6 +304,26 @@ public class AddressWriterTests : IDisposable
         return contents;
     }
 
+    [Fact]
+    public async Task WriteAsync_UsesCrlfLineEndings()
+    {
+        // Arrange
+        var context = new AddressFieldsContext([]);
+        var writer = new AddressWriter(_testDirectory, context);
+        var contents = CreateFullRecordArray();
+
+        // Act
+        await writer.WriteAsync("NOMS001", contents);
+        await writer.WriteAsync("NOMS002", contents);
+        writer.Dispose();
+
+        // Assert
+        var outputFile = Path.Combine(_testDirectory, "Addresses.txt");
+        var fileContent = await File.ReadAllTextAsync(outputFile);
+        Assert.Contains("\r\n", fileContent);
+        Assert.DoesNotContain("\n", fileContent.Replace("\r\n", string.Empty));
+    }
+
     public void Dispose()
     {
         if (Directory.Exists(_testDirectory))
