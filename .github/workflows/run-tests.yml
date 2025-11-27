@@ -27,7 +27,10 @@ jobs:
           done
 
       - name: Test (ubuntu)
-        run: dotnet test tests/**/*.csproj --configuration Release --no-build
+        run: |
+          for project in tests/**/*.csproj; do
+            dotnet test "$project" --configuration Release --no-build
+          done
 
   test-windows:
     runs-on: windows-2022
@@ -52,4 +55,7 @@ jobs:
           }
 
       - name: Test (windows)
-        run: dotnet test tests/**/*.csproj --configuration Release --no-build
+        run: |
+          Get-ChildItem -Path tests -Filter *.csproj -Recurse | ForEach-Object {
+            dotnet test $_.FullName --configuration Release --no-build
+          }
