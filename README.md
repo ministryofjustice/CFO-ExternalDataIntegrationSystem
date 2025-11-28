@@ -4,6 +4,7 @@ HMPPS CFO DMS
 =============
 [![Run Tests](https://github.com/ministryofjustice/CFO-ExternalDataIntegrationSystem/actions/workflows/run-tests.yml/badge.svg)](https://github.com/ministryofjustice/CFO-ExternalDataIntegrationSystem/actions/workflows/run-tests.yml)
 [![.NET](https://img.shields.io/badge/.NET-10.0-512BD4)](https://dotnet.microsoft.com/)
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Issues](https://img.shields.io/github/issues/ministryofjustice/CFO-ExternalDataIntegrationSystem)](https://github.com/ministryofjustice/CFO-ExternalDataIntegrationSystem/issues)
 [![Pull Requests](https://img.shields.io/github/issues-pr/ministryofjustice/CFO-ExternalDataIntegrationSystem)](https://github.com/ministryofjustice/CFO-ExternalDataIntegrationSystem/pulls)
 ## Overview
@@ -45,7 +46,7 @@ The recommended way to run and debug these apps is using .NET Aspire.
 - **Using Visual Studio Code**: open the project and press `F5`, selecting the *Default Configuration*.
 - **Using Visual Studio or other IDEs**: From the debug configuration dropdown, select `Aspire.AppHost` and start the application.
 
-## Services and Credentials
+### Services and Credentials
 When running via Aspire, the following services are available:
 
 | Service | Purpose | Access | Credentials |
