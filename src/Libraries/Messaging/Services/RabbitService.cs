@@ -9,7 +9,6 @@ using Messaging.Messages.StatusMessages;
 using Messaging.Interfaces;
 using Messaging.Messages.DbMessages.Sending;
 using Messaging.Messages.DbMessages.Receiving;
-using EnvironmentSetup;
 using Messaging.Messages;
 using Messaging.Messages.ImportMessages;
 using Messaging.Messages.BlockingMessages;
@@ -29,31 +28,16 @@ public class RabbitService : IMessageService
     {
     }
 
-    public static async Task<RabbitService> CreateAsync(RabbitHostingContextWrapper hostingContext)
+    public static async Task<RabbitService> CreateAsync(Uri connectionUri)
     {
         var service = new RabbitService();
-        await service.InitializeAsync(hostingContext);
+        await service.InitializeAsync(connectionUri);
         return service;
     }
 
-    private async Task InitializeAsync(RabbitHostingContextWrapper hostingContext)
+    private async Task InitializeAsync(Uri connectionUri)
     {
-        ConnectionFactory factory;
-
-        // Configures connection factory based on whether a full URI is provided or individual components.
-        if (hostingContext.Uri is not null)
-        {
-            factory = new ConnectionFactory() { Uri = hostingContext.Uri };
-        }
-        else
-        {
-            factory = new ConnectionFactory()
-            {
-                HostName = hostingContext.Context,
-                UserName = hostingContext.Username,
-                Password = hostingContext.Password
-            };
-        }
+        var factory = new ConnectionFactory() { Uri = connectionUri };
 
         connection = await factory.CreateConnectionAsync();
         channel = await connection.CreateChannelAsync();

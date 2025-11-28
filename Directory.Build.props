@@ -1,12 +1,4 @@
 <Project>
-	<PropertyGroup Condition="'$(Configuration)' != 'Release'">
-		<EnvFile>$(MSBuildThisFileDirectory)development.local.env</EnvFile>
-	</PropertyGroup>
-
-	<Target Name="CopyEnvFile" AfterTargets="Build" Condition="'$(Configuration)' != 'Release'">
-		<Copy SourceFiles="$(EnvFile)" DestinationFolder="$(OutputPath).." />
-	</Target>
-	
 	<PropertyGroup>
 		<TargetFramework>net10.0</TargetFramework>
 	</PropertyGroup>

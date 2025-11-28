@@ -1,44 +1,25 @@
-﻿
+using Messaging.Extensions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Offloc.Cleaner;
-using Messaging.Services;
-using Messaging.Interfaces;
 using Microsoft.Extensions.Configuration;
 using Offloc.Cleaner.Services;
 using EnvironmentSetup;
 using Serilog;
 
-Log.Logger = new LoggerConfiguration()
-    .Enrich.FromLogContext()
-    .WriteTo.Console()
-    .WriteTo.File(@".\logs\fatal.txt", Serilog.Events.LogEventLevel.Fatal)
-    .CreateBootstrapLogger();
-
 try
 {
-
     HostApplicationBuilder builder = Host.CreateApplicationBuilder(args);
 
-    builder.Configuration.AddJsonFile("appsettings.json").AddEnvironmentVariables();
-    builder.Configuration.ConfigureByEnvironment();
-
+    builder.AddDmsCoreWorkerService();
+    
     builder.Services.AddSingleton(
         new RedundantFieldsWrapper(
             builder.Configuration.GetValue<string>("RedundantOfflocFields")!
         ));
 
     builder.Services.AddSingleton<ICleaningStrategy, SequentialCleaningStrategy>();
-    
-    builder.Services.ConfigureServices(builder.Configuration);
-    builder.Services.AddSingleton<RabbitService>(sp =>
-    {
-        var rabbitContext = sp.GetRequiredService<RabbitHostingContextWrapper>();
-        return RabbitService.CreateAsync(rabbitContext).GetAwaiter().GetResult();
-    });
-    builder.Services.AddSingleton<IStagingMessagingService>(sp => sp.GetRequiredService<RabbitService>());
-    builder.Services.AddSingleton<IStatusMessagingService>(sp => sp.GetRequiredService<RabbitService>());
-    builder.Services.AddSingleton<IDbMessagingService>(sp => sp.GetRequiredService<RabbitService>());
+    builder.Services.AddDmsRabbitMQ(builder.Configuration);
 
     builder.Services.AddHostedService<OfflocCleanerBackgroundService>();
 
