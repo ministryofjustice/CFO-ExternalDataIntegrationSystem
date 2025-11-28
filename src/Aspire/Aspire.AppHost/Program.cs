@@ -26,10 +26,12 @@ builder.AddDmsVisualiser(apiService);
 
 var rabbit = builder
     .AddRabbitMQ("RabbitMQ", password: rabbitPassword)
-    .WithManagementPlugin();
+    .WithManagementPlugin(port: 15672);
 
 // MinIO (s3 emulation)
-var minio = builder.AddMinioContainer("minio", rootPassword: minioPassword)
+var minio = builder.AddMinioContainer("minio", 
+    rootPassword: minioPassword,
+    port: 9000)
     .WithDataVolume("dms-minio-data");
 
 builder.AddDmsServices(
