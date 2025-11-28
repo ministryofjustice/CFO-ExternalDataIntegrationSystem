@@ -20,6 +20,9 @@
 
 
     <ItemGroup>
+      <PackageReference Include="Microsoft.Build" />
+      <PackageReference Include="Microsoft.Build.Framework" />
+    <PackageReference Include="Microsoft.NET.StringTools" />
         <ProjectReference Include="..\..\API\API.csproj" />
         <ProjectReference Include="..\..\Database\DeliusRunningPictureDb\DeliusRunningPictureDb.sqlproj" />
         <ProjectReference Include="..\..\Database\DeliusStagingDb\DeliusStagingDb.sqlproj" />
