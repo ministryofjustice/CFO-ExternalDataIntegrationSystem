@@ -1,10 +1,4 @@
-﻿Log.Logger = new LoggerConfiguration()
-    .Enrich.FromLogContext()
-    .WriteTo.Console()
-    .WriteTo.File(@".\logs\fatal.txt", Serilog.Events.LogEventLevel.Fatal)
-    .CreateBootstrapLogger();
-
-try
+﻿try
 {
     var builder = Host.CreateApplicationBuilder(args);
 
@@ -14,8 +8,7 @@ try
         container.RegisterScorers(builder.Configuration);
     });
 
-    builder.Configuration.ConfigureByEnvironment();
-    builder.Services.ConfigureServices(builder.Configuration);
+    builder.AddDmsCoreWorkerService();
     builder.AddMessagingServices();
 
     builder.AddApplicationServices();

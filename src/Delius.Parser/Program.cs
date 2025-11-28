@@ -1,41 +1,18 @@
-﻿
+using Messaging.Extensions;
 using Delius.Parser;
 using Delius.Parser.Core;
 using Delius.Parser.Services;
 using EnvironmentSetup;
-using Messaging.Interfaces;
-using Messaging.Services;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Serilog;
-
-Log.Logger = new LoggerConfiguration()
-    .Enrich.FromLogContext()
-    .WriteTo.Console()
-    .WriteTo.File(@".\logs\fatal.txt", Serilog.Events.LogEventLevel.Fatal)
-    .CreateBootstrapLogger();
 
 try
 {
     HostApplicationBuilder builder = Host.CreateApplicationBuilder(args);
 
-    builder.Configuration.AddJsonFile("appsettings.json").AddEnvironmentVariables();
-    builder.Configuration.ConfigureByEnvironment();
-
-    builder.Services.AddSingleton<IConfiguration>(builder.Configuration);
-
-    builder.Services.ConfigureServices(builder.Configuration);
-
-    builder.Services.AddSingleton<RabbitService>(sp =>
-    {
-        var rabbitContext = sp.GetRequiredService<RabbitHostingContextWrapper>();
-        return RabbitService.CreateAsync(rabbitContext).GetAwaiter().GetResult();
-    });
-    builder.Services.AddSingleton<IStagingMessagingService>(sp => sp.GetRequiredService<RabbitService>());
-    builder.Services.AddSingleton<IDbMessagingService>(sp => sp.GetRequiredService<RabbitService>());
-    builder.Services.AddSingleton<IStatusMessagingService>(sp => sp.GetRequiredService<RabbitService>());
-
+    builder.AddDmsCoreWorkerService();
+    builder.Services.AddDmsRabbitMQ(builder.Configuration);
 
     builder.Services.AddSingleton<IParsingStrategy, SequentialParsingStrategy>();
         

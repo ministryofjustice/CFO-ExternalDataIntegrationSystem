@@ -1,4 +1,4 @@
-﻿
+
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 18
 VisualStudioVersion = 18.0.11116.177
@@ -38,9 +38,6 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{D3DAF78A-03D7-42EC-8B73-4B4622E61EF8}"
 	ProjectSection(SolutionItems) = preProject
 		.gitignore = .gitignore
-		base.development.env = base.development.env
-		development.docker.env = development.docker.env
-		development.local.env = development.local.env
 		Directory.Build.props = Directory.Build.props
 		Directory.Packages.props = Directory.Packages.props
 		NuGet.config = NuGet.config
