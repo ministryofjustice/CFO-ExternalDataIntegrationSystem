@@ -1,4 +1,5 @@
-﻿using Meow;
+using Infrastructure.Middlewares;
+using Meow;
 using Meow.Features.Participants.Handlers;
 using Rebus.Serialization;
 
@@ -14,6 +15,8 @@ try
 
     var services = builder.Services;
     var configuration = builder.Configuration;
+
+    builder.Services.AddScoped<ICurrentUserService, MeowUserService>();
 
     builder.AddDatabaseServices();
 
