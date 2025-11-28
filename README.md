@@ -51,7 +51,7 @@ When running via Aspire, the following services are available:
 
 | Service | Purpose | Access | Credentials |
 |---------|---------|--------|-------------|
-| **API** | REST endpoints for querying offender data, searches, and clustering operations | https://localhost:7013 | API Key: `password` |
+| **API** | REST endpoints for querying offender data, searches, and clustering operations | https://localhost:7013/swagger | API Key: `password` |
 | **MinIO** | S3-compatible file storage |  *random port* (check Aspire) | Username: `minioadmin`<br>Password: `minioadmin` |
 | **MSSQL** | Application databases (staging, running picture, matching, cluster) | `127.0.0.1,61749` | Username: `sa`<br>Password: `P@ssword123!` |
 | **RabbitMQ** | Message broker for inter-service communication | http://localhost:15672 | Username: `guest`<br>Password: `guest` |
