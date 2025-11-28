@@ -45,7 +45,7 @@ public static class AppExtensions
         builder.AddDmsService<Import>("Import", rabbit, databases, hostMount);
         builder.AddDmsService<Logging>("Logging", rabbit, databases, hostMount);
         builder.AddDmsService<Matching_Engine>("Matching-Engine", rabbit, databases, hostMount);
-        //builder.AddDmsService<Meow>("Meow", rabbit, databases, hostMount);
+        builder.AddDmsService<Meow>("Meow", rabbit, databases, hostMount).WithExplicitStart();
         builder.AddDmsService<Offloc_Cleaner>("Offloc-Cleaner", rabbit, databases, hostMount);
         builder.AddDmsService<Offloc_Parser>("Offloc-Parser", rabbit, databases, hostMount);
 
