@@ -14,6 +14,13 @@ public static class DatabaseExtensions
 {
     public static IHostApplicationBuilder AddDatabaseServices(this IHostApplicationBuilder builder)
     {
+        if (!builder.Services.Any(x => x.ServiceType == typeof(ICurrentUserService)))
+        {
+            throw new InvalidOperationException(
+                "ICurrentUserService must be registered before calling AddDatabaseServices. " +
+                "Register an implementation using builder.Services.AddScoped<ICurrentUserService, YourImplementation>()");
+        }
+
         builder.Services.AddScoped<AuditSaveChangesInterceptor>();
 
         builder.Services.AddDbContext<AuditContext>((sp, options) =>
