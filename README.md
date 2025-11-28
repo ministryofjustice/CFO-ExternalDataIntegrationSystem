@@ -48,25 +48,9 @@ The recommended way to run and debug these apps is using .NET Aspire.
 ## Services and Credentials
 When running via Aspire, the following services are available:
 
-### API
-Provides REST endpoints for querying offender data, performing searches, and managing clustering operations.
-- **HTTPS**: `https://localhost:7013`
-- **API Key**: `password`
-
-### MinIO (S3 Storage)
-Used for file synchronization and storage.
-- **Console**: Randomly assigned port (check Aspire dashboard)
-- **Username**: `minioadmin`
-- **Password**: `minioadmin`
-
-### MSSQL Server
-Hosts all application databases including staging, running picture, matching, and cluster databases.
-- **Host**: `127.0.0.1,61749`
-- **Username**: `sa`
-- **Password**: `P@ssword123!`
-
-### RabbitMQ
-Handles messaging between services.
-- **Management Console**: `http://localhost:15672`
-- **Username**: `guest`
-- **Password**: `guest`
+| Service | Purpose | Access | Credentials |
+|---------|---------|--------|-------------|
+| **API** | REST endpoints for querying offender data, searches, and clustering operations | https://localhost:7013 | API Key: `password` |
+| **MinIO** | S3-compatible file storage |  *random port* (check Aspire) | Username: `minioadmin`<br>Password: `minioadmin` |
+| **MSSQL** | Application databases (staging, running picture, matching, cluster) | `127.0.0.1,61749` | Username: `sa`<br>Password: `P@ssword123!` |
+| **RabbitMQ** | Message broker for inter-service communication | http://localhost:15672 | Username: `guest`<br>Password: `guest` |
