@@ -29,9 +29,7 @@ var rabbit = builder
     .WithManagementPlugin(port: 15672);
 
 // MinIO (s3 emulation)
-var minio = builder.AddMinioContainer("minio", 
-    rootPassword: minioPassword,
-    port: 9000)
+var minio = builder.AddMinioContainer("minio", rootPassword: minioPassword)
     .WithDataVolume("dms-minio-data");
 
 builder.AddDmsServices(
