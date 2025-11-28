@@ -13,13 +13,15 @@ HMPPS Creating Future Opportunities (CFO) - Data Management System (DMS). It is 
 ## Architecture
 CFO DMS is built as a microservices architecture using .NET Aspire for orchestration. Data flows through the following pipeline:
 
-**File Ingestion → Parsing → Staging → Import → Running Picture → Matching → Clustering**
+**File Ingestion → Parsing/Cleaning → Staging → Import → Running Picture → Matching → Clustering**
 
 1. **FileSync** monitors MinIO/S3/FileSystem storage and syncs incoming files
-2. **Parsers** (Offloc, Delius) transform raw PNOMIS and NDelius files into structured records in staging databases
+2. **Parsers/Cleaners** (Offloc, Delius) transform raw PNOMIS and NDelius files into structured records in staging databases
 3. **Import** validates and migrates data from staging to running picture databases
 4. **Matching Engine** identifies and links related offender records across systems
-5. **Cluster database** maintains grouped offender data for downstream consumers (e.g., CATS)
+5. **Cluster database** maintains grouped offender data
+6. **API** exposes the processed data via REST endpoints for downstream consumers (e.g., CATS)
+7. **Visualiser** provides a web UI for exploring and visualising relationships between offender data
 
 Supporting services include **DbInteractions** (complex database operations), **Blocking** (matching rules), **Cleanup** (data maintenance), and **Logging**. Services communicate asynchronously via RabbitMQ message queues.
 
