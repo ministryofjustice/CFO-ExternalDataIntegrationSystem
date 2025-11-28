@@ -1,33 +1,22 @@
 using Messaging.Extensions;
-﻿using Messaging.Interfaces;
-using Messaging.Services;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using EnvironmentSetup;
 using Blocking;
 using Blocking.ConfigurationModels;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using Serilog;
 
 try
 {
-    HostApplicationBuilder builder = Host.CreateApplicationBuilder(args);
+    var builder = Host.CreateApplicationBuilder(args);
 
     builder.AddDmsCoreWorkerService();
 
-    var storedProceduresConfig = builder.Configuration.GetSection("StoredProceduresConfig")!;
-    var blockingQueriesGroups = builder.Configuration.GetSection("BlockingQueriesConfig")!;
-
-    builder.Services.AddSingleton(
-        new ServerConfiguration
-        {
-            connectionString = builder.Configuration.GetConnectionString("MatchingDb")!,
-            storedProceduresConfig = builder.Configuration.GetRequiredSection("StoredProceduresConfig").Get<StoredProceduresConfig>()!,
-            blockingQueriesConfig = builder.Configuration.GetSection("BlockingQueriesConfig").Get<BlockingQueriesConfig>()!
-        }
-    );
+    builder.Services.Configure<StoredProceduresConfig>(
+        builder.Configuration.GetRequiredSection("StoredProceduresConfig"));
+    builder.Services.Configure<BlockingQueriesConfig>(
+        builder.Configuration.GetRequiredSection("BlockingQueriesConfig"));
 
     builder.Services.AddSingleton<DatabaseInsert>();
     builder.Services.AddDmsRabbitMQ(builder.Configuration);

@@ -9,7 +9,7 @@ using Serilog;
 
 try
 {
-    HostApplicationBuilder builder = Host.CreateApplicationBuilder(args);
+    var builder = Host.CreateApplicationBuilder(args);
 
     builder.AddDmsCoreWorkerService();
     builder.Services.AddDmsRabbitMQ(builder.Configuration);
