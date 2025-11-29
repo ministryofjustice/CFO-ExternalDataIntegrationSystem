@@ -5,8 +5,6 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <RootNamespace>Visualiser</RootNamespace>
 	<UserSecretsId>6b76fc04-e0a8-4265-b2ac-d8600fd901dc</UserSecretsId>
-	<DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
-	<DockerfileContext>.</DockerfileContext>
   </PropertyGroup>
 
   <ItemGroup>
