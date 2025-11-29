@@ -10,7 +10,7 @@ public static class AppExtensions
         IResourceBuilder<ParameterResource> apiKey,
         IResourceBuilder<ParameterResource> isDevelopment)
     {
-        return builder.AddProject<API>("api")
+        return builder.AddProject<API>("Api")
             .WithDmsDatabaseReference(databases.OfflocRunningPicture)
             .WithDmsDatabaseReference(databases.DeliusRunningPicture)
             .WithDmsDatabaseReference(databases.Cluster)
@@ -23,7 +23,7 @@ public static class AppExtensions
         this IDistributedApplicationBuilder builder,
         IResourceBuilder<ProjectResource> apiService)
     {
-        return builder.AddProject<Visualiser>("visualiser")
+        return builder.AddProject<Visualiser>("Visualiser")
             .WithReference(apiService).WaitFor(apiService);
     }
 
