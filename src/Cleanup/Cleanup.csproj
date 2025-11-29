@@ -8,16 +8,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="CleanupServices\EndCleanup\**" />
-    <EmbeddedResource Remove="CleanupServices\EndCleanup\**" />
-    <None Remove="CleanupServices\EndCleanup\**" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="Microsoft.Extensions.Hosting" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\Libraries\EnvironmentSetup\EnvironmentSetup.csproj" />
     <ProjectReference Include="..\Libraries\Messaging\Messaging.csproj" />
   </ItemGroup>

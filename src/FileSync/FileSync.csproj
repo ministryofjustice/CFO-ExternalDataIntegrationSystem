@@ -8,12 +8,6 @@
   </PropertyGroup>
 
 	<ItemGroup>
-		<Content Include="appsettings.json">
-			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
-		</Content>
-	</ItemGroup>
-
-	<ItemGroup>
 		<ProjectReference Include="..\Libraries\EnvironmentSetup\EnvironmentSetup.csproj" />
 		<ProjectReference Include="..\Libraries\Messaging\Messaging.csproj" />
 	</ItemGroup>
@@ -24,5 +18,11 @@
 	  <PackageReference Include="AWSSDK.SecurityToken" />
 	  <PackageReference Include="CommunityToolkit.Aspire.Minio.Client" />
 	</ItemGroup>
+
+  <ItemGroup>
+    <None Update="appsettings.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
 
 </Project>
