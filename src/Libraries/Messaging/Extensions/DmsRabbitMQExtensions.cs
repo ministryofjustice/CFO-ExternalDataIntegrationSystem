@@ -19,9 +19,7 @@ public static class DmsRabbitMQExtensions
             return RabbitService.CreateAsync(new Uri(connectionString)).GetAwaiter().GetResult();
         });
 
-        // Register all messaging interfaces
         services.AddSingleton<IMessageService>(sp => sp.GetRequiredService<RabbitService>());
-        services.AddSingleton<IDbMessagingService>(sp => sp.GetRequiredService<RabbitService>());
 
         return services;
     }

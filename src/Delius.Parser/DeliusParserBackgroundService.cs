@@ -1,6 +1,4 @@
 ﻿using Delius.Parser.Services;
-using EnvironmentSetup;
-using FileStorage;
 using Messaging.Interfaces;
 using Messaging.Messages.DbMessages.Receiving;
 using Messaging.Messages.DbMessages.Sending;
@@ -13,7 +11,6 @@ namespace Delius.Parser;
 
 public class DeliusParserBackgroundService(
     IMessageService messageService,
-    IDbMessagingService dbService,
     IParsingStrategy parseService) : BackgroundService
 {
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -42,13 +39,13 @@ public class DeliusParserBackgroundService(
     private async Task BeginProcessing(string fileName, string fileId)
     {
         var request = new DeliusFileProcessingStarted(fileName, fileId);
-        await dbService.SendDbRequestAndWaitForResponseAsync<DeliusFileProcessingStarted, ResultDeliusFileProcessingStarted>(request);
+        await messageService.SendDbRequestAndWaitForResponseAsync<DeliusFileProcessingStarted, ResultDeliusFileProcessingStarted>(request);
         await parseService.ParseFileAsync(fileName);
     }
 
     private async Task<bool> HasAlreadyBeenProcessedAsync(string file)
     {
-        var res = await dbService.SendDbRequestAndWaitForResponseAsync<GetDeliusFilesMessage, DeliusFilesReturnMessage>(new GetDeliusFilesMessage());
+        var res = await messageService.SendDbRequestAndWaitForResponseAsync<GetDeliusFilesMessage, DeliusFilesReturnMessage>(new GetDeliusFilesMessage());
         return res.FileNames.Contains(file);
     }
 }

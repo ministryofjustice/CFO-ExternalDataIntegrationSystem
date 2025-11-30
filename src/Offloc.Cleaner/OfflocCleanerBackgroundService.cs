@@ -14,7 +14,6 @@ namespace Offloc.Cleaner;
 
 public class OfflocCleanerBackgroundService(
     IMessageService messageService,
-    IDbMessagingService dbService,
     ICleaningStrategy cleaningService) : BackgroundService
 {
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -37,13 +36,13 @@ public class OfflocCleanerBackgroundService(
         else
         {
             var request = new OfflocFileProcessingStarted(message.FileName, message.FileId, message.ArchiveFileName);
-            await dbService.SendDbRequestAndWaitForResponseAsync<OfflocFileProcessingStarted, ResultOfflocFileProcessingStarted>(request);
+            await messageService.SendDbRequestAndWaitForResponseAsync<OfflocFileProcessingStarted, ResultOfflocFileProcessingStarted>(request);
             await cleaningService.CleanFile(file);
         }
     }
     private async Task<bool> HasAlreadyBeenProcessedAsync(string file)
     {
-        var res = await dbService.SendDbRequestAndWaitForResponseAsync<GetOfflocFilesMessage, OfflocFilesReturnMessage>(new GetOfflocFilesMessage());
+        var res = await messageService.SendDbRequestAndWaitForResponseAsync<GetOfflocFilesMessage, OfflocFilesReturnMessage>(new GetOfflocFilesMessage());
         return res.OfflocFiles.Contains(file);
     }
 }

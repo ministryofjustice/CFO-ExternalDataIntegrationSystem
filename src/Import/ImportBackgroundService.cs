@@ -8,9 +8,7 @@ using Microsoft.Extensions.Hosting;
 
 namespace Import;
 
-public class ImportBackgroundService(
-    IMessageService messageService,
-    IDbMessagingService dbService) : BackgroundService
+public class ImportBackgroundService(IMessageService messageService) : BackgroundService
 {
     private static readonly SemaphoreSlim offlocSem = new(1, 1);
     private static readonly SemaphoreSlim deliusSem = new(1, 1);
@@ -44,9 +42,9 @@ public class ImportBackgroundService(
         }
         else
         {
-            await dbService.SendDbRequestAndWaitForResponseAsync<StageDeliusMessage, StageDeliusReturnMessage>(
+            await messageService.SendDbRequestAndWaitForResponseAsync<StageDeliusMessage, StageDeliusReturnMessage>(
                 new StageDeliusMessage(message.FileName, message.FilePath));
-            await dbService.SendDbRequestAndWaitForResponseAsync<MergeDeliusRunningPictureMessage, MergeDeliusReturnMessage>(
+            await messageService.SendDbRequestAndWaitForResponseAsync<MergeDeliusRunningPictureMessage, MergeDeliusReturnMessage>(
                 new MergeDeliusRunningPictureMessage(message.FileName));
         }
 
@@ -65,9 +63,9 @@ public class ImportBackgroundService(
         }
         else
         {
-            await dbService.SendDbRequestAndWaitForResponseAsync<StageOfflocMessage, StageOfflocReturnMessage>(
+            await messageService.SendDbRequestAndWaitForResponseAsync<StageOfflocMessage, StageOfflocReturnMessage>(
                 new StageOfflocMessage(message.FilePath));
-            await dbService.SendDbRequestAndWaitForResponseAsync<MergeOfflocRunningPictureMessage, MergeOfflocReturnMessage>(
+            await messageService.SendDbRequestAndWaitForResponseAsync<MergeOfflocRunningPictureMessage, MergeOfflocReturnMessage>(
                 new MergeOfflocRunningPictureMessage(Path.GetFileName(message.FilePath)));
         }
 

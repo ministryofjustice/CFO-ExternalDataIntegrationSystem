@@ -12,7 +12,6 @@ namespace DbInteractions;
 //This class links the messaging service and dbInteractionService- the dbinteraction service does all of the work. 
 public class DbBackgroundService(
     IDbInteractionService dbInteractionService,
-    IDbMessagingService dbMessagingService,
     IMessageService messageService) : BackgroundService
 {
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -21,19 +20,19 @@ public class DbBackgroundService(
         {
             string[] results = await dbInteractionService.GetProcessedDeliusFileNames();
             DeliusFilesReturnMessage msg = new DeliusFilesReturnMessage(results);
-            await dbMessagingService.DbPublishResponseAsync(msg);
+            await messageService.DbPublishResponseAsync(msg);
         }, TDbQueue.GetProcessedDeliusFiles);
 
         await messageService.SubscribeAsync<GetOfflocFilesMessage>(async (message) =>
         {
             string[] results = await dbInteractionService.GetProcessedOfflocFileNames();
-            await dbMessagingService.DbPublishResponseAsync(new OfflocFilesReturnMessage(results));
+            await messageService.DbPublishResponseAsync(new OfflocFilesReturnMessage(results));
         }, TDbQueue.GetProcessedOfflocFiles);
 
         await messageService.SubscribeAsync<StageDeliusMessage>(async (message) =>
         {
             await dbInteractionService.StageDelius(message.FileName, message.FilePath);
-            await dbMessagingService.DbPublishResponseAsync(new StageDeliusReturnMessage());
+            await messageService.DbPublishResponseAsync(new StageDeliusReturnMessage());
             await messageService.PublishAsync(new DeliusFilesCleanupMessage(message.FileName));
         }, TDbQueue.StageDelius);
 
@@ -41,19 +40,19 @@ public class DbBackgroundService(
         {
             await dbInteractionService.MergeDeliusPicture(message.FileName);
             await dbInteractionService.ClearDeliusStaging();
-            await dbMessagingService.DbPublishResponseAsync(new MergeDeliusReturnMessage());
+            await messageService.DbPublishResponseAsync(new MergeDeliusReturnMessage());
         }, TDbQueue.MergeDelius);
 
         await messageService.SubscribeAsync<ClearDeliusStaging>(async (message) =>
         {
             await dbInteractionService.ClearDeliusStaging();
-            await dbMessagingService.DbPublishResponseAsync(new ResultClearDeliusStaging());
+            await messageService.DbPublishResponseAsync(new ResultClearDeliusStaging());
         }, TDbQueue.ClearDeliusStaging);
 
         await messageService.SubscribeAsync<StageOfflocMessage>(async (message) =>
         {
             await dbInteractionService.StageOffloc(message.FileName);
-            await dbMessagingService.DbPublishResponseAsync(new StageOfflocReturnMessage());
+            await messageService.DbPublishResponseAsync(new StageOfflocReturnMessage());
             await messageService.PublishAsync(new OfflocFilesCleanupMessage(message.FileName));
         }, TDbQueue.StageOffloc);
 
@@ -61,61 +60,61 @@ public class DbBackgroundService(
         {
             await dbInteractionService.MergeOfflocPicture(message.FileName);
             await dbInteractionService.ClearOfflocStaging();
-            await dbMessagingService.DbPublishResponseAsync(new MergeOfflocReturnMessage());
+            await messageService.DbPublishResponseAsync(new MergeOfflocReturnMessage());
         }, TDbQueue.MergeOffloc);
 
         await messageService.SubscribeAsync<ClearOfflocStaging>(async (message) =>
         {
             await dbInteractionService.ClearOfflocStaging();
-            await dbMessagingService.DbPublishResponseAsync(new ResultClearOfflocStaging());
+            await messageService.DbPublishResponseAsync(new ResultClearOfflocStaging());
         }, TDbQueue.ClearOfflocStaging);
 
         await messageService.SubscribeAsync<DeliusGetLastFullMessage>(async (message) =>
         {
             int res = await dbInteractionService.DeliusGetFileIdLastFull();
-            await dbMessagingService.DbPublishResponseAsync(new ResultDeliusGetLastFullMessage(res));
+            await messageService.DbPublishResponseAsync(new ResultDeliusGetLastFullMessage(res));
         }, TDbQueue.DeliusGetLastFullId);
 
         await messageService.SubscribeAsync<OfflocFileProcessingStarted>(async (message) =>
         {
             await dbInteractionService.CreateOfflocProcessedFileEntry(message.FileName, message.FileId, message.ArchiveName);
-            await dbMessagingService.DbPublishResponseAsync(new ResultOfflocFileProcessingStarted());
+            await messageService.DbPublishResponseAsync(new ResultOfflocFileProcessingStarted());
         }, TDbQueue.OfflocFileProcessingStarted);
 
         await messageService.SubscribeAsync<DeliusFileProcessingStarted>(async (message) =>
         {
             await dbInteractionService.CreateDeliusProcessedFileEntry(message.FileName, message.FileId);
-            await dbMessagingService.DbPublishResponseAsync(new ResultDeliusFileProcessingStarted());
+            await messageService.DbPublishResponseAsync(new ResultDeliusFileProcessingStarted());
         }, TDbQueue.DeliusFileProcessingStarted);
 
         await messageService.SubscribeAsync<AssociateOfflocFileWithArchiveMessage>(async (message) =>
         {
             await dbInteractionService.AssociateOfflocFileWithArchive(message.FileName, message.ArchiveName);
-            await dbMessagingService.DbPublishResponseAsync(new ResultAssociateOfflocFileWithArchiveMessage());
+            await messageService.DbPublishResponseAsync(new ResultAssociateOfflocFileWithArchiveMessage());
         }, TDbQueue.AssociateOfflocFileWithArchive);
 
         await messageService.SubscribeAsync<IsDeliusReadyForProcessingMessage>(async (message) =>
         {
             bool result = await dbInteractionService.IsDeliusReadyForProcessing();
-            await dbMessagingService.DbPublishResponseAsync(new IsDeliusReadyForProcessingReturnMessage(result));
+            await messageService.DbPublishResponseAsync(new IsDeliusReadyForProcessingReturnMessage(result));
         }, TDbQueue.IsDeliusReadyForProcessing);
         
         await messageService.SubscribeAsync<IsOfflocReadyForProcessingMessage>(async (message) =>
         {
             bool result = await dbInteractionService.IsOfflocReadyForProcessing();
-            await dbMessagingService.DbPublishResponseAsync(new IsOfflocReadyForProcessingReturnMessage(result));
+            await messageService.DbPublishResponseAsync(new IsOfflocReadyForProcessingReturnMessage(result));
         }, TDbQueue.IsOfflocReadyForProcessing);
 
         await messageService.SubscribeAsync<GetLastProcessedOfflocFile>(async (message) =>
         {
             string? result = await dbInteractionService.GetLastProcessedOfflocFileName();
-            await dbMessagingService.DbPublishResponseAsync(new ResultGetLastProcessedOfflocFileMessage(result));
+            await messageService.DbPublishResponseAsync(new ResultGetLastProcessedOfflocFileMessage(result));
         }, TDbQueue.GetLastProcessedOfflocFile);
 
         await messageService.SubscribeAsync<GetLastProcessedDeliusFile>(async (message) =>
         {
             string? result = await dbInteractionService.GetLastProcessedDeliusFileName();
-            await dbMessagingService.DbPublishResponseAsync(new ResultGetLastProcessedDeliusFileMessage(result));
+            await messageService.DbPublishResponseAsync(new ResultGetLastProcessedDeliusFileMessage(result));
         }, TDbQueue.GetLastProcessedDeliusFile);
         
     }
