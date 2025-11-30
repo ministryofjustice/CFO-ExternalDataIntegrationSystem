@@ -9,7 +9,7 @@ public class SequentialParsingStrategy : ParsingStrategyBase, IParsingStrategy
 {
     private static SemaphoreSlim sem = new SemaphoreSlim(1, 1);
 
-    public SequentialParsingStrategy(IStagingMessagingService stagingService, 
+    public SequentialParsingStrategy(IMessageService stagingService, 
         IStatusMessagingService statusService, IFileLocations fileLocations, 
         FieldTrimmerContext trimmerContext)
         : base(stagingService, statusService, fileLocations, trimmerContext) { }
@@ -25,7 +25,7 @@ public class SequentialParsingStrategy : ParsingStrategyBase, IParsingStrategy
             await sem.WaitAsync();
 
             await ParseFile(fileLocations.offlocInput + '/' + files[0]);
-            await stagingService.StagingPublishAsync(new OfflocParserFinishedMessage(files[0].Split('/').Last(), false));
+            await stagingService.PublishAsync(new OfflocParserFinishedMessage(files[0].Split('/').Last(), false));
             
             sem.Release();
         }

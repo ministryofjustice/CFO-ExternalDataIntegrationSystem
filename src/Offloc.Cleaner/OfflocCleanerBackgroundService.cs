@@ -13,31 +13,31 @@ using Offloc.Cleaner.Services;
 namespace Offloc.Cleaner;
 
 public class OfflocCleanerBackgroundService(
-    IStagingMessagingService stagingService,
+    IMessageService stagingService,
     IDbMessagingService dbService,
     ICleaningStrategy cleaningService,
     IStatusMessagingService statusService) : BackgroundService
 {
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        await Task.Run(() =>
+        await stagingService.SubscribeAsync<OfflocDownloadFinished>(async (message) => 
         {
-            stagingService.StagingSubscribeAsync<OfflocDownloadFinished>(async (message) => await ParseFileAsync(message), TStagingQueue.OfflocCleaner);
-        }, stoppingToken);
+            await ParseFileAsync(message);
+        }, TStagingQueue.OfflocCleaner);
     }
 
     private async Task ParseFileAsync(OfflocDownloadFinished message)
     {
-        string file = message.fileName;
+        string file = message.FileName;
 
         if (await HasAlreadyBeenProcessedAsync(file))
         {
             await statusService.StatusPublishAsync(new StatusUpdateMessage($"File {file} has already been processed"));
-            await stagingService.StagingPublishAsync(new OfflocParserFinishedMessage("File already processed", true));
+            await stagingService.PublishAsync(new OfflocParserFinishedMessage("File already processed", emptyFile: true));
         }
         else
         {
-            var request = new OfflocFileProcessingStarted(message.fileName, message.FileId, message.ArchiveFileName);
+            var request = new OfflocFileProcessingStarted(message.FileName, message.FileId, message.ArchiveFileName);
             await dbService.SendDbRequestAndWaitForResponseAsync<OfflocFileProcessingStarted, ResultOfflocFileProcessingStarted>(request);
             await cleaningService.CleanFile(file);
         }
@@ -45,6 +45,6 @@ public class OfflocCleanerBackgroundService(
     private async Task<bool> HasAlreadyBeenProcessedAsync(string file)
     {
         var res = await dbService.SendDbRequestAndWaitForResponseAsync<GetOfflocFilesMessage, OfflocFilesReturnMessage>(new GetOfflocFilesMessage());
-        return res.offlocFiles.Contains(file);
+        return res.OfflocFiles.Contains(file);
     }
 }

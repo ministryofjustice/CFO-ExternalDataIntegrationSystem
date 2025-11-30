@@ -12,8 +12,8 @@ public class ComparatorService(
     ILogger<ComparatorService> logger,
     IOptions<List<MatchingOption>> options,
     IStatusMessagingService statusMessagingService,
-    IBlockingMessagingService blockingMessagingService,
-    IMatchingMessagingService matchingMessagingService,
+    IMessageService blockingMessagingService,
+    IMessageService matchingMessagingService,
     IMatchingRepository matchingRepository,
     IClusteringRepository clusteringRepository,
     MatcherCache cache,
@@ -25,42 +25,39 @@ public class ComparatorService(
     {
         try
         {
-            await Task.Run(async () =>
+            matchingOptions = options.Value.ToDictionary(o => o.MatchingKey);
+
+            await blockingMessagingService.SubscribeAsync<BlockingFinishedMessage>(async (message) =>
             {
-                matchingOptions = options.Value.ToDictionary(o => o.MatchingKey);
+                var items = await matchingRepository.GetAllAsync();
 
-                await blockingMessagingService.BlockingSubscribeAsync<BlockingFinishedMessage>(async (message) =>
-                {
-                    var items = await matchingRepository.GetAllAsync();
+                var records = items
+                    .Cast<IDictionary<string, object>>()
+                    .ToImmutableArray();
 
-                    var records = items
-                        .Cast<IDictionary<string, object>>()
-                        .ToImmutableArray();
+                await ProcessAsync(records, stoppingToken);
 
-                    await ProcessAsync(records, stoppingToken);
+                records.Clear();
 
-                    records.Clear();
+                await matchingMessagingService.PublishAsync(new MatchingScoreCandidatesMessage());
 
-                    await matchingMessagingService.MatchingPublishAsync(new MatchingScoreCandidatesMessage());
+            }, TBlockingQueue.BlockingFinished);
 
-                }, TBlockingQueue.BlockingFinished);
+            await matchingMessagingService.SubscribeAsync<ClusteringPreProcessingStartedMessage>(async (message) =>
+            {
+                var items = await clusteringRepository.GetAllAsync();
 
-                await matchingMessagingService.MatchingSubscribeAsync<ClusteringPreProcessingStartedMessage>(async (message) =>
-                {
-                    var items = await clusteringRepository.GetAllAsync();
+                var records = items
+                    .Cast<IDictionary<string, object>>()
+                    .ToImmutableArray();
 
-                    var records = items
-                        .Cast<IDictionary<string, object>>()
-                        .ToImmutableArray();
+                await ProcessAsync(records, stoppingToken);
 
-                    await ProcessAsync(records, stoppingToken);
+                records.Clear();
 
-                    records.Clear();
+                await matchingMessagingService.PublishAsync(new MatchingScoreOutstandingEdgesMessage());
 
-                    await matchingMessagingService.MatchingPublishAsync(new MatchingScoreOutstandingEdgesMessage());
-
-                }, TMatchingQueue.ClusteringPreProcessingStarted);
-            }, stoppingToken);
+            }, TMatchingQueue.ClusteringPreProcessingStarted);
         }
         catch(Exception ex)
         {

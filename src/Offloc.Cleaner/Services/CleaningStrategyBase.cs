@@ -8,13 +8,13 @@ namespace Offloc.Cleaner.Services;
 
 public abstract class CleaningStrategyBase
 {
-    protected IStagingMessagingService stagingService;
+    protected IMessageService stagingService;
     protected IStatusMessagingService statusService;
     protected IFileLocations fileLocations;
 
     protected int[] redundantFieldIndexes;
     
-    public CleaningStrategyBase(IStagingMessagingService stagingService, IStatusMessagingService statusService, 
+    public CleaningStrategyBase(IMessageService stagingService, IStatusMessagingService statusService, 
         IFileLocations fileLocations, int[] redundantFieldIndexes)
     {
         this.stagingService = stagingService;

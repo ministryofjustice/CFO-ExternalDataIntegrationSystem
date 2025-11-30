@@ -16,7 +16,7 @@ public class OfflocCleanerFinishedMessage : StagingMessage
     [JsonConstructor]
     public OfflocCleanerFinishedMessage()
     {
-        routingKey = TStagingQueue.OfflocParser;
+        Queue = TStagingQueue.OfflocParser;
     }
     //For parallel processing.
     public OfflocCleanerFinishedMessage(string[] filesToParse, int[] redundantFields)
@@ -29,6 +29,6 @@ public class OfflocCleanerFinishedMessage : StagingMessage
     public OfflocCleanerFinishedMessage(string fileToParse, int[] redundantFields, string fileName)
         : this(new string[] { fileToParse }, redundantFields)
     {
-        this.fileName = fileName;
+        FileName = fileName;
     }
 }

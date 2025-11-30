@@ -9,13 +9,13 @@ namespace Offloc.Parser.Services;
 
 public class ParsingStrategyBase
 {
-    protected IStagingMessagingService stagingService;
+    protected IMessageService stagingService;
     protected IStatusMessagingService statusService;
     protected IFileLocations fileLocations;
 
     private FieldTrimmerContext trimmerContext;
 
-    public ParsingStrategyBase(IStagingMessagingService stagingService, IStatusMessagingService statusService,
+    public ParsingStrategyBase(IMessageService stagingService, IStatusMessagingService statusService,
         IFileLocations fileLocations, FieldTrimmerContext trimmerContext)
     {
         this.stagingService = stagingService;

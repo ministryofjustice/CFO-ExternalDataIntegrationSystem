@@ -7,7 +7,7 @@ namespace Messaging.Messages.DbMessages;
 
 public class OfflocFileIdReturnMessage : DbResponseMessage
 {
-    public DateOnly[] fileDates = Array.Empty<DateOnly>();
+    public DateOnly[] FileDates { get; set; } = Array.Empty<DateOnly>();
 
     public override StatusUpdateMessage StatusMessage =>
         new StatusUpdateMessage("Processed Offloc files returned.");
@@ -20,6 +20,6 @@ public class OfflocFileIdReturnMessage : DbResponseMessage
 
     public OfflocFileIdReturnMessage(DateOnly[] fileIds) : this()
     {
-        this.fileDates = fileIds; 
+        FileDates = fileIds; 
     }
 }

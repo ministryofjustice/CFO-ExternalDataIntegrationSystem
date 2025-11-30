@@ -12,27 +12,27 @@ using Microsoft.Extensions.Hosting;
 namespace Delius.Parser;
 
 public class DeliusParserBackgroundService(
-    IStagingMessagingService messageService,
+    IMessageService messageService,
     IDbMessagingService dbService,
     IStatusMessagingService statusService,
     IParsingStrategy parseService) : BackgroundService
 {
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        await Task.Run(() => 
-        {
-            messageService.StagingSubscribeAsync<DeliusDownloadFinishedMessage>(async (message) => await ParseFileAsync(message), TStagingQueue.DeliusParser);
-        }, stoppingToken);
+        await messageService.SubscribeAsync<DeliusDownloadFinishedMessage>(async (message) => 
+        { 
+            await ParseFileAsync(message); 
+        }, TStagingQueue.DeliusParser);
     }
 
     private async Task ParseFileAsync(DeliusDownloadFinishedMessage message)
     {
-        var file = message.fileName;
+        var file = message.FileName;
 
         if (await HasAlreadyBeenProcessedAsync(file))
         {
             await statusService.StatusPublishAsync(new StatusUpdateMessage($"File {file} has already been processed"));
-            await messageService.StagingPublishAsync(new DeliusParserFinishedMessage("File already processed", "No Path", true));
+            await messageService.PublishAsync(new DeliusParserFinishedMessage("File already processed", "No Path", emptyFile: true));
         }
         else
         {
@@ -50,6 +50,6 @@ public class DeliusParserBackgroundService(
     private async Task<bool> HasAlreadyBeenProcessedAsync(string file)
     {
         var res = await dbService.SendDbRequestAndWaitForResponseAsync<GetDeliusFilesMessage, DeliusFilesReturnMessage>(new GetDeliusFilesMessage());
-        return res.fileNames.Contains(file);
+        return res.FileNames.Contains(file);
     }
 }

@@ -6,7 +6,7 @@ namespace Messaging.Messages.DbMessages.Sending;
 
 public class StageOfflocMessage : DbRequestMessage
 {
-    public string fileName = string.Empty;
+    public string FileName { get; set; } = string.Empty;
 
     public override StatusUpdateMessage StatusMessage =>
         new StatusUpdateMessage();
@@ -20,6 +20,6 @@ public class StageOfflocMessage : DbRequestMessage
 
     public StageOfflocMessage(string fileName) : this()
     {
-        this.fileName = fileName;
+        FileName = fileName;
     }
 }

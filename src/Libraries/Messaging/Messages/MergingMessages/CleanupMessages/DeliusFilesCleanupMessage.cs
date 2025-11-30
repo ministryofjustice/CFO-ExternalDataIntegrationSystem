@@ -8,16 +8,16 @@ namespace Messaging.Messages.MergingMessages.CleanupMessages;
 public class DeliusFilesCleanupMessage : MergingMessage
 {
     public override StatusUpdateMessage StatusMessage =>
-        new StatusUpdateMessage($"File cleanup started for delius file {fileName}");
+        new StatusUpdateMessage($"File cleanup started for delius file {FileName}");
 
     [JsonConstructor]
     public DeliusFilesCleanupMessage()
     {
-        routingKey = TMergingQueue.DeliusFilesCleanupQueue;
+        Queue = TMergingQueue.DeliusFilesCleanupQueue;
     }
 
     public DeliusFilesCleanupMessage(string fileName) : this()
     {
-        this.fileName = fileName;
+        FileName = fileName;
     }
 }

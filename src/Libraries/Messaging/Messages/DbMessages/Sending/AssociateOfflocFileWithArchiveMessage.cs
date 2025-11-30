@@ -8,15 +8,19 @@ public class AssociateOfflocFileWithArchiveMessage : DbRequestMessage
 {
     public override StatusUpdateMessage StatusMessage => new();
 
-    public string fileName { get; set; }
-    public string archiveName { get; set; }
+    public string FileName { get; set; } = string.Empty;
+    public string ArchiveName { get; set; } = string.Empty;
 
     [JsonConstructor]
-    public AssociateOfflocFileWithArchiveMessage(string fileName, string archiveName)
+    public AssociateOfflocFileWithArchiveMessage()
     {
         Queue = TDbQueue.AssociateOfflocFileWithArchive;
         ReplyQueue = TDbQueue.ResultAssociateOfflocFileWithArchive;
-        this.fileName = fileName;
-        this.archiveName = archiveName;
+    }
+
+    public AssociateOfflocFileWithArchiveMessage(string fileName, string archiveName) : this()
+    {
+        FileName = fileName;
+        ArchiveName = archiveName;
     }
 }

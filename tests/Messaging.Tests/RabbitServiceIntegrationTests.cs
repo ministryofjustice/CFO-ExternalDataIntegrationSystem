@@ -1,3 +1,4 @@
+using Messaging.Messages.StatusMessages;
 using Messaging.Queues;
 using Messaging.Services;
 using Messaging.Tests.TestMessages;
@@ -15,37 +16,106 @@ public class RabbitServiceIntegrationTests(RabbitContainerFixture fixture) : IAs
     }
 
     [Fact]
-    public async Task StatusPublishAndSubscribe_SerializesAndDeserializesMessage_Correctly()
+    public async Task PublishAndSubscribe_SerializesAndDeserializesMessage_Correctly()
     {
         // Arrange
-        var completionSource = new TaskCompletionSource<TestStatusMessage>();
-        var expectedMessage = "Status update message";
-        var expectedCustomProperty = "Custom Value";
-        var expectedTimestamp = DateTime.UtcNow;
+        var completionSource = new TaskCompletionSource<TestMessage>();
 
-        // Act
-        await _rabbitService!.StatusSubscribeAsync<TestStatusMessage>(
+        await _rabbitService!.SubscribeAsync<TestMessage>(
             completionSource.SetResult,
-            TStatusQueue.StatusUpdate
+            TMatchingQueue.ClusteringPostProcessingFinished
         );
 
-        var publishedMessage = new TestStatusMessage()
+        var publishedMessage = new TestMessage(TMatchingQueue.ClusteringPostProcessingFinished.ToString(), Exchanges.matching)
         {
-            Message = expectedMessage,
-            CustomProperty = expectedCustomProperty,
-            Timestamp = expectedTimestamp
+            CustomProperty = "Test Value"
         };
 
-        await _rabbitService.StatusPublishAsync(publishedMessage);
+        // Act
+        await _rabbitService.PublishAsync(publishedMessage);
 
         var receivedMessage = await completionSource.Task.WaitAsync(TimeSpan.FromSeconds(5));
 
         // Assert
         Assert.NotNull(receivedMessage);
-        Assert.Equal(publishedMessage.Message, receivedMessage.Message);
         Assert.Equal(publishedMessage.CustomProperty, receivedMessage.CustomProperty);
-        Assert.Equal(publishedMessage.Timestamp, receivedMessage.Timestamp);
         Assert.Equal(publishedMessage.RoutingKey, receivedMessage.RoutingKey);
+    }
+
+    [Fact]
+    public async Task PublishAsync_WithStatusMessageSet_PublishesStatusMessage()
+    {
+        // Arrange
+        var messageCompletionSource = new TaskCompletionSource<TestMessage>();
+        var statusCompletionSource = new TaskCompletionSource<StatusUpdateMessage>();
+
+        await _rabbitService!.SubscribeAsync<TestMessage>(
+            messageCompletionSource.SetResult,
+            TStagingQueue.DeliusCleanup
+        );
+
+        await _rabbitService.StatusSubscribeAsync<StatusUpdateMessage>(
+            statusCompletionSource.SetResult,
+            TStatusQueue.StatusUpdate
+        );
+
+        var publishedMessage = new TestMessage(TStagingQueue.DeliusCleanup.ToString(), Exchanges.staging)
+        {
+            CustomProperty = "Test Value",
+            Status = "Test completed successfully"
+        };
+
+        // Act
+        await _rabbitService.PublishAsync(publishedMessage);
+
+        var receivedMessage = await messageCompletionSource.Task.WaitAsync(TimeSpan.FromSeconds(5));
+        var receivedStatus = await statusCompletionSource.Task.WaitAsync(TimeSpan.FromSeconds(5));
+
+        // Assert
+        Assert.NotNull(receivedMessage);
+        Assert.Equal("Test Value", receivedMessage.CustomProperty);
+        
+        Assert.NotNull(receivedStatus);
+        Assert.Equal("Test completed successfully", receivedStatus.Message);
+    }
+
+    [Fact]
+    public async Task PublishAsync_WithoutStatusMessageSet_DoesNotPublishStatusMessage()
+    {
+        // Arrange
+        var messageCompletionSource = new TaskCompletionSource<TestMessage>();
+        var statusCompletionSource = new TaskCompletionSource<StatusUpdateMessage>();
+
+        await _rabbitService!.SubscribeAsync<TestMessage>(
+            messageCompletionSource.SetResult,
+            TImportQueue.ImportFinished
+        );
+
+        await _rabbitService.StatusSubscribeAsync<StatusUpdateMessage>(
+            statusCompletionSource.SetResult,
+            TStatusQueue.StatusUpdate
+        );
+
+        var publishedMessage = new TestMessage(TImportQueue.ImportFinished.ToString(), Exchanges.import)
+        {
+            CustomProperty = "Test Value"
+            // Status is not set (null or empty string)
+        };
+
+        // Act
+        await _rabbitService.PublishAsync(publishedMessage);
+
+        var receivedMessage = await messageCompletionSource.Task.WaitAsync(TimeSpan.FromSeconds(5));
+
+        // Assert - message should be received
+        Assert.NotNull(receivedMessage);
+        Assert.Equal("Test Value", receivedMessage.CustomProperty);
+
+        // Assert - status message should NOT be received (timeout should occur)
+        await Assert.ThrowsAsync<TimeoutException>(async () =>
+        {
+            await statusCompletionSource.Task.WaitAsync(TimeSpan.FromSeconds(2));
+        });
     }
 
     public Task DisposeAsync() => Task.CompletedTask;

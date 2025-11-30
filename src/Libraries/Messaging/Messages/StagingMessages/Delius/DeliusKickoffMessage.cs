@@ -10,6 +10,6 @@ public class DeliusKickoffMessage : StagingMessage
 
     public DeliusKickoffMessage()
     {
-        routingKey = TStagingQueue.DeliusFileDownload;
+        Queue = TStagingQueue.DeliusFileDownload;
     }
 }

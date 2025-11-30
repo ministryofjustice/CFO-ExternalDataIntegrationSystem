@@ -7,8 +7,8 @@ namespace Messaging.Messages.DbMessages.Sending;
 
 public class StageDeliusMessage : DbRequestMessage
 {
-    public string fileName = string.Empty;
-    public string filePath = string.Empty;
+    public string FileName { get; set; } = string.Empty;
+    public string FilePath { get; set; } = string.Empty;
 
     public override StatusUpdateMessage StatusMessage =>
         new StatusUpdateMessage("Delius Staging started.");
@@ -22,7 +22,7 @@ public class StageDeliusMessage : DbRequestMessage
     
     public StageDeliusMessage(string fileName, string filePath) : this()
     {
-        this.fileName = fileName;
-        this.filePath = filePath;
+        FileName = fileName;
+        FilePath = filePath;
     }
 }

@@ -13,6 +13,6 @@ public class BlockingFinishedMessage : BlockingMessage
     [JsonConstructor]
     public BlockingFinishedMessage()
     {
-        routingKey = TBlockingQueue.BlockingFinished;
+        Queue = TBlockingQueue.BlockingFinished;
     }
 }

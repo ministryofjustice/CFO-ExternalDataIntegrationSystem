@@ -8,9 +8,9 @@ public class OfflocFileProcessingStarted : DbRequestMessage
 {
     public override StatusUpdateMessage StatusMessage => new();
 
-    public string fileName = string.Empty;
-    public int fileId;
-    public string? archiveName;
+    public string FileName { get; set; } = string.Empty;
+    public int FileId { get; set; }
+    public string? ArchiveName { get; set; }
 
     [JsonConstructor]
     public OfflocFileProcessingStarted()
@@ -21,8 +21,8 @@ public class OfflocFileProcessingStarted : DbRequestMessage
 
     public OfflocFileProcessingStarted(string fileName, int fileId, string? archiveName = null) : this()
     {
-        this.fileName = fileName;
-        this.fileId = fileId;
-        this.archiveName = archiveName;
+        FileName = fileName;
+        FileId = fileId;
+        ArchiveName = archiveName;
     }
 }

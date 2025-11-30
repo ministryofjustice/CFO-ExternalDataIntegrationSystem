@@ -3,76 +3,54 @@ using Messaging.Messages.DbMessages.Receiving;
 using Messaging.Messages.DbMessages.Sending;
 using Messaging.Messages.ImportMessages;
 using Messaging.Messages.StagingMessages;
-using Messaging.Messages.StatusMessages;
 using Messaging.Queues;
 using Microsoft.Extensions.Hosting;
 
 namespace Import;
 
-public class ImportBackgroundService : BackgroundService
+public class ImportBackgroundService(
+    IMessageService messageService,
+    IDbMessagingService dbService) : BackgroundService
 {
-    private readonly IStagingMessagingService messageService;
-    private readonly IStatusMessagingService statusService;
-    private readonly IDbMessagingService dbService;
-    private readonly IImportMessagingService importMessagingService;
-
-    //Uses semaphore like a lock/monitor. This is because locks/monitors
-    //don't work in an asynchronous context.
-    private static SemaphoreSlim offlocSem = new SemaphoreSlim(1, 1);
-    private static SemaphoreSlim deliusSem = new SemaphoreSlim(1, 1);
+    private static readonly SemaphoreSlim offlocSem = new(1, 1);
+    private static readonly SemaphoreSlim deliusSem = new(1, 1);
 
     private bool deliusParserCompleted;
     private bool offlocParserCompleted;
-
     private bool deliusFileEmpty;
     private bool offlocFileEmpty;
 
-    private bool[] parserStates => [deliusParserCompleted, offlocParserCompleted];
-    private bool[] filesEmpty => [deliusFileEmpty, offlocFileEmpty];
-
-    public ImportBackgroundService(IStagingMessagingService messageService, IStatusMessagingService statusService, IDbMessagingService dbService, IImportMessagingService importMessagingService)
-    {
-        this.dbService = dbService;
-        this.messageService = messageService;
-        this.statusService = statusService;
-        this.importMessagingService=importMessagingService;
-}
+    private bool[] ParserStates => [deliusParserCompleted, offlocParserCompleted];
+    private bool[] FilesEmpty => [deliusFileEmpty, offlocFileEmpty];
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        await Task.Run(() =>
-        {
-            messageService.StagingSubscribeAsync<OfflocParserFinishedMessage>(async (message) =>
-            {
-                await OnOfflocMessageReceived(message);
-            }, TStagingQueue.OfflocImport);
+        await messageService.SubscribeAsync<OfflocParserFinishedMessage>(
+            async message => await OnOfflocMessageReceived(message), 
+            TStagingQueue.OfflocImport);
 
-            messageService.StagingSubscribeAsync<DeliusParserFinishedMessage>(async (message) =>
-            {
-                await OnDeliusMessageReceived(message);
-            }, TStagingQueue.DeliusImport);
-
-        }, stoppingToken);
+        await messageService.SubscribeAsync<DeliusParserFinishedMessage>(
+            async message => await OnDeliusMessageReceived(message), 
+            TStagingQueue.DeliusImport);
     }
 
     private async Task OnDeliusMessageReceived(DeliusParserFinishedMessage message)
     {
         await deliusSem.WaitAsync();
 
-        if (message.emptyFile)
+        if (message.EmptyFile)
         {
             deliusFileEmpty = true;
-            await statusService.StatusPublishAsync(new StatusUpdateMessage($"No Delius File to import (staging or merging)"));
         }
         else
         {
-            await statusService.StatusPublishAsync(new StatusUpdateMessage($"Importing Delius File....."));
-            var res = await dbService.SendDbRequestAndWaitForResponseAsync<StageDeliusMessage, StageDeliusReturnMessage>(new StageDeliusMessage(message.fileName, message.filePath));
-            var msg = await dbService.SendDbRequestAndWaitForResponseAsync<MergeDeliusRunningPictureMessage, MergeDeliusReturnMessage>(new MergeDeliusRunningPictureMessage(message.fileName));
+            await dbService.SendDbRequestAndWaitForResponseAsync<StageDeliusMessage, StageDeliusReturnMessage>(
+                new StageDeliusMessage(message.FileName, message.FilePath));
+            await dbService.SendDbRequestAndWaitForResponseAsync<MergeDeliusRunningPictureMessage, MergeDeliusReturnMessage>(
+                new MergeDeliusRunningPictureMessage(message.FileName));
         }
 
         deliusSem.Release();
-
         deliusParserCompleted = true;
         await CheckStates();
     }
@@ -81,43 +59,33 @@ public class ImportBackgroundService : BackgroundService
     {
         await offlocSem.WaitAsync();
            
-        if (message.emptyFile)
+        if (message.EmptyFile)
         {
             offlocFileEmpty = true;
-            await statusService.StatusPublishAsync(new StatusUpdateMessage($"No Offloc File to import (staging or merging)"));
         }
         else
         {
-            await statusService.StatusPublishAsync(new StatusUpdateMessage($"Importing Offloc File....."));
-            var res = await dbService.SendDbRequestAndWaitForResponseAsync<StageOfflocMessage, StageOfflocReturnMessage>(new StageOfflocMessage(message.filePath));
-            var msg = await dbService.SendDbRequestAndWaitForResponseAsync<MergeOfflocRunningPictureMessage, MergeOfflocReturnMessage>(new MergeOfflocRunningPictureMessage(Path.GetFileName(message.filePath)));
+            await dbService.SendDbRequestAndWaitForResponseAsync<StageOfflocMessage, StageOfflocReturnMessage>(
+                new StageOfflocMessage(message.FilePath));
+            await dbService.SendDbRequestAndWaitForResponseAsync<MergeOfflocRunningPictureMessage, MergeOfflocReturnMessage>(
+                new MergeOfflocRunningPictureMessage(Path.GetFileName(message.FilePath)));
         }
+
         offlocSem.Release();
         offlocParserCompleted = true;
-
         await CheckStates();
     }
 
-    //Purely for status updates.
     private async Task CheckStates()
     {
-        await Task.CompletedTask;
-
-        if (parserStates.All(b => b == true))
+        if (ParserStates.All(b => b))
         {            
             deliusParserCompleted = false;
             offlocParserCompleted = false;
 
-            if (filesEmpty.All(b => b == true))
+            if (!FilesEmpty.All(b => b))
             {
-                await statusService.StatusPublishAsync(new StatusUpdateMessage($"no Files imported"));
-            }
-            else
-            {
-                //Clear staging Db after 10 minutes for testing purposes.
-                //await Task.Delay(new TimeSpan(0, 10, 0));
-                await statusService.StatusPublishAsync(new StatusUpdateMessage($"Files imported"));
-                await importMessagingService.ImportPublishAsync(new ImportFinishedMessage());                     
+                await messageService.PublishAsync(new ImportFinishedMessage());                     
             }
         }
     }

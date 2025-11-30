@@ -4,9 +4,9 @@ namespace Messaging.Messages.StagingMessages;
 
 public abstract class StagingMessage : Message
 {
-    public TStagingQueue routingKey { get; set; }
-    public string fileName = string.Empty; //To handle processing of multiple files.
+    public TStagingQueue Queue { get; set; }
+    public string FileName { get; set; } = string.Empty;
     
     public override string Exchange => Exchanges.staging;
-    public override string RoutingKey => routingKey.ToString();
+    public override string RoutingKey => Queue.ToString();
 }

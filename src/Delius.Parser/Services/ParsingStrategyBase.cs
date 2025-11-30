@@ -11,10 +11,10 @@ public abstract class ParsingStrategyBase
     protected readonly IFileLocations fileLocations;
     protected readonly IFileProcessor fileProcessor;
     protected readonly IStatusMessagingService statusService;
-    protected readonly IStagingMessagingService stagingService;
+    protected readonly IMessageService stagingService;
 
     public ParsingStrategyBase(IFileProcessor fp, IStatusMessagingService statusService,
-        IStagingMessagingService stagingService, IFileLocations fileLocations)
+        IMessageService stagingService, IFileLocations fileLocations)
     {
         this.statusService = statusService;
         this.stagingService = stagingService;
@@ -28,6 +28,6 @@ public abstract class ParsingStrategyBase
 
         await fileProcessor.Process(fileLocations.deliusInput + '/' + file, $"{fileLocations.deliusOutput}/{file.Split('.').First()}");
 
-        await stagingService.StagingPublishAsync(new DeliusParserFinishedMessage(file, fileLocations.deliusInput + '/' + file.Split('.').First(), false));
+        await stagingService.PublishAsync(new DeliusParserFinishedMessage(file, fileLocations.deliusInput + '/' + file.Split('.').First(), false));
     }
 }

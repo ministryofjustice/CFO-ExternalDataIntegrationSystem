@@ -1,7 +1,9 @@
-﻿namespace Messaging.Interfaces;
+﻿using Messaging.Messages;
 
-//This interface is defined assuming each queue will only have 1 type of messages.
-//Perhaps should be split up into mutliple pub/sub interfaces.
-public interface IMessageService : IStagingMessagingService, IMergingMessagingService, IStatusMessagingService, 
-    IDbMessagingService, IImportMessagingService, IBlockingMessagingService, IMatchingMessagingService
-{ }
+namespace Messaging.Interfaces;
+
+public interface IMessageService : IStatusMessagingService, IDbMessagingService
+{
+    Task PublishAsync<T>(T message) where T : Message;
+    Task SubscribeAsync<T>(Action<T> handler, Enum queue) where T : Message;
+}

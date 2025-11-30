@@ -6,7 +6,7 @@ namespace Messaging.Messages.DbMessages.Receiving;
 
 public class ResultGetLastProcessedOfflocFileMessage : DbResponseMessage
 {
-    public string? fileName;
+    public string? FileName { get; set; }
 
 	public override StatusUpdateMessage StatusMessage => new();
 
@@ -18,6 +18,6 @@ public class ResultGetLastProcessedOfflocFileMessage : DbResponseMessage
 
     public ResultGetLastProcessedOfflocFileMessage(string? fileName) : this()
     {
-        this.fileName = fileName;
+        FileName = fileName;
     }
 }

@@ -15,8 +15,8 @@ public class OfflocDownloadFinished : StagingMessage
     [JsonConstructor]
     public OfflocDownloadFinished(string fileName, int fileId, string? archiveFileName = null)
     {
-        routingKey = TStagingQueue.OfflocCleaner;
-        base.fileName = fileName;
+        Queue = TStagingQueue.OfflocCleaner;
+        base.FileName = fileName;
         FileId = fileId;
         ArchiveFileName = archiveFileName;
     }

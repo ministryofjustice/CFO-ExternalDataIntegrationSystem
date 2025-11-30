@@ -13,6 +13,6 @@ public class ClearHalfCleanedOfflocFiles : StagingMessage
     [JsonConstructor]
     public ClearHalfCleanedOfflocFiles()
     {
-        routingKey = TStagingQueue.OfflocFilesClear;
+        Queue = TStagingQueue.OfflocFilesClear;
     }
 }

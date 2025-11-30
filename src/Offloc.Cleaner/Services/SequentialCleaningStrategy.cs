@@ -8,7 +8,7 @@ using System.Globalization;
 namespace Offloc.Cleaner.Services;
 
 public class SequentialCleaningStrategy : CleaningStrategyBase, ICleaningStrategy
-{    public SequentialCleaningStrategy(IStagingMessagingService stagingService, 
+{    public SequentialCleaningStrategy(IMessageService stagingService, 
         IStatusMessagingService statusService, IFileLocations fileLocations, 
         RedundantFieldsWrapper redundantWrapper) 
         : base(stagingService, statusService, fileLocations, 
@@ -18,7 +18,7 @@ public class SequentialCleaningStrategy : CleaningStrategyBase, ICleaningStrateg
     {
         await statusService.StatusPublishAsync(new StatusUpdateMessage($"Cleaning file: {file}"));
         await base.ProcessFile(Path.Combine(fileLocations.offlocInput, file));
-        await stagingService.StagingPublishAsync(new OfflocCleanerFinishedMessage([file], redundantFieldIndexes));
+        await stagingService.PublishAsync(new OfflocCleanerFinishedMessage([file], redundantFieldIndexes));
     }
 
 }

@@ -13,6 +13,9 @@ namespace Messaging.Services;
 
 public class RabbitService : IMessageService
 {
+    public IChannel Channel => channel;
+    public IConnection Connection => connection;
+    
     private IChannel channel;
     private IConnection connection;
 
@@ -79,7 +82,7 @@ public class RabbitService : IMessageService
         );
         await AssociatedMessagePublishAsync(message);
     }
-
+    
     public async Task SubscribeAsync<T>(Action<T> handler, Enum queue) where T : Message
     {
         var consumer = new AsyncEventingBasicConsumer(channel);
@@ -109,14 +112,6 @@ public class RabbitService : IMessageService
 
         consumer.ReceivedAsync += (model, ea) => { handler.Invoke(JsonSerializer.Deserialize<T>(Encoding.UTF8.GetString(ea.Body.ToArray()), new JsonSerializerOptions { IncludeFields = true })!); return Task.CompletedTask; };
     }
-
-    [Obsolete("Use PublishAsync instead")]
-    async Task IStagingMessagingService.StagingPublishAsync<T>(T message)
-        => await PublishAsync(message);
-
-    [Obsolete("Use SubscribeAsync instead")]
-    async Task IStagingMessagingService.StagingSubscribeAsync<T>(Action<T> handler, TStagingQueue queue)
-        => await SubscribeAsync(handler, queue);
 
     private async Task DbPublishRequestAsync<T>(T message) where T : DbRequestMessage
     {
@@ -206,30 +201,6 @@ public class RabbitService : IMessageService
         }
     }
 
-    [Obsolete("Use PublishAsync instead")]
-    async Task IMergingMessagingService.MergingPublishAsync<T>(T message)
-        => await PublishAsync(message);
-
-    [Obsolete("Use SubscribeAsync instead")]
-    async Task IMergingMessagingService.MergingSubscribeAsync<T>(Action<T> handler, TMergingQueue queue)
-        => await SubscribeAsync(handler, queue);
-
-    [Obsolete("Use PublishAsync instead")]
-    async Task IImportMessagingService.ImportPublishAsync<T>(T message)
-        => await PublishAsync(message);
-
-    [Obsolete("Use SubscribeAsync instead")]
-    async Task IImportMessagingService.ImportSubscribeAsync<T>(Action<T> handler, TImportQueue queue)
-        => await SubscribeAsync(handler, queue);
-
-    [Obsolete("Use PublishAsync instead")]
-    async Task IBlockingMessagingService.BlockingPublishAsync<T>(T message)
-        => await PublishAsync(message);
-
-    [Obsolete("Use SubscribeAsync instead")]
-    async Task IBlockingMessagingService.BlockingSubscribeAsync<T>(Action<T> handler, TBlockingQueue queue)
-        => await SubscribeAsync(handler, queue);
-
     private async Task AssociatedMessagePublishAsync<T>(T message) where T : Message
     {
         if (message.StatusMessage.Message != string.Empty)
@@ -238,11 +209,4 @@ public class RabbitService : IMessageService
         }
     }
 
-    [Obsolete("Use PublishAsync instead")]
-    async Task IMatchingMessagingService.MatchingPublishAsync<T>(T message)
-        => await PublishAsync(message);
-
-    [Obsolete("Use SubscribeAsync instead")]
-    async Task IMatchingMessagingService.MatchingSubscribeAsync<T>(Action<T> handler, TMatchingQueue queue)
-        => await SubscribeAsync(handler, queue);
 }
