@@ -3,7 +3,6 @@ using System.Text;
 using RabbitMQ.Client.Events;
 using System.Text.Json;
 using Messaging.Queues;
-using Messaging.Messages.StatusMessages;
 using Messaging.Interfaces;
 using Messaging.Messages.DbMessages.Sending;
 using Messaging.Messages.DbMessages.Receiving;
@@ -13,9 +12,6 @@ namespace Messaging.Services;
 
 public class RabbitService : IMessageService
 {
-    public IChannel Channel => channel;
-    public IConnection Connection => connection;
-    
     private IChannel channel;
     private IConnection connection;
 
@@ -72,7 +68,7 @@ public class RabbitService : IMessageService
         }
     }
 
-    public async Task PublishAsync<T>(T message) where T : Message
+    public async Task PublishAsync<T>(T message) where T : IMessage
     {
         await channel.BasicPublishAsync(
             exchange: message.Exchange,
@@ -80,10 +76,11 @@ public class RabbitService : IMessageService
             mandatory: false,
             body: Encoding.UTF8.GetBytes(JsonSerializer.Serialize(message, serializerOpts))
         );
-        await AssociatedMessagePublishAsync(message);
+
+        await PublishStatusAsync(message);
     }
     
-    public async Task SubscribeAsync<T>(Action<T> handler, Enum queue) where T : Message
+    public async Task SubscribeAsync<T>(Action<T> handler, Enum queue) where T : IMessage
     {
         var consumer = new AsyncEventingBasicConsumer(channel);
         await channel.BasicConsumeAsync(queue.ToString(), true, consumer);
@@ -95,42 +92,6 @@ public class RabbitService : IMessageService
         };
     }
 
-    public async Task StatusPublishAsync<T>(T message) where T : StatusUpdateMessage
-    {
-        await channel.BasicPublishAsync(
-            exchange: Exchanges.status,
-            routingKey: message.RoutingKey.ToString(),
-            mandatory: false,
-            body: Encoding.UTF8.GetBytes(JsonSerializer.Serialize(message, serializerOpts))
-            );
-    }
-
-    public async Task StatusSubscribeAsync<T>(Action<T> handler, TStatusQueue queue) where T : StatusUpdateMessage
-    {
-        var consumer = new AsyncEventingBasicConsumer(channel);
-        await channel.BasicConsumeAsync(queue.ToString(), true, consumer);
-
-        consumer.ReceivedAsync += (model, ea) => { handler.Invoke(JsonSerializer.Deserialize<T>(Encoding.UTF8.GetString(ea.Body.ToArray()), new JsonSerializerOptions { IncludeFields = true })!); return Task.CompletedTask; };
-    }
-
-    private async Task DbPublishRequestAsync<T>(T message) where T : DbRequestMessage
-    {
-        var props = new BasicProperties
-        {
-            ReplyTo = message.ReplyQueue.ToString()
-        };
-         
-        await channel.BasicPublishAsync(
-            exchange: Exchanges.database,
-            routingKey: message.Queue.ToString(),
-            mandatory: false,
-            basicProperties: props,
-            body: Encoding.UTF8.GetBytes(JsonSerializer.Serialize(message, serializerOpts))
-            );
-
-		await AssociatedMessagePublishAsync(message);
-	}
-
     public async Task DbPublishResponseAsync<T>(T message) where T : DbResponseMessage
     {
         await channel.BasicPublishAsync(
@@ -140,7 +101,7 @@ public class RabbitService : IMessageService
             body: Encoding.UTF8.GetBytes(JsonSerializer.Serialize(message, serializerOpts))
             );
 
-		await AssociatedMessagePublishAsync(message);
+		await PublishStatusAsync(message);
 	}
 
     public async Task SubscribeToDbRequestAsync<T>(Action<T> handler, TDbQueue queue) where T : DbRequestMessage
@@ -201,11 +162,29 @@ public class RabbitService : IMessageService
         }
     }
 
-    private async Task AssociatedMessagePublishAsync<T>(T message) where T : Message
+    private async Task DbPublishRequestAsync<T>(T message) where T : DbRequestMessage
     {
-        if (message.StatusMessage.Message != string.Empty)
+        var props = new BasicProperties
         {
-            await StatusPublishAsync(message.StatusMessage);
+            ReplyTo = message.ReplyQueue.ToString()
+        };
+         
+        await channel.BasicPublishAsync(
+            exchange: Exchanges.database,
+            routingKey: message.Queue.ToString(),
+            mandatory: false,
+            basicProperties: props,
+            body: Encoding.UTF8.GetBytes(JsonSerializer.Serialize(message, serializerOpts))
+            );
+
+		await PublishStatusAsync(message);
+	}
+
+    private async Task PublishStatusAsync<T>(T message) where T : IMessage
+    {
+        if (message is Message { StatusMessage.Message: not "" } status)
+        {
+            await PublishAsync(status.StatusMessage);
         }
     }
 

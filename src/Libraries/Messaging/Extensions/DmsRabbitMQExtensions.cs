@@ -21,7 +21,6 @@ public static class DmsRabbitMQExtensions
 
         // Register all messaging interfaces
         services.AddSingleton<IMessageService>(sp => sp.GetRequiredService<RabbitService>());
-        services.AddSingleton<IStatusMessagingService>(sp => sp.GetRequiredService<RabbitService>());
         services.AddSingleton<IDbMessagingService>(sp => sp.GetRequiredService<RabbitService>());
 
         return services;

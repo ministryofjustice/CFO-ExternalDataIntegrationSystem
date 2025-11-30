@@ -11,9 +11,7 @@ namespace Matching.Engine.Services;
 public class ComparatorService(
     ILogger<ComparatorService> logger,
     IOptions<List<MatchingOption>> options,
-    IStatusMessagingService statusMessagingService,
-    IMessageService blockingMessagingService,
-    IMessageService matchingMessagingService,
+    IMessageService messageService,
     IMatchingRepository matchingRepository,
     IClusteringRepository clusteringRepository,
     MatcherCache cache,
@@ -27,7 +25,7 @@ public class ComparatorService(
         {
             matchingOptions = options.Value.ToDictionary(o => o.MatchingKey);
 
-            await blockingMessagingService.SubscribeAsync<BlockingFinishedMessage>(async (message) =>
+            await messageService.SubscribeAsync<BlockingFinishedMessage>(async (message) =>
             {
                 var items = await matchingRepository.GetAllAsync();
 
@@ -39,11 +37,11 @@ public class ComparatorService(
 
                 records.Clear();
 
-                await matchingMessagingService.PublishAsync(new MatchingScoreCandidatesMessage());
+                await messageService.PublishAsync(new MatchingScoreCandidatesMessage());
 
             }, TBlockingQueue.BlockingFinished);
 
-            await matchingMessagingService.SubscribeAsync<ClusteringPreProcessingStartedMessage>(async (message) =>
+            await messageService.SubscribeAsync<ClusteringPreProcessingStartedMessage>(async (message) =>
             {
                 var items = await clusteringRepository.GetAllAsync();
 
@@ -55,7 +53,7 @@ public class ComparatorService(
 
                 records.Clear();
 
-                await matchingMessagingService.PublishAsync(new MatchingScoreOutstandingEdgesMessage());
+                await messageService.PublishAsync(new MatchingScoreOutstandingEdgesMessage());
 
             }, TMatchingQueue.ClusteringPreProcessingStarted);
         }
@@ -67,7 +65,7 @@ public class ComparatorService(
 
     private async Task ProcessAsync(IEnumerable<IDictionary<string, object>> records, CancellationToken stoppingToken)
     {
-        await statusMessagingService.StatusPublishAsync(new StatusUpdateMessage("Comparing candidates..."));
+        await messageService.PublishAsync(new StatusUpdateMessage("Comparing candidates..."));
 
         queue.Results.Clear();
 
@@ -100,7 +98,6 @@ public class ComparatorService(
             queue.Results.Add(result);
         }
 
-        await Task.CompletedTask;
     }
 
 }

@@ -7,8 +7,7 @@ using Messaging.Queues;
 namespace Matching.Engine.Services;
 
 public class ClusteringService(
-    IStatusMessagingService statusMessagingService,
-    IMessageService matchingMessagingService, 
+    IMessageService messageService, 
     IClusteringRepository clusteringRepository,
     ILogger<ClusteringService> logger) : BackgroundService
 {
@@ -16,12 +15,12 @@ public class ClusteringService(
     {
         try
         {
-            await matchingMessagingService.SubscribeAsync<MatchingScoreCandidatesFinishedMessage>(async (message) =>
+            await messageService.SubscribeAsync<MatchingScoreCandidatesFinishedMessage>(async (message) =>
             {
                 await PreProcessAsync(stoppingToken);
             }, TMatchingQueue.MatchingScoreCandidatesFinished);
 
-            await matchingMessagingService.SubscribeAsync<ClusteringPreProcessingFinishedMessage>(async (message) =>
+            await messageService.SubscribeAsync<ClusteringPreProcessingFinishedMessage>(async (message) =>
             {
                 await PostProcessAsync(stoppingToken);
             }, TMatchingQueue.ClusteringPreProcessingFinished);
@@ -35,15 +34,15 @@ public class ClusteringService(
     private async Task PreProcessAsync(CancellationToken stoppingToken)
     {
         await clusteringRepository.ClusterPreProcessAsync();
-        await matchingMessagingService.PublishAsync(new ClusteringPreProcessingStartedMessage());
+        await messageService.PublishAsync(new ClusteringPreProcessingStartedMessage());
     }
 
     private async Task PostProcessAsync(CancellationToken stoppingToken)
     {
-        await statusMessagingService.StatusPublishAsync(new StatusUpdateMessage("Clustering (post-processing) started..."));
+        await messageService.PublishAsync(new StatusUpdateMessage("Clustering (post-processing) started..."));
 
         await clusteringRepository.ClusterPostProcessAsync();
-        await matchingMessagingService.PublishAsync(new ClusteringPostProcessingFinishedMessage());
+        await messageService.PublishAsync(new ClusteringPostProcessingFinishedMessage());
     }
 
 }

@@ -1,32 +1,12 @@
-﻿
-using FileStorage;
-using Messaging.Interfaces;
-using Offloc.Cleaner.Cleaners;
+﻿using Offloc.Cleaner.Cleaners;
 using Serilog;
 
 namespace Offloc.Cleaner.Services;
 
-public abstract class CleaningStrategyBase
+public abstract class CleaningStrategyBase(int[] redundantFieldIndexes)
 {
-    protected IMessageService stagingService;
-    protected IStatusMessagingService statusService;
-    protected IFileLocations fileLocations;
-
-    protected int[] redundantFieldIndexes;
-    
-    public CleaningStrategyBase(IMessageService stagingService, IStatusMessagingService statusService, 
-        IFileLocations fileLocations, int[] redundantFieldIndexes)
+    public void ProcessFile(string file)
     {
-        this.stagingService = stagingService;
-        this.statusService = statusService;
-        this.redundantFieldIndexes = redundantFieldIndexes;
-        this.fileLocations = fileLocations;
-    }
-
-    public virtual async Task ProcessFile(string file)
-    {
-        await Task.CompletedTask;
-
         FileCleaner fc = new FileCleaner(file, redundantFieldIndexes);
         // We are here. Lets try to clean the line 
         var clean = fc.Clean();

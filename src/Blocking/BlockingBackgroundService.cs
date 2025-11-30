@@ -7,8 +7,7 @@ using Messaging.Messages.StatusMessages;
 
 namespace Blocking;
 
-public class BlockingBackgroundService(        
-    IStatusMessagingService statusMessagingService, 
+public class BlockingBackgroundService(
     IMessageService messageService,
     DatabaseInsert database) : BackgroundService
 {
@@ -16,7 +15,7 @@ public class BlockingBackgroundService(
     {
         await messageService.SubscribeAsync<ImportFinishedMessage>(async (message) =>
         {
-            await statusMessagingService.StatusPublishAsync(new StatusUpdateMessage("Blocking candidates..."));
+            await messageService.PublishAsync(new StatusUpdateMessage("Blocking candidates..."));
             await CallBlocking();
         }, TImportQueue.ImportFinished);
     }

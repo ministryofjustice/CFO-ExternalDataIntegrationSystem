@@ -6,14 +6,13 @@ namespace Logging;
 
 public class LoggingBackgroundService(
     ILogger<LoggingBackgroundService> logger, 
-    IStatusMessagingService statusService) : BackgroundService
+    IMessageService messageService) : BackgroundService
 {
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
 	{
-        await statusService.StatusSubscribeAsync<StatusUpdateMessage>(Log, TStatusQueue.StatusUpdate);
-        await statusService.StatusSubscribeAsync<StagingFinishedMessage>(Log, TStatusQueue.StagingFinished);
-
-        await statusService.StatusPublishAsync(new StatusUpdateMessage("Logger configured."));
+        await messageService.SubscribeAsync<StatusUpdateMessage>(Log, TStatusQueue.StatusUpdate);
+        await messageService.SubscribeAsync<StagingFinishedMessage>(Log, TStatusQueue.StagingFinished);
+        await messageService.PublishAsync(new StatusUpdateMessage("Logger configured."));
 	}
 
     private void Log(StatusUpdateMessage statusUpdate)

@@ -13,14 +13,13 @@ using Offloc.Cleaner.Services;
 namespace Offloc.Cleaner;
 
 public class OfflocCleanerBackgroundService(
-    IMessageService stagingService,
+    IMessageService messageService,
     IDbMessagingService dbService,
-    ICleaningStrategy cleaningService,
-    IStatusMessagingService statusService) : BackgroundService
+    ICleaningStrategy cleaningService) : BackgroundService
 {
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        await stagingService.SubscribeAsync<OfflocDownloadFinished>(async (message) => 
+        await messageService.SubscribeAsync<OfflocDownloadFinished>(async (message) => 
         {
             await ParseFileAsync(message);
         }, TStagingQueue.OfflocCleaner);
@@ -32,8 +31,8 @@ public class OfflocCleanerBackgroundService(
 
         if (await HasAlreadyBeenProcessedAsync(file))
         {
-            await statusService.StatusPublishAsync(new StatusUpdateMessage($"File {file} has already been processed"));
-            await stagingService.PublishAsync(new OfflocParserFinishedMessage("File already processed", emptyFile: true));
+            await messageService.PublishAsync(new StatusUpdateMessage($"File {file} has already been processed"));
+            await messageService.PublishAsync(new OfflocParserFinishedMessage("File already processed", emptyFile: true));
         }
         else
         {

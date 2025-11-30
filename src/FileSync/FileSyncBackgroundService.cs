@@ -20,7 +20,6 @@ namespace FileSync;
 public class FileSyncBackgroundService(
     ILogger<FileSyncBackgroundService> logger,
     IMessageService messageService,
-    IStatusMessagingService statusMessagingService,
     IDbMessagingService dbMessagingService,
     IFileLocations fileLocations,
     FileSource fileSource,
@@ -307,7 +306,7 @@ public class FileSyncBackgroundService(
     async Task LogStatus(string message)
     {
         logger.LogInformation(message);
-        await statusMessagingService.StatusPublishAsync(new StatusUpdateMessage(message));
+        await messageService.PublishAsync(new StatusUpdateMessage(message));
     }
 
     public override void Dispose()

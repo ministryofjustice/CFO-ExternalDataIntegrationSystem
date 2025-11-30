@@ -14,7 +14,6 @@ namespace Delius.Parser;
 public class DeliusParserBackgroundService(
     IMessageService messageService,
     IDbMessagingService dbService,
-    IStatusMessagingService statusService,
     IParsingStrategy parseService) : BackgroundService
 {
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -31,7 +30,7 @@ public class DeliusParserBackgroundService(
 
         if (await HasAlreadyBeenProcessedAsync(file))
         {
-            await statusService.StatusPublishAsync(new StatusUpdateMessage($"File {file} has already been processed"));
+            await messageService.PublishAsync(new StatusUpdateMessage($"File {file} has already been processed"));
             await messageService.PublishAsync(new DeliusParserFinishedMessage("File already processed", "No Path", emptyFile: true));
         }
         else

@@ -54,7 +54,7 @@ public class RabbitServiceIntegrationTests(RabbitContainerFixture fixture) : IAs
             TStagingQueue.DeliusCleanup
         );
 
-        await _rabbitService.StatusSubscribeAsync<StatusUpdateMessage>(
+        await _rabbitService.SubscribeAsync<StatusUpdateMessage>(
             statusCompletionSource.SetResult,
             TStatusQueue.StatusUpdate
         );
@@ -91,7 +91,7 @@ public class RabbitServiceIntegrationTests(RabbitContainerFixture fixture) : IAs
             TImportQueue.ImportFinished
         );
 
-        await _rabbitService.StatusSubscribeAsync<StatusUpdateMessage>(
+        await _rabbitService.SubscribeAsync<StatusUpdateMessage>(
             statusCompletionSource.SetResult,
             TStatusQueue.StatusUpdate
         );
