@@ -9,7 +9,7 @@ public class MatchingScoreCandidatesMessage : MatchingMessage
     [JsonConstructor]
     public MatchingScoreCandidatesMessage()
     {
-        routingKey = TMatchingQueue.MatchingScoreCandidatesMessage;
+        Queue = TMatchingQueue.MatchingScoreCandidatesMessage;
     }
 
     public override StatusUpdateMessage StatusMessage =>

@@ -6,7 +6,7 @@ using Messaging.Queues;
 namespace Matching.Engine.Services;
 
 public class ScorerService(
-    IMatchingMessagingService matchingMessagingService,
+    IMessageService matchingMessagingService,
     IMatchingRepository matchingRepository,
     IClusteringRepository clusteringRepository,
     ILogger<ScorerService> logger,
@@ -20,29 +20,25 @@ public class ScorerService(
     {
         try
         {
-            await Task.Run(async () =>
+            matchingOptions = options.Value.ToDictionary(o => o.MatchingKey);
+
+            await matchingMessagingService.SubscribeAsync<MatchingScoreCandidatesMessage>(async (message) =>
             {
-                matchingOptions = options.Value.ToDictionary(o => o.MatchingKey);
+                var results = await ScoreAsync(stoppingToken);
+                await matchingRepository.BulkInsertAsync(results);
+                results = null;
 
-                await matchingMessagingService.MatchingSubscribeAsync<MatchingScoreCandidatesMessage>(async (message) =>
-                {
-                    var results = await ScoreAsync(stoppingToken);
-                    await matchingRepository.BulkInsertAsync(results);
-                    results = null;
+                await matchingMessagingService.PublishAsync(new MatchingScoreCandidatesFinishedMessage());
+            }, TMatchingQueue.MatchingScoreCandidatesMessage);
 
-                    await matchingMessagingService.MatchingPublishAsync(new MatchingScoreCandidatesFinishedMessage());
-                }, TMatchingQueue.MatchingScoreCandidatesMessage);
+            await matchingMessagingService.SubscribeAsync<MatchingScoreOutstandingEdgesMessage>(async (message) =>
+            {
+                var results = await ScoreAsync(stoppingToken);
+                await clusteringRepository.BulkInsertAsync(results);
+                results = null;
 
-                await matchingMessagingService.MatchingSubscribeAsync<MatchingScoreOutstandingEdgesMessage>(async (message) =>
-                {
-                    var results = await ScoreAsync(stoppingToken);
-                    await clusteringRepository.BulkInsertAsync(results);
-                    results = null;
-
-                    await matchingMessagingService.MatchingPublishAsync(new ClusteringPreProcessingFinishedMessage());
-                }, TMatchingQueue.MatchingScoreOutstandingEdgesMessage);
-
-            }, stoppingToken);
+                await matchingMessagingService.PublishAsync(new ClusteringPreProcessingFinishedMessage());
+            }, TMatchingQueue.MatchingScoreOutstandingEdgesMessage);
         }
         catch (Exception ex)
         {

@@ -6,20 +6,21 @@ namespace Messaging.Messages.StagingMessages;
 
 public class DeliusParserFinishedMessage : StagingMessage
 {
-    public string filePath = string.Empty;
+    public string FilePath { get; set; } = string.Empty;
     public override StatusUpdateMessage StatusMessage =>
-        new StatusUpdateMessage($"Delius parser finished for file {fileName}");
-    public bool emptyFile;
+        new StatusUpdateMessage($"Delius parser finished for file {FileName}");
+    public bool EmptyFile { get; set; }
 
     [JsonConstructor]
     public DeliusParserFinishedMessage()
-    { }
-
-    public DeliusParserFinishedMessage(string fileName, string filePath,bool emptyFile)
     {
-        routingKey = TStagingQueue.DeliusImport;
-        this.fileName = fileName;
-        this.filePath = filePath;
-        this.emptyFile = emptyFile;
+        Queue = TStagingQueue.DeliusImport;
+    }
+
+    public DeliusParserFinishedMessage(string fileName, string filePath, bool emptyFile) : this()
+    {
+        FileName = fileName;
+        FilePath = filePath;
+        EmptyFile = emptyFile;
     }
 }

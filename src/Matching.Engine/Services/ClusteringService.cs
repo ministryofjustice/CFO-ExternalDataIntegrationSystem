@@ -7,8 +7,7 @@ using Messaging.Queues;
 namespace Matching.Engine.Services;
 
 public class ClusteringService(
-    IStatusMessagingService statusMessagingService,
-    IMatchingMessagingService matchingMessagingService, 
+    IMessageService messageService, 
     IClusteringRepository clusteringRepository,
     ILogger<ClusteringService> logger) : BackgroundService
 {
@@ -16,20 +15,15 @@ public class ClusteringService(
     {
         try
         {
-            await Task.Run(async () =>
+            await messageService.SubscribeAsync<MatchingScoreCandidatesFinishedMessage>(async (message) =>
             {
-                await matchingMessagingService.MatchingSubscribeAsync<MatchingScoreCandidatesFinishedMessage>(async (message) =>
-                {
-                    await PreProcessAsync(stoppingToken);
+                await PreProcessAsync(stoppingToken);
+            }, TMatchingQueue.MatchingScoreCandidatesFinished);
 
-                }, TMatchingQueue.MatchingScoreCandidatesFinished);
-
-                await matchingMessagingService.MatchingSubscribeAsync<ClusteringPreProcessingFinishedMessage>(async (message) =>
-                {
-                    await PostProcessAsync(stoppingToken);
-                }, TMatchingQueue.ClusteringPreProcessingFinished);
-
-            }, stoppingToken);
+            await messageService.SubscribeAsync<ClusteringPreProcessingFinishedMessage>(async (message) =>
+            {
+                await PostProcessAsync(stoppingToken);
+            }, TMatchingQueue.ClusteringPreProcessingFinished);
         }
         catch (Exception ex)
         {
@@ -40,15 +34,15 @@ public class ClusteringService(
     private async Task PreProcessAsync(CancellationToken stoppingToken)
     {
         await clusteringRepository.ClusterPreProcessAsync();
-        await matchingMessagingService.MatchingPublishAsync(new ClusteringPreProcessingStartedMessage());
+        await messageService.PublishAsync(new ClusteringPreProcessingStartedMessage());
     }
 
     private async Task PostProcessAsync(CancellationToken stoppingToken)
     {
-        await statusMessagingService.StatusPublishAsync(new StatusUpdateMessage("Clustering (post-processing) started..."));
+        await messageService.PublishAsync(new StatusUpdateMessage("Clustering (post-processing) started..."));
 
         await clusteringRepository.ClusterPostProcessAsync();
-        await matchingMessagingService.MatchingPublishAsync(new ClusteringPostProcessingFinishedMessage());
+        await messageService.PublishAsync(new ClusteringPostProcessingFinishedMessage());
     }
 
 }

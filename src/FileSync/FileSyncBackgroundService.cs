@@ -1,4 +1,3 @@
-using System.Globalization;
 using System.IO.Compression;
 using System.Text.RegularExpressions;
 using FileStorage;
@@ -19,16 +18,12 @@ namespace FileSync;
 
 public class FileSyncBackgroundService(
     ILogger<FileSyncBackgroundService> logger,
-    IMatchingMessagingService matchingMessagingService,
-    IDbMessagingService dbMessagingService,
-	IStagingMessagingService stagingMessagingService,
-    IStatusMessagingService statusMessagingService,
+    IMessageService messageService,
     IFileLocations fileLocations,
     FileSource fileSource,
     IOptions<SyncOptions> syncOptions) : BackgroundService, IDisposable
 {
     private Timer? timer = null;
-
     private readonly SemaphoreSlim _lock = new(1, 1);
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -39,11 +34,9 @@ public class FileSyncBackgroundService(
         {
             if (syncOptions.Value.ProcessOnCompletion)
             {
-                matchingMessagingService.MatchingSubscribeAsync<ClusteringPostProcessingFinishedMessage>(
-                    async msg =>
-                    {
-                        await ProcessMessageAsync(msg, stoppingToken);
-                    }, TMatchingQueue.ClusteringPostProcessingFinished);
+                await messageService.SubscribeAsync<ClusteringPostProcessingFinishedMessage>(
+                    async msg => await ProcessMessageAsync(msg, stoppingToken),
+                    TMatchingQueue.ClusteringPostProcessingFinished);
             }
 
             if (syncOptions.Value is { ProcessOnTimer: true, ProcessTimerIntervalSeconds: > 0 })
@@ -153,8 +146,8 @@ public class FileSyncBackgroundService(
 
             logger.LogInformation($"Targeting: Delius file ({unprocessedDeliusFile.Name}), Offloc file ({unprocessedOfflocFile.Name})");
 
-            await stagingMessagingService.StagingPublishAsync(new DeliusDownloadFinishedMessage(unprocessedDeliusFile.Name, unprocessedDeliusFile.GetFileId()));
-            await stagingMessagingService.StagingPublishAsync(new OfflocDownloadFinished(unprocessedOfflocFile.Name, unprocessedOfflocFile.GetFileId()!.Value, unprocessedOfflocFile.ParentArchiveName));
+            await messageService.PublishAsync(new DeliusDownloadFinishedMessage(unprocessedDeliusFile.Name, unprocessedDeliusFile.GetFileId()));
+            await messageService.PublishAsync(new OfflocDownloadFinished(unprocessedOfflocFile.Name, unprocessedOfflocFile.GetFileId()!.Value, unprocessedOfflocFile.ParentArchiveName));
         }
         finally
         {
@@ -165,14 +158,14 @@ public class FileSyncBackgroundService(
 
     private async Task<bool> IsOfflocReady()
     {
-        var response = await dbMessagingService.SendDbRequestAndWaitForResponseAsync<IsOfflocReadyForProcessingMessage, IsOfflocReadyForProcessingReturnMessage>(new());
-        return response.isReady;
+        var response = await messageService.SendDbRequestAndWaitForResponseAsync(new CheckOfflocReadyRequest());
+        return response.IsReady;
     }
 
     private async Task<bool> IsDeliusReady()
     {
-        var response = await dbMessagingService.SendDbRequestAndWaitForResponseAsync<IsDeliusReadyForProcessingMessage, IsDeliusReadyForProcessingReturnMessage>(new());
-        return response.isReady;
+        var response = await messageService.SendDbRequestAndWaitForResponseAsync(new CheckDeliusReadyRequest());
+        return response.IsReady;
     }
     
     private async Task<OfflocFile?> GetNextUnprocessedOfflocFileAsync(CancellationToken cancellationToken = default)
@@ -184,12 +177,12 @@ public class FileSyncBackgroundService(
 
         // Get already processed files
         logger.LogInformation("Retrieving processed Offloc files...");
-        var response = await dbMessagingService.SendDbRequestAndWaitForResponseAsync<GetOfflocFilesMessage, OfflocFilesReturnMessage>(new GetOfflocFilesMessage());
-        logger.LogInformation($"Retrieved {response.offlocFiles.Length} processed Offloc file(s).");
+        var response = await messageService.SendDbRequestAndWaitForResponseAsync(new GetOfflocFilesRequest());
+        logger.LogInformation($"Retrieved {response.OfflocFiles.Length} processed Offloc file(s).");
 
         // Find latest unprocessed file
         var unprocessedOfflocFiles = offlocFileStore
-            .ExceptBy(response.offlocFiles, file => Path.GetFileName(file.Name)) // Excludes processed
+            .ExceptBy(response.OfflocFiles, file => Path.GetFileName(file.Name)) // Excludes processed
             .OrderBy(f => f.GetDatestamp())
             .ToList();
 
@@ -230,11 +223,15 @@ public class FileSyncBackgroundService(
         logger.LogInformation("Extracted Offloc file: " + file);
 
         // We have already processed the contents of the archive, get the next unprocessed file.
-        if(response.offlocFiles.Contains(file))
+        if(response.OfflocFiles.Contains(file))
         {
             // Associate the zip with the file name
             logger.LogWarning("Already processed contents of archive: " + file);
-            await dbMessagingService.SendDbRequestAndWaitForResponseAsync<AssociateOfflocFileWithArchiveMessage, ResultAssociateOfflocFileWithArchiveMessage>(new AssociateOfflocFileWithArchiveMessage(file, Path.GetFileName(downloadedFile)));
+            await messageService.SendDbRequestAndWaitForResponseAsync(new AssociateOfflocFileWithArchiveRequest
+            {
+                FileName = file,
+                ArchiveName = Path.GetFileName(downloadedFile)
+            });
             
             // Remove the extracted file from the input directory - we have already processed it!
             File.Delete(filePath);
@@ -252,12 +249,12 @@ public class FileSyncBackgroundService(
         
         // Get already processed files
         logger.LogInformation("Retrieving processed Delius files...");
-        var response = await dbMessagingService.SendDbRequestAndWaitForResponseAsync<GetDeliusFilesMessage, DeliusFilesReturnMessage>(new GetDeliusFilesMessage());
-        logger.LogInformation($"Retrieved {response.fileNames.Length} processed Delius file(s).");
+        var response = await messageService.SendDbRequestAndWaitForResponseAsync(new GetDeliusFilesRequest());
+        logger.LogInformation($"Retrieved {response.FileNames.Length} processed Delius file(s).");
 
         // Return unprocessed files
         var unprocessedDeliusFiles = deliusFileStore
-            .ExceptBy(response.fileNames, file => Path.GetFileName(file.Name))
+            .ExceptBy(response.FileNames, file => Path.GetFileName(file.Name))
             .OrderBy(file => file.GetDatestamp())
             .ToList();
 
@@ -279,17 +276,17 @@ public class FileSyncBackgroundService(
     
     private async Task PreKickoffTasks()
     {
-        LogStatus("Publishing pre-kickoff messages...");
-        await stagingMessagingService.StagingPublishAsync(new ClearHalfCleanedOfflocFiles());
-        await stagingMessagingService.StagingPublishAsync(new ClearTemporaryDeliusFiles());
+        await LogStatus("Publishing pre-kickoff messages...");
+        await messageService.PublishAsync(new ClearHalfCleanedOfflocFiles());
+        await messageService.PublishAsync(new ClearTemporaryDeliusFiles());
 
-        LogStatus("Pre-kickoff messages published. Beginning staging database tear down...");
-        await dbMessagingService.SendDbRequestAndWaitForResponseAsync<ClearDeliusStaging, ResultClearDeliusStaging>(new ClearDeliusStaging());
-        await dbMessagingService.SendDbRequestAndWaitForResponseAsync<ClearOfflocStaging, ResultClearOfflocStaging>(new ClearOfflocStaging());
-        LogStatus("Staging database tear down complete.");
+        await LogStatus("Pre-kickoff messages published. Beginning staging database tear down...");
+        await messageService.SendDbRequestAndWaitForResponseAsync(new ClearDeliusStagingRequest());
+        await messageService.SendDbRequestAndWaitForResponseAsync(new ClearOfflocStagingRequest());
+        await LogStatus("Staging database tear down complete.");
 
         // Delete any files in input directories
-        LogStatus("Clearing input directories...");
+        await LogStatus("Clearing input directories...");
         int counter = 0;
 
         foreach (var file in Directory.GetFiles(fileLocations.deliusInput))
@@ -304,13 +301,13 @@ public class FileSyncBackgroundService(
             counter++;
         }
         
-        LogStatus("Input directories cleared. Deleted " + counter + " file(s).");
+        await LogStatus("Input directories cleared. Deleted " + counter + " file(s).");
     }
 
     async Task LogStatus(string message)
     {
         logger.LogInformation(message);
-        await statusMessagingService.StatusPublishAsync(new StatusUpdateMessage(message));
+        await messageService.PublishAsync(new StatusUpdateMessage(message));
     }
 
     public override void Dispose()
@@ -320,11 +317,11 @@ public class FileSyncBackgroundService(
 
     public async Task<bool> IsDeliusFileNewerThanLastProcessed(DeliusFile unprocessedDeliusFile, CancellationToken cancellationToken = default)
     {
-        var lastProcessedDeliusFileName = await dbMessagingService.SendDbRequestAndWaitForResponseAsync<GetLastProcessedDeliusFile, ResultGetLastProcessedDeliusFileMessage>(new());
+        var lastProcessedDeliusFileName = await messageService.SendDbRequestAndWaitForResponseAsync(new GetLastProcessedDeliusFileRequest());
 
-        if(!string.IsNullOrEmpty(lastProcessedDeliusFileName.fileName))
+        if(!string.IsNullOrEmpty(lastProcessedDeliusFileName.FileName))
         {
-            var file = new DeliusFile(lastProcessedDeliusFileName.fileName);
+            var file = new DeliusFile(lastProcessedDeliusFileName.FileName);
             
             if(file.GetDatestamp() >= unprocessedDeliusFile.GetDatestamp())
             {
@@ -338,11 +335,11 @@ public class FileSyncBackgroundService(
 
     public async Task<bool> IsOfflocFileNewerThanLastProcessed(OfflocFile unprocessedOfflocFile, CancellationToken cancellationToken = default)
     {
-        var lastProcessedOfflocFileName = await dbMessagingService.SendDbRequestAndWaitForResponseAsync<GetLastProcessedOfflocFile, ResultGetLastProcessedOfflocFileMessage>(new());
+        var lastProcessedOfflocFileName = await messageService.SendDbRequestAndWaitForResponseAsync(new GetLastProcessedOfflocFileRequest());
 
-        if(!string.IsNullOrEmpty(lastProcessedOfflocFileName.fileName))
+        if(!string.IsNullOrEmpty(lastProcessedOfflocFileName.FileName))
         {
-            var file = new OfflocFile(lastProcessedOfflocFileName.fileName);
+            var file = new OfflocFile(lastProcessedOfflocFileName.FileName);
             
             if(file.GetDatestamp() >= unprocessedOfflocFile.GetDatestamp())
             {

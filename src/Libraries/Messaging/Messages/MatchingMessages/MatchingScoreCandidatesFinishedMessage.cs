@@ -12,6 +12,6 @@ public class MatchingScoreCandidatesFinishedMessage : MatchingMessage
     [JsonConstructor]
     public MatchingScoreCandidatesFinishedMessage()
     {
-        routingKey = TMatchingQueue.MatchingScoreCandidatesFinished;
+        Queue = TMatchingQueue.MatchingScoreCandidatesFinished;
     }
 }

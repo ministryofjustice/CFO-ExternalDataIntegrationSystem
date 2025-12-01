@@ -12,6 +12,6 @@ public class ClusteringPreProcessingFinishedMessage : MatchingMessage
     [JsonConstructor]
     public ClusteringPreProcessingFinishedMessage()
     {
-        routingKey = TMatchingQueue.ClusteringPreProcessingFinished;
+        Queue = TMatchingQueue.ClusteringPreProcessingFinished;
     }
 }

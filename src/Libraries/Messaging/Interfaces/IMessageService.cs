@@ -1,7 +1,12 @@
-﻿namespace Messaging.Interfaces;
+﻿using Messaging.Messages;
+using Messaging.Messages.DbMessages.Receiving;
+using Messaging.Messages.DbMessages.Sending;
 
-//This interface is defined assuming each queue will only have 1 type of messages.
-//Perhaps should be split up into mutliple pub/sub interfaces.
-public interface IMessageService : IStagingMessagingService, IMergingMessagingService, IStatusMessagingService, 
-    IDbMessagingService, IImportMessagingService, IBlockingMessagingService, IMatchingMessagingService
-{ }
+namespace Messaging.Interfaces;
+
+public interface IMessageService
+{
+    Task PublishAsync<T>(T message) where T : IMessage;
+    Task SubscribeAsync<T>(Action<T> handler, Enum queue) where T : IMessage;
+    Task<TResponse> SendDbRequestAndWaitForResponseAsync<TResponse>(DbRequestMessage<TResponse> message) where TResponse : DbResponseMessage, new();
+}

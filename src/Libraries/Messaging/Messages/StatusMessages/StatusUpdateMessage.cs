@@ -5,18 +5,19 @@ using Messaging.Queues;
 
 namespace Messaging.Messages.StatusMessages;
 
-public class StatusUpdateMessage
+public class StatusUpdateMessage : IMessage
 {
-    public TStatusQueue RoutingKey { get; set; }
+    public virtual string RoutingKey { get; } = TStatusQueue.StatusUpdate.ToString();
     public string Message { get; set; }
     public string Caller { get; set; }
+
+    public string Exchange => Exchanges.status;
 
     [JsonConstructor]
     public StatusUpdateMessage() : this(string.Empty) { }
 
     public StatusUpdateMessage(string message)
     {
-        RoutingKey = TStatusQueue.StatusUpdate;
         Message = message;
         Caller = Assembly.GetCallingAssembly().GetName().Name!;
     }
