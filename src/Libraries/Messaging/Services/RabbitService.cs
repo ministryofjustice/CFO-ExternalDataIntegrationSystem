@@ -74,7 +74,7 @@ public class RabbitService : IMessageService
             exchange: message.Exchange,
             routingKey: message.RoutingKey,
             mandatory: false,
-            body: Encoding.UTF8.GetBytes(JsonSerializer.Serialize(message, serializerOpts))
+            body: Encoding.UTF8.GetBytes(JsonSerializer.Serialize(message, message!.GetType(), serializerOpts))
         );
 
         await PublishStatusAsync(message);
@@ -96,33 +96,28 @@ public class RabbitService : IMessageService
         where TResponse : DbResponseMessage, new() 
     {
         await dbSemaphore.WaitAsync();
-
-        var consumer = new AsyncEventingBasicConsumer(channel);
-        string tempConsumer = await channel.BasicConsumeAsync(message.ReplyQueue.ToString(), true, consumer);
-
+        var responseQueue = new TResponse().Queue.ToString();
         var taskCompletion = new TaskCompletionSource<TResponse>(TaskCreationOptions.RunContinuationsAsynchronously);
 
-        AsyncEventHandler<BasicDeliverEventArgs> eventHandler = (model, ea) =>
-        {
-            DbMessageReceivedCallback(model, ea);
-            return Task.CompletedTask;
-        };
-
-        consumer.ReceivedAsync += eventHandler;
+        // Subscribe to response queue temporarily
+        var consumer = new AsyncEventingBasicConsumer(channel);
+        
+        consumer.ReceivedAsync += DbMessageReceivedCallback;
+        string consumerTag = await channel.BasicConsumeAsync(responseQueue, true, consumer);
 
         try
         {
-            await DbPublishRequestAsync(message);
+            await DbPublishRequestAsync(message, responseQueue);
             return await taskCompletion.Task;
         }
         finally
         {
-            consumer.ReceivedAsync -= eventHandler;
-            await channel.BasicCancelAsync(tempConsumer);
+            consumer.ReceivedAsync -= DbMessageReceivedCallback;
+            await channel.BasicCancelAsync(consumerTag);
             dbSemaphore.Release();
         }
 
-        void DbMessageReceivedCallback(object? model, BasicDeliverEventArgs ea)
+        Task DbMessageReceivedCallback(object? model, BasicDeliverEventArgs ea)
         {
             try
             {
@@ -133,23 +128,25 @@ public class RabbitService : IMessageService
             {
                 taskCompletion.SetException(ex);
             }
+            return Task.CompletedTask;
         }
     }
 
-    private async Task DbPublishRequestAsync<TResponse>(DbRequestMessage<TResponse> message) where TResponse : DbResponseMessage, new()
+    private async Task DbPublishRequestAsync<TResponse>(DbRequestMessage<TResponse> message, string replyQueue) where TResponse : DbResponseMessage, new()
     {
         var props = new BasicProperties
         {
-            ReplyTo = message.ReplyQueue.ToString()
+            ReplyTo = replyQueue
         };
+
+        var json = JsonSerializer.Serialize(message, message.GetType(), serializerOpts);
          
         await channel.BasicPublishAsync(
             exchange: Exchanges.database,
             routingKey: message.Queue.ToString(),
             mandatory: false,
             basicProperties: props,
-            body: Encoding.UTF8.GetBytes(JsonSerializer.Serialize(message, serializerOpts))
-            );
+            body: Encoding.UTF8.GetBytes(json));
 
 		await PublishStatusAsync(message);
 	}

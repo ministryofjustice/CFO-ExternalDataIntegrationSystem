@@ -118,5 +118,32 @@ public class RabbitServiceIntegrationTests(RabbitContainerFixture fixture) : IAs
         });
     }
 
+
+    [Fact]
+    public async Task SendDbRequestAndWaitForResponseAsync_SendsRequestAndReceivesResponse_Successfully()
+    {
+        // Arrange
+        var requestData = "RequestData";
+        var expectedResponseData = $"Echo: {requestData}";
+        await _rabbitService!.SubscribeAsync<TestDbRequestMessage>(
+            msg =>
+            {
+                Task.Run(async () =>
+                {
+                    await Task.Delay(250); // Simulate processing delay
+                    var response = new TestDbResponseMessage($"Echo: {msg.RequestData}", true);
+                    await _rabbitService.PublishAsync(response);
+                });
+            },
+            TDbQueue.GetProcessedDeliusFiles
+        );
+        // Act
+        var response = await _rabbitService.SendDbRequestAndWaitForResponseAsync(new TestDbRequestMessage(requestData));
+
+        // Assert
+        Assert.Equal(expectedResponseData, response.ResponseData);
+        Assert.True(response.Success);
+    }
+
     public Task DisposeAsync() => Task.CompletedTask;
 }
