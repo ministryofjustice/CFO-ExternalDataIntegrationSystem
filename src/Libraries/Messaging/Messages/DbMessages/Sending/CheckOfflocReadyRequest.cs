@@ -8,10 +8,5 @@ namespace Messaging.Messages.DbMessages.Sending;
 public class CheckOfflocReadyRequest : DbRequestMessage<CheckOfflocReadyResponse>
 {
     public override StatusUpdateMessage StatusMessage => new("Sent request to check if offloc is ready for processing.");
-
-    [JsonConstructor]
-    public CheckOfflocReadyRequest()
-    {
-        Queue = TDbQueue.IsOfflocReadyForProcessing;
-    }
+    public override TDbQueue Queue { get; set; } = TDbQueue.IsOfflocReadyForProcessing;
 }

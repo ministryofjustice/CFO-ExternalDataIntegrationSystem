@@ -159,13 +159,13 @@ public class FileSyncBackgroundService(
     private async Task<bool> IsOfflocReady()
     {
         var response = await messageService.SendDbRequestAndWaitForResponseAsync(new CheckOfflocReadyRequest());
-        return response.isReady;
+        return response.IsReady;
     }
 
     private async Task<bool> IsDeliusReady()
     {
         var response = await messageService.SendDbRequestAndWaitForResponseAsync(new CheckDeliusReadyRequest());
-        return response.isReady;
+        return response.IsReady;
     }
     
     private async Task<OfflocFile?> GetNextUnprocessedOfflocFileAsync(CancellationToken cancellationToken = default)
@@ -227,7 +227,11 @@ public class FileSyncBackgroundService(
         {
             // Associate the zip with the file name
             logger.LogWarning("Already processed contents of archive: " + file);
-            await messageService.SendDbRequestAndWaitForResponseAsync(new AssociateOfflocFileWithArchiveRequest(file, Path.GetFileName(downloadedFile)));
+            await messageService.SendDbRequestAndWaitForResponseAsync(new AssociateOfflocFileWithArchiveRequest
+            {
+                FileName = file,
+                ArchiveName = Path.GetFileName(downloadedFile)
+            });
             
             // Remove the extracted file from the input directory - we have already processed it!
             File.Delete(filePath);

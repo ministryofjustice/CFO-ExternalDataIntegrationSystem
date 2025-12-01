@@ -9,9 +9,5 @@ public class MergeOfflocResponse : DbResponseMessage
     public override StatusUpdateMessage StatusMessage =>
         new StatusUpdateMessage($"Offloc staging database successfully " +
             $"merged into offloc running picture database.");
-
-    public MergeOfflocResponse()
-    {
-        Queue = TDbQueue.ResultMergeOffloc;
-    }
+    public override TDbQueue Queue { get; set; } = TDbQueue.ResultMergeOffloc;
 }

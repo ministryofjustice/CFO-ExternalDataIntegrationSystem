@@ -8,21 +8,9 @@ namespace Messaging.Messages.DbMessages.Sending;
 
 public class StageDeliusRequest : DbRequestMessage<StageDeliusResponse>
 {
-    public string FileName { get; set; } = string.Empty;
-    public string FilePath { get; set; } = string.Empty;
-
+    public required string FileName { get; set; }
+    public required string FilePath { get; set; }
     public override StatusUpdateMessage StatusMessage =>
         new StatusUpdateMessage("Delius Staging started.");
-
-    [JsonConstructor]
-    public StageDeliusRequest()
-    {
-        Queue = TDbQueue.StageDelius;
-    }
-    
-    public StageDeliusRequest(string fileName, string filePath) : this()
-    {
-        FileName = fileName;
-        FilePath = filePath;
-    }
+    public override TDbQueue Queue { get; set; } = TDbQueue.StageDelius;
 }

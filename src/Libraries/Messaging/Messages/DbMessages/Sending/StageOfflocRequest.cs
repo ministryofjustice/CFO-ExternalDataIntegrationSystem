@@ -7,19 +7,8 @@ namespace Messaging.Messages.DbMessages.Sending;
 
 public class StageOfflocRequest : DbRequestMessage<StageOfflocResponse>
 {
-    public string FileName { get; set; } = string.Empty;
-
+    public required string FileName { get; set; }
     public override StatusUpdateMessage StatusMessage =>
         new StatusUpdateMessage();
-
-    [JsonConstructor]
-    public StageOfflocRequest()
-    {
-        Queue = TDbQueue.StageOffloc;
-    }
-
-    public StageOfflocRequest(string fileName) : this()
-    {
-        FileName = fileName;
-    }
+    public override TDbQueue Queue { get; set; } = TDbQueue.StageOffloc;
 }

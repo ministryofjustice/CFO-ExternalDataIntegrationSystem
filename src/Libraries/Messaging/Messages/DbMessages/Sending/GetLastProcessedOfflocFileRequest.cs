@@ -7,10 +7,5 @@ namespace Messaging.Messages.DbMessages.Sending;
 public class GetLastProcessedOfflocFileRequest : DbRequestMessage<GetLastProcessedOfflocFileResponse>
 {
     public override StatusUpdateMessage StatusMessage => new("Getting last processed offloc file.");
-
-    public GetLastProcessedOfflocFileRequest()
-    {
-        Queue = TDbQueue.GetLastProcessedOfflocFile;
-    }
-
+    public override TDbQueue Queue { get; set; } = TDbQueue.GetLastProcessedOfflocFile;
 }

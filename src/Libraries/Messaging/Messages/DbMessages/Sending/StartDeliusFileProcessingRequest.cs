@@ -8,19 +8,7 @@ namespace Messaging.Messages.DbMessages.Sending;
 public class StartDeliusFileProcessingRequest : DbRequestMessage<StartDeliusFileProcessingResponse>
 {
     public override StatusUpdateMessage StatusMessage => new();
-
-    public string FileName { get; set; } = string.Empty;
-    public string FileId { get; set; } = string.Empty;
-
-    [JsonConstructor]
-    public StartDeliusFileProcessingRequest()
-    {
-        Queue = TDbQueue.DeliusFileProcessingStarted;
-    }
-
-    public StartDeliusFileProcessingRequest(string fileName, string fileId) : this()
-    {
-        FileName = fileName;
-        FileId = fileId;
-    }
+    public required string FileName { get; set; }
+    public required string FileId { get; set; }
+    public override TDbQueue Queue { get; set; } = TDbQueue.DeliusFileProcessingStarted;
 }

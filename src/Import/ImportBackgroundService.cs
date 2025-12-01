@@ -43,9 +43,9 @@ public class ImportBackgroundService(IMessageService messageService) : Backgroun
         else
         {
             await messageService.SendDbRequestAndWaitForResponseAsync(
-                new StageDeliusRequest(message.FileName, message.FilePath));
+                new StageDeliusRequest { FileName = message.FileName, FilePath = message.FilePath });
             await messageService.SendDbRequestAndWaitForResponseAsync(
-                new MergeDeliusRequest(message.FileName));
+                new MergeDeliusRequest { FileName = message.FileName });
         }
 
         deliusSem.Release();
@@ -64,9 +64,9 @@ public class ImportBackgroundService(IMessageService messageService) : Backgroun
         else
         {
             await messageService.SendDbRequestAndWaitForResponseAsync(
-                new StageOfflocRequest(message.FilePath));
+                new StageOfflocRequest { FileName = message.FilePath });
             await messageService.SendDbRequestAndWaitForResponseAsync(
-                new MergeOfflocRequest(Path.GetFileName(message.FilePath)));
+                new MergeOfflocRequest { FileName = Path.GetFileName(message.FilePath) });
         }
 
         offlocSem.Release();

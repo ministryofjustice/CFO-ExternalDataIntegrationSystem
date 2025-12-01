@@ -8,9 +8,5 @@ public class ClearOfflocStagingRequest : DbRequestMessage<ClearOfflocStagingResp
 {
     public override StatusUpdateMessage StatusMessage =>
         new StatusUpdateMessage("Offloc staging database being cleared.");
-
-    public ClearOfflocStagingRequest()
-    {
-        Queue = TDbQueue.ClearOfflocStaging;
-    }
+    public override TDbQueue Queue { get; set; } = TDbQueue.ClearOfflocStaging;
 }

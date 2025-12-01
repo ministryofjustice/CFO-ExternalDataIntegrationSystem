@@ -10,17 +10,6 @@ public class MergeDeliusRequest : DbRequestMessage<MergeDeliusResponse>
 {
 	public override StatusUpdateMessage StatusMessage => 
 		new StatusUpdateMessage("Merging into delius running picture started.");
-
-	public string FileName { get; set; } = string.Empty;
-
-	[JsonConstructor]
-	public MergeDeliusRequest()
-	{
-		Queue = TDbQueue.MergeDelius;
-	}
-
-	public MergeDeliusRequest(string fileName) : this()
-	{
-		FileName = fileName;
-	}
+	public required string FileName { get; set; }
+	public override TDbQueue Queue { get; set; } = TDbQueue.MergeDelius;
 }

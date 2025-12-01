@@ -7,17 +7,6 @@ namespace Messaging.Messages.DbMessages.Receiving;
 public class GetLastProcessedDeliusFileResponse : DbResponseMessage
 {
     public string? FileName { get; set; }
-
-	public override StatusUpdateMessage StatusMessage => new();
-
-    [JsonConstructor]
-    public GetLastProcessedDeliusFileResponse()
-    {
-        Queue = TDbQueue.ResultLastProcessedDeliusFile;
-    }
-
-    public GetLastProcessedDeliusFileResponse(string? fileName) : this()
-    {
-        FileName = fileName;
-    }
+    public override StatusUpdateMessage StatusMessage => new();
+    public override TDbQueue Queue { get; set; } = TDbQueue.ResultLastProcessedDeliusFile;
 }

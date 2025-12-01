@@ -38,7 +38,11 @@ public class DeliusParserBackgroundService(
     
     private async Task BeginProcessing(string fileName, string fileId)
     {
-        var request = new StartDeliusFileProcessingRequest(fileName, fileId);
+        var request = new StartDeliusFileProcessingRequest
+        {
+            FileName = fileName,
+            FileId = fileId
+        };
         await messageService.SendDbRequestAndWaitForResponseAsync(request);
         await parseService.ParseFileAsync(fileName);
     }

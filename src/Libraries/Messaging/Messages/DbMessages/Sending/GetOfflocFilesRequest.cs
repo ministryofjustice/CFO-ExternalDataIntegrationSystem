@@ -9,10 +9,5 @@ public class GetOfflocFilesRequest : DbRequestMessage<GetOfflocFilesResponse>
 {
     public override StatusUpdateMessage StatusMessage =>
         new StatusUpdateMessage("Sent request to get processed offloc files.");
-
-    [JsonConstructor]
-    public GetOfflocFilesRequest()
-    {
-        Queue = TDbQueue.GetProcessedOfflocFiles;
-    }
+    public override TDbQueue Queue { get; set; } = TDbQueue.GetProcessedOfflocFiles;
 }

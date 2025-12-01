@@ -7,10 +7,5 @@ namespace Messaging.Messages.DbMessages.Receiving;
 public class StartOfflocFileProcessingResponse : DbResponseMessage
 {
 	public override StatusUpdateMessage StatusMessage => new("Offloc file processing started");
-
-    [JsonConstructor]
-    public StartOfflocFileProcessingResponse()
-    {
-        Queue = TDbQueue.ResultOfflocFileProcessingStarted;
-    }
+    public override TDbQueue Queue { get; set; } = TDbQueue.ResultOfflocFileProcessingStarted;
 }

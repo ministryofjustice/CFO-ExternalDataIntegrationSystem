@@ -9,10 +9,5 @@ public class MergeDeliusResponse : DbResponseMessage
 	public override StatusUpdateMessage StatusMessage =>
          new StatusUpdateMessage($"Delius staging database successfully " +
             $"merged into Delius running picture database.");
-
-    [JsonConstructor]
-    public MergeDeliusResponse()
-    {
-        Queue = TDbQueue.ResultMergeDelius;
-    }
+    public override TDbQueue Queue { get; set; } = TDbQueue.ResultMergeDelius;
 }

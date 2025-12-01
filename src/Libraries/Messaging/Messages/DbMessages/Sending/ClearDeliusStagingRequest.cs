@@ -11,11 +11,6 @@ public class ClearDeliusStagingRequest : DbRequestMessage<ClearDeliusStagingResp
 {
 	public override StatusUpdateMessage StatusMessage =>
 			new StatusUpdateMessage();
-
-	[JsonConstructor]
-	public ClearDeliusStagingRequest() 
-	{
-		Queue = TDbQueue.ClearDeliusStaging;
-	}
+    public override TDbQueue Queue { get; set; } = TDbQueue.ClearDeliusStaging;
 }
 

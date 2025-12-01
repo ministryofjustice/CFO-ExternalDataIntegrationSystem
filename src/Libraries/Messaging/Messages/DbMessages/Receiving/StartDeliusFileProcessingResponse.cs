@@ -6,9 +6,5 @@ namespace Messaging.Messages.DbMessages.Receiving;
 public class StartDeliusFileProcessingResponse : DbResponseMessage
 {
 	public override StatusUpdateMessage StatusMessage => new("Delius file processing started");
-
-    public StartDeliusFileProcessingResponse()
-    {
-        Queue = TDbQueue.ResultDeliusFileProcessingStarted;
-    }
+    public override TDbQueue Queue { get; set; } = TDbQueue.ResultDeliusFileProcessingStarted;
 }

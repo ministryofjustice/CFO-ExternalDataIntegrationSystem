@@ -6,17 +6,8 @@ namespace Messaging.Messages.DbMessages.Receiving;
 
 public class GetDeliusFilesResponse : DbResponseMessage
 {
-    public string[] FileNames { get; set; } = Array.Empty<string>();
+    public string[] FileNames { get; set; } = [];
     public override StatusUpdateMessage StatusMessage =>
         new StatusUpdateMessage("Processed Delius files returned.");
-
-    [JsonConstructor]
-    public GetDeliusFilesResponse()
-    { }
-
-    public GetDeliusFilesResponse(string[] fileNames)
-    {
-        FileNames = fileNames;
-        Queue = TDbQueue.ReturnedDeliusFiles;
-    }
+    public override TDbQueue Queue { get; set; } = TDbQueue.ReturnedDeliusFiles;
 }

@@ -19,14 +19,14 @@ public class DbBackgroundService(
         await messageService.SubscribeAsync<GetDeliusFilesRequest>(async (message) =>
         {
             string[] results = await dbInteractionService.GetProcessedDeliusFileNames();
-            GetDeliusFilesResponse msg = new GetDeliusFilesResponse(results);
+            GetDeliusFilesResponse msg = new GetDeliusFilesResponse { FileNames = results };
             await messageService.PublishAsync(msg);
         }, TDbQueue.GetProcessedDeliusFiles);
 
         await messageService.SubscribeAsync<GetOfflocFilesRequest>(async (message) =>
         {
             string[] results = await dbInteractionService.GetProcessedOfflocFileNames();
-            await messageService.PublishAsync(new GetOfflocFilesResponse(results));
+            await messageService.PublishAsync(new GetOfflocFilesResponse { OfflocFiles = results });
         }, TDbQueue.GetProcessedOfflocFiles);
 
         await messageService.SubscribeAsync<StageDeliusRequest>(async (message) =>
@@ -90,25 +90,25 @@ public class DbBackgroundService(
         await messageService.SubscribeAsync<CheckDeliusReadyRequest>(async (message) =>
         {
             bool result = await dbInteractionService.IsDeliusReadyForProcessing();
-            await messageService.PublishAsync(new CheckDeliusReadyResponse(result));
+            await messageService.PublishAsync(new CheckDeliusReadyResponse { IsReady = result });
         }, TDbQueue.IsDeliusReadyForProcessing);
         
         await messageService.SubscribeAsync<CheckOfflocReadyRequest>(async (message) =>
         {
             bool result = await dbInteractionService.IsOfflocReadyForProcessing();
-            await messageService.PublishAsync(new CheckOfflocReadyResponse(result));
+            await messageService.PublishAsync(new CheckOfflocReadyResponse { IsReady = result });
         }, TDbQueue.IsOfflocReadyForProcessing);
 
         await messageService.SubscribeAsync<GetLastProcessedOfflocFileRequest>(async (message) =>
         {
             string? result = await dbInteractionService.GetLastProcessedOfflocFileName();
-            await messageService.PublishAsync(new GetLastProcessedOfflocFileResponse(result));
+            await messageService.PublishAsync(new GetLastProcessedOfflocFileResponse { FileName = result });
         }, TDbQueue.GetLastProcessedOfflocFile);
 
         await messageService.SubscribeAsync<GetLastProcessedDeliusFileRequest>(async (message) =>
         {
             string? result = await dbInteractionService.GetLastProcessedDeliusFileName();
-            await messageService.PublishAsync(new GetLastProcessedDeliusFileResponse(result));
+            await messageService.PublishAsync(new GetLastProcessedDeliusFileResponse { FileName = result });
         }, TDbQueue.GetLastProcessedDeliusFile);
         
     }

@@ -7,9 +7,5 @@ namespace Messaging.Messages.DbMessages.Sending;
 public class GetLastProcessedDeliusFileRequest : DbRequestMessage<GetLastProcessedDeliusFileResponse>
 {
     public override StatusUpdateMessage StatusMessage => new("Getting last processed delius file.");
-
-    public GetLastProcessedDeliusFileRequest()
-    {
-        Queue = TDbQueue.GetLastProcessedDeliusFile;
-    }
+    public override TDbQueue Queue { get; set; } = TDbQueue.GetLastProcessedDeliusFile;
 }

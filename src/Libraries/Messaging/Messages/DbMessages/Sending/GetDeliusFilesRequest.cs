@@ -9,10 +9,5 @@ public class GetDeliusFilesRequest : DbRequestMessage<GetDeliusFilesResponse>
 {
     public override StatusUpdateMessage StatusMessage =>
         new StatusUpdateMessage("Request sent to retrieve processed delius files.");
-
-    [JsonConstructor]
-    public GetDeliusFilesRequest()
-    {
-        Queue = TDbQueue.GetProcessedDeliusFiles;
-    }
+    public override TDbQueue Queue { get; set; } = TDbQueue.GetProcessedDeliusFiles;
 }

@@ -8,10 +8,5 @@ public class StageDeliusResponse : DbResponseMessage
 {
     public override StatusUpdateMessage StatusMessage =>
         new StatusUpdateMessage("Delius Staging completed.");
-
-    [JsonConstructor]
-    public StageDeliusResponse()
-    {
-        Queue = TDbQueue.ResultStageDelius;
-    }
+    public override TDbQueue Queue { get; set; } = TDbQueue.ResultStageDelius;
 }

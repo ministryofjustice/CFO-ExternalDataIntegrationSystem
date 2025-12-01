@@ -8,10 +8,5 @@ namespace Messaging.Messages.DbMessages.Sending;
 public class CheckDeliusReadyRequest : DbRequestMessage<CheckDeliusReadyResponse>
 {
     public override StatusUpdateMessage StatusMessage => new("Sent request to check if delius is ready for processing.");
-
-    [JsonConstructor]
-    public CheckDeliusReadyRequest()
-    {
-        Queue = TDbQueue.IsDeliusReadyForProcessing;
-    }
+    public override TDbQueue Queue { get; set; } = TDbQueue.IsDeliusReadyForProcessing;
 }

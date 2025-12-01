@@ -7,9 +7,5 @@ public class ClearOfflocStagingResponse : DbResponseMessage
 {
 	public override StatusUpdateMessage StatusMessage =>
 		new StatusUpdateMessage("Offloc staging cleared.");
-
-    public ClearOfflocStagingResponse()
-    {
-        Queue = TDbQueue.ResultClearOffloc;
-    }
+    public override TDbQueue Queue { get; set; } = TDbQueue.ResultClearOffloc;
 }

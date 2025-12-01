@@ -6,9 +6,5 @@ namespace Messaging.Messages.DbMessages.Receiving;
 public class AssociateOfflocFileWithArchiveResponse : DbResponseMessage
 {
 	public override StatusUpdateMessage StatusMessage => new("Offloc file associated with archive");
-
-    public AssociateOfflocFileWithArchiveResponse()
-    {
-        Queue = TDbQueue.ResultAssociateOfflocFileWithArchive;
-    }
+    public override TDbQueue Queue { get; set; } = TDbQueue.ResultAssociateOfflocFileWithArchive;
 }

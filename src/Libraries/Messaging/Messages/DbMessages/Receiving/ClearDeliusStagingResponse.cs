@@ -8,9 +8,5 @@ public class ClearDeliusStagingResponse : DbResponseMessage
 {
 	public override StatusUpdateMessage StatusMessage =>
 		new StatusUpdateMessage("Delius staging cleared.");
-
-    public ClearDeliusStagingResponse()
-    {
-        Queue = TDbQueue.ResultClearDelius;
-    }
+    public override TDbQueue Queue { get; set; } = TDbQueue.ResultClearDelius;
 }

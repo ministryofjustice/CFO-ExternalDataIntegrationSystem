@@ -35,7 +35,12 @@ public class OfflocCleanerBackgroundService(
         }
         else
         {
-            var request = new StartOfflocFileProcessingRequest(message.FileName, message.FileId, message.ArchiveFileName);
+            var request = new StartOfflocFileProcessingRequest
+            {
+                FileName = message.FileName,
+                FileId = message.FileId,
+                ArchiveName = message.ArchiveFileName
+            };
             await messageService.SendDbRequestAndWaitForResponseAsync(request);
             await cleaningService.CleanFile(file);
         }

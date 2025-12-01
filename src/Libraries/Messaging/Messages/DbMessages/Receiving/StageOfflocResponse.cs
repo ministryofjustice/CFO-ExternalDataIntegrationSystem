@@ -8,10 +8,5 @@ public class StageOfflocResponse : DbResponseMessage
 {
     public override StatusUpdateMessage StatusMessage =>
         new StatusUpdateMessage("Offloc Staging completed.");
-
-    [JsonConstructor]
-    public StageOfflocResponse()
-    {
-        Queue = TDbQueue.ResultStageOffloc;
-    }
+    public override TDbQueue Queue { get; set; } = TDbQueue.ResultStageOffloc;
 }

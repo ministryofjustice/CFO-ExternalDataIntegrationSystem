@@ -8,19 +8,7 @@ namespace Messaging.Messages.DbMessages.Sending;
 public class AssociateOfflocFileWithArchiveRequest : DbRequestMessage<AssociateOfflocFileWithArchiveResponse>
 {
     public override StatusUpdateMessage StatusMessage => new();
-
-    public string FileName { get; set; } = string.Empty;
-    public string ArchiveName { get; set; } = string.Empty;
-
-    [JsonConstructor]
-    public AssociateOfflocFileWithArchiveRequest()
-    {
-        Queue = TDbQueue.AssociateOfflocFileWithArchive;
-    }
-
-    public AssociateOfflocFileWithArchiveRequest(string fileName, string archiveName) : this()
-    {
-        FileName = fileName;
-        ArchiveName = archiveName;
-    }
+    public required string FileName { get; set; }
+    public required string ArchiveName { get; set; }
+    public override TDbQueue Queue { get; set; } = TDbQueue.AssociateOfflocFileWithArchive;
 }
