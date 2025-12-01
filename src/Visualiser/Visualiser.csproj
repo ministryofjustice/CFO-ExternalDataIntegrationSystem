@@ -5,8 +5,6 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <RootNamespace>Visualiser</RootNamespace>
 	<UserSecretsId>6b76fc04-e0a8-4265-b2ac-d8600fd901dc</UserSecretsId>
-	<DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
-	<DockerfileContext>.</DockerfileContext>
   </PropertyGroup>
 
   <ItemGroup>
@@ -15,6 +13,14 @@
     <PackageReference Include="Microsoft.Identity.Web" />
     <PackageReference Include="Microsoft.Identity.Web.UI" />
     <PackageReference Include="Microsoft.Identity.Web.DownstreamApi" />
+    <PackageReference Include="Serilog.Extensions.Hosting" />
+    <PackageReference Include="Serilog.Settings.Configuration" />
+    <PackageReference Include="Serilog.Sinks.Console" />
+    <PackageReference Include="Serilog.Sinks.File" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Libraries\EnvironmentSetup\EnvironmentSetup.csproj" />
   </ItemGroup>
 
 </Project>

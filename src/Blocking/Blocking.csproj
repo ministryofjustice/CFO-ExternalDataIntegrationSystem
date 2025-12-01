@@ -4,23 +4,10 @@
     <OutputType>Exe</OutputType>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
-    <DockerfileContext>..\..\..</DockerfileContext>
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="PythonContext.cs" />
-    <Compile Remove="PythonInterop.cs" />
-    <Compile Remove="PythonResultWrapper.cs" />
-    <Compile Remove="PythonScriptConfig.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Remove="BlockingScript.py" />
-  </ItemGroup>
-
-  <ItemGroup>
-	<PackageReference Include="Microsoft.Data.SqlClient" />
+	  <PackageReference Include="Microsoft.Data.SqlClient" />
     <PackageReference Include="Newtonsoft.Json" />
   </ItemGroup>
 

@@ -3,44 +3,35 @@ using Messaging.Interfaces;
 using Messaging.Messages.StatusMessages;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Options;
 using System.Data;
 
 namespace DbInteractions.Services;
 
 public class DbInteractionService : IDbInteractionService
 {
-    private IStatusMessagingService statusService;
-    private IFileLocations fileLocations;
+    private readonly IStatusMessagingService statusService;
+    private readonly IFileLocations fileLocations;
+    private readonly ServerConfiguration serverConfig;
+    private readonly IConfiguration configuration;
+    private readonly bool inContainer;
 
-    private ServerConfiguration serverConfig;
-
-    private string deliusStagingConnString;
-    private string offlocStagingConnString;
-    private string deliusPictureConnString;
-    private string offlocPictureConnString;
-
-    private bool inContainer;
-
-    public DbInteractionService(IStatusMessagingService messageService,
-        ConnectionStrings connStrings, ServerConfiguration serverConfig,
-        IConfiguration config, IFileLocations fileLocations)
+    public DbInteractionService(
+        IStatusMessagingService messageService,
+        IOptions<ServerConfiguration> serverConfig,
+        IConfiguration config,
+        IFileLocations fileLocations)
     {
         this.statusService = messageService;
-        this.serverConfig = serverConfig;
+        this.serverConfig = serverConfig.Value;
+        this.configuration = config;
         this.fileLocations = fileLocations;
-
-        deliusStagingConnString = connStrings.deliusStagingConnectionString;
-        offlocStagingConnString = connStrings.offlocStagingConnectionString;
-        deliusPictureConnString = connStrings.deliusPictureConnectionString;
-        offlocPictureConnString = connStrings.offlocPictureConnectionString;
-
-        //Make tidier.
-        inContainer = config.GetValue<bool>("RUNNING_IN_CONTAINER");
+        this.inContainer = config.GetValue<bool>("RUNNING_IN_CONTAINER");
     }
 
     public async Task<string[]> GetProcessedDeliusFileNames()
     {
-        SqlConnection conn = new SqlConnection(deliusPictureConnString);
+        SqlConnection conn = new SqlConnection(configuration.GetConnectionString("DeliusRunningPictureDb")!);
 
         await conn.OpenAsync();
 
@@ -69,7 +60,7 @@ public class DbInteractionService : IDbInteractionService
     {
         int fileId = 0;
 
-        SqlConnection conn = new SqlConnection(deliusPictureConnString);
+        SqlConnection conn = new SqlConnection(configuration.GetConnectionString("DeliusRunningPictureDb")!);
 
         using (conn)
         {
@@ -101,7 +92,7 @@ public class DbInteractionService : IDbInteractionService
     //Returning primitive types instead of strings should make DMS work better over time.
     public async Task<int[]> GetProcessedOfflocIds()
     {
-        SqlConnection conn = new SqlConnection(offlocPictureConnString);
+        SqlConnection conn = new SqlConnection(configuration.GetConnectionString("OfflocRunningPictureDb")!);
 
         using (conn)
         {
@@ -133,7 +124,7 @@ public class DbInteractionService : IDbInteractionService
 
     public async Task<string[]> GetProcessedOfflocFileNames()
     {
-        SqlConnection conn = new SqlConnection(offlocPictureConnString);
+        SqlConnection conn = new SqlConnection(configuration.GetConnectionString("OfflocRunningPictureDb")!);
 
         using (conn)
         {
@@ -172,7 +163,7 @@ public class DbInteractionService : IDbInteractionService
             containerFlag = "N";
         }
 
-        var deliusConn = new SqlConnection(deliusStagingConnString);
+        var deliusConn = new SqlConnection(configuration.GetConnectionString("DeliusStagingDb")!);
         using (deliusConn)
         {
             await deliusConn.OpenAsync();
@@ -203,7 +194,7 @@ public class DbInteractionService : IDbInteractionService
         string folderName = fileName.Split('.').First();
         await statusService.StatusPublishAsync(new StatusUpdateMessage($"Offloc staging started for file {fileName}."));
 
-        var offlocConn = new SqlConnection(offlocStagingConnString);
+        var offlocConn = new SqlConnection(configuration.GetConnectionString("OfflocStagingDb")!);
         using (offlocConn)
         {
             await offlocConn.OpenAsync();
@@ -229,7 +220,7 @@ public class DbInteractionService : IDbInteractionService
     //Calls merge and then on completion
     public async Task StandardiseDeliusStaging()
     {
-        SqlConnection conn = new SqlConnection(deliusStagingConnString);
+        SqlConnection conn = new SqlConnection(configuration.GetConnectionString("DeliusStagingDb")!);
 
         using (conn)
         {
@@ -254,7 +245,7 @@ public class DbInteractionService : IDbInteractionService
     //Calls merge and then on completion
     public async Task MergeDeliusPicture(string fileName)
     {
-        SqlConnection conn = new SqlConnection(deliusPictureConnString);
+        SqlConnection conn = new SqlConnection(configuration.GetConnectionString("DeliusRunningPictureDb")!);
 
         using (conn)
         {
@@ -281,7 +272,7 @@ public class DbInteractionService : IDbInteractionService
 
     public async Task ClearDeliusStaging()
     {
-        SqlConnection conn = new SqlConnection(deliusStagingConnString);
+        SqlConnection conn = new SqlConnection(configuration.GetConnectionString("DeliusStagingDb")!);
 
         using (conn)
         {
@@ -306,7 +297,7 @@ public class DbInteractionService : IDbInteractionService
 
     public async Task MergeOfflocPicture(string fileName)
     {
-        SqlConnection offlocConn = new SqlConnection(offlocPictureConnString);
+        SqlConnection offlocConn = new SqlConnection(configuration.GetConnectionString("OfflocRunningPictureDb")!);
 
         using (offlocConn)
         {
@@ -333,7 +324,7 @@ public class DbInteractionService : IDbInteractionService
 
     public async Task ClearOfflocStaging()
     {
-        SqlConnection offlocConn = new SqlConnection(offlocStagingConnString);
+        SqlConnection offlocConn = new SqlConnection(configuration.GetConnectionString("OfflocStagingDb")!);
         using (offlocConn)
         {
             await offlocConn.OpenAsync();
@@ -358,7 +349,7 @@ public class DbInteractionService : IDbInteractionService
 
     public async Task CreateOfflocProcessedFileEntry(string fileName, int fileId, string? archiveName = null)
     {
-        SqlConnection offlocConn = new(offlocPictureConnString);
+        SqlConnection offlocConn = new(configuration.GetConnectionString("OfflocRunningPictureDb")!);
 
         using (offlocConn)
         {
@@ -388,7 +379,7 @@ public class DbInteractionService : IDbInteractionService
 
     public async Task CreateDeliusProcessedFileEntry(string fileName, string fileId)
     {
-        SqlConnection deliusConn = new(deliusPictureConnString);
+        SqlConnection deliusConn = new(configuration.GetConnectionString("DeliusRunningPictureDb")!);
 
         using (deliusConn)
         {
@@ -417,7 +408,7 @@ public class DbInteractionService : IDbInteractionService
 
     public async Task AssociateOfflocFileWithArchive(string fileName, string archiveName)
     {
-        SqlConnection offlocConn = new(offlocPictureConnString);
+        SqlConnection offlocConn = new(configuration.GetConnectionString("OfflocRunningPictureDb")!);
 
         using (offlocConn)
         {
@@ -449,7 +440,7 @@ public class DbInteractionService : IDbInteractionService
 
     public async Task<bool> IsDeliusReadyForProcessing()
     {
-        SqlConnection deliusConn = new(deliusPictureConnString);
+        SqlConnection deliusConn = new(configuration.GetConnectionString("DeliusRunningPictureDb")!);
 
         using (deliusConn)
         {
@@ -487,7 +478,7 @@ public class DbInteractionService : IDbInteractionService
 
     public async Task<bool> IsOfflocReadyForProcessing()
     {
-        SqlConnection offlocConn = new(offlocPictureConnString);
+        SqlConnection offlocConn = new(configuration.GetConnectionString("OfflocRunningPictureDb")!);
 
         using (offlocConn)
         {
@@ -525,7 +516,7 @@ public class DbInteractionService : IDbInteractionService
 
     public async Task<string?> GetLastProcessedOfflocFileName()
     {
-        SqlConnection offlocConn = new(offlocPictureConnString);
+        SqlConnection offlocConn = new(configuration.GetConnectionString("OfflocRunningPictureDb")!);
 
         using (offlocConn)
         {
@@ -557,7 +548,7 @@ public class DbInteractionService : IDbInteractionService
 
     public async Task<string?> GetLastProcessedDeliusFileName()
     {
-        SqlConnection deliusConn = new(deliusPictureConnString);
+        SqlConnection deliusConn = new(configuration.GetConnectionString("DeliusRunningPictureDb")!);
 
         using (deliusConn)
         {
