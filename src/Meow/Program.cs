@@ -17,7 +17,7 @@ try
 
     builder.Services.AddRebus(configure =>
     {
-        var connectionString = builder.Configuration.GetConnectionString("RabbitMQ");
+        var connectionString = builder.Configuration.GetConnectionString("CatsRabbitMQ");
         var rabbitSettings = builder.Configuration.GetRequiredSection("RabbitSettings");
 
         string queueName    = rabbitSettings["DmsService"]!,
