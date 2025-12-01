@@ -5,14 +5,12 @@ using Offloc.Parser.Services.TrimmerContext;
 
 namespace Offloc.Parser.Services;
 
-public class SequentialParsingStrategy : ParsingStrategyBase, IParsingStrategy
+public class SequentialParsingStrategy(
+    IMessageService messageService, 
+    IFileLocations fileLocations,
+    FieldTrimmerContext trimmerContext) : ParsingStrategyBase(messageService, fileLocations, trimmerContext), IParsingStrategy
 {
     private static SemaphoreSlim sem = new SemaphoreSlim(1, 1);
-
-    public SequentialParsingStrategy(IStagingMessagingService stagingService, 
-        IStatusMessagingService statusService, IFileLocations fileLocations, 
-        FieldTrimmerContext trimmerContext)
-        : base(stagingService, statusService, fileLocations, trimmerContext) { }
 
     public async Task ParseFiles(string[] files)
     {
@@ -25,7 +23,7 @@ public class SequentialParsingStrategy : ParsingStrategyBase, IParsingStrategy
             await sem.WaitAsync();
 
             await ParseFile(fileLocations.offlocInput + '/' + files[0]);
-            await stagingService.StagingPublishAsync(new OfflocParserFinishedMessage(files[0].Split('/').Last(), false));
+            await messageService.PublishAsync(new OfflocParserFinishedMessage(files[0].Split('/').Last(), false));
             
             sem.Release();
         }

@@ -9,7 +9,7 @@ public class MatchingScoreOutstandingEdgesMessage : MatchingMessage
     [JsonConstructor]
     public MatchingScoreOutstandingEdgesMessage()
     {
-        routingKey = TMatchingQueue.MatchingScoreOutstandingEdgesMessage;
+        Queue = TMatchingQueue.MatchingScoreOutstandingEdgesMessage;
     }
 
     public override StatusUpdateMessage StatusMessage =>

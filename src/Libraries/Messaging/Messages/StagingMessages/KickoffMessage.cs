@@ -12,6 +12,6 @@ public class KickoffMessage : StagingMessage
     [JsonConstructor]
     public KickoffMessage()
     {
-        routingKey = TStagingQueue.Kickoff;
+        Queue = TStagingQueue.Kickoff;
     }
 }

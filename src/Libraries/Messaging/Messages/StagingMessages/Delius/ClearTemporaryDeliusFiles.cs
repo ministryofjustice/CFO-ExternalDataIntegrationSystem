@@ -10,6 +10,6 @@ public class ClearTemporaryDeliusFiles : StagingMessage
 
     public ClearTemporaryDeliusFiles()
     {
-        routingKey = TStagingQueue.DeliusFilesClear;
+        Queue = TStagingQueue.DeliusFilesClear;
     }
 }

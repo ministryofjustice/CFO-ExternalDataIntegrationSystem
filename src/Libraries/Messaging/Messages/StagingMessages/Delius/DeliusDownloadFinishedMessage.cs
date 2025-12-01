@@ -13,8 +13,8 @@ public class DeliusDownloadFinishedMessage : StagingMessage
     [JsonConstructor]
     public DeliusDownloadFinishedMessage(string fileName, string fileId)
     {
-        routingKey = TStagingQueue.DeliusParser;
-        base.fileName = fileName;
+        Queue = TStagingQueue.DeliusParser;
+        base.FileName = fileName;
         FileId = fileId;
     }
     

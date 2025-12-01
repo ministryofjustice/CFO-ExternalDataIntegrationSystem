@@ -8,10 +8,10 @@ namespace Delius.Parser.Core;
 
 public class TextFileProcessor : IFileProcessor
 {
-    private readonly IStagingMessagingService messageService;
+    private readonly IMessageService messageService;
     private DeliusProcessor deliusProcessor;
 
-    public TextFileProcessor(IStagingMessagingService messageService, DeliusProcessor deliusProcessor)
+    public TextFileProcessor(IMessageService messageService, DeliusProcessor deliusProcessor)
     {
         this.messageService = messageService;
         this.deliusProcessor = deliusProcessor;

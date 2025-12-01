@@ -12,6 +12,6 @@ public class ImportFinishedMessage : ImportMessage
     [JsonConstructor]
     public ImportFinishedMessage()
     {
-        routingKey = TImportQueue.ImportFinished;
+        Queue = TImportQueue.ImportFinished;
     }
 }
