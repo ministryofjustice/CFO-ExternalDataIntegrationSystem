@@ -92,34 +92,8 @@ public class RabbitService : IMessageService
         };
     }
 
-    public async Task DbPublishResponseAsync<T>(T message) where T : DbResponseMessage
-    {
-        await channel.BasicPublishAsync(
-            exchange: Exchanges.database,
-            routingKey: message.Queue.ToString(),
-            mandatory: false,
-            body: Encoding.UTF8.GetBytes(JsonSerializer.Serialize(message, serializerOpts))
-            );
-
-		await PublishStatusAsync(message);
-	}
-
-    public async Task SubscribeToDbRequestAsync<T>(Action<T> handler, TDbQueue queue) where T : DbRequestMessage
-    {        
-        var consumer = new AsyncEventingBasicConsumer(channel);
-        await channel.BasicConsumeAsync(queue.ToString(), true, consumer);
-
-        consumer.ReceivedAsync += (model, ea) =>
-        {
-            var msg = JsonSerializer.Deserialize<T>(Encoding.UTF8.GetString(ea.Body.ToArray()), serializerOpts)!;
-            handler.Invoke(msg);
-            return Task.CompletedTask;
-        };
-    }
-
-    public async Task<TResponse> SendDbRequestAndWaitForResponseAsync<TRequest, TResponse>(TRequest message) 
-        where TRequest : DbRequestMessage 
-        where TResponse : DbResponseMessage 
+    public async Task<TResponse> SendDbRequestAndWaitForResponseAsync<TResponse>(DbRequestMessage<TResponse> message) 
+        where TResponse : DbResponseMessage, new() 
     {
         await dbSemaphore.WaitAsync();
 
@@ -162,7 +136,7 @@ public class RabbitService : IMessageService
         }
     }
 
-    private async Task DbPublishRequestAsync<T>(T message) where T : DbRequestMessage
+    private async Task DbPublishRequestAsync<TResponse>(DbRequestMessage<TResponse> message) where TResponse : DbResponseMessage, new()
     {
         var props = new BasicProperties
         {

@@ -38,14 +38,14 @@ public class DeliusParserBackgroundService(
     
     private async Task BeginProcessing(string fileName, string fileId)
     {
-        var request = new DeliusFileProcessingStarted(fileName, fileId);
-        await messageService.SendDbRequestAndWaitForResponseAsync<DeliusFileProcessingStarted, ResultDeliusFileProcessingStarted>(request);
+        var request = new StartDeliusFileProcessingRequest(fileName, fileId);
+        await messageService.SendDbRequestAndWaitForResponseAsync(request);
         await parseService.ParseFileAsync(fileName);
     }
 
     private async Task<bool> HasAlreadyBeenProcessedAsync(string file)
     {
-        var res = await messageService.SendDbRequestAndWaitForResponseAsync<GetDeliusFilesMessage, DeliusFilesReturnMessage>(new GetDeliusFilesMessage());
+        var res = await messageService.SendDbRequestAndWaitForResponseAsync(new GetDeliusFilesRequest());
         return res.FileNames.Contains(file);
     }
 }

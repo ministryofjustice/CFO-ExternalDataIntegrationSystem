@@ -42,10 +42,10 @@ public class ImportBackgroundService(IMessageService messageService) : Backgroun
         }
         else
         {
-            await messageService.SendDbRequestAndWaitForResponseAsync<StageDeliusMessage, StageDeliusReturnMessage>(
-                new StageDeliusMessage(message.FileName, message.FilePath));
-            await messageService.SendDbRequestAndWaitForResponseAsync<MergeDeliusRunningPictureMessage, MergeDeliusReturnMessage>(
-                new MergeDeliusRunningPictureMessage(message.FileName));
+            await messageService.SendDbRequestAndWaitForResponseAsync(
+                new StageDeliusRequest(message.FileName, message.FilePath));
+            await messageService.SendDbRequestAndWaitForResponseAsync(
+                new MergeDeliusRequest(message.FileName));
         }
 
         deliusSem.Release();
@@ -63,10 +63,10 @@ public class ImportBackgroundService(IMessageService messageService) : Backgroun
         }
         else
         {
-            await messageService.SendDbRequestAndWaitForResponseAsync<StageOfflocMessage, StageOfflocReturnMessage>(
-                new StageOfflocMessage(message.FilePath));
-            await messageService.SendDbRequestAndWaitForResponseAsync<MergeOfflocRunningPictureMessage, MergeOfflocReturnMessage>(
-                new MergeOfflocRunningPictureMessage(Path.GetFileName(message.FilePath)));
+            await messageService.SendDbRequestAndWaitForResponseAsync(
+                new StageOfflocRequest(message.FilePath));
+            await messageService.SendDbRequestAndWaitForResponseAsync(
+                new MergeOfflocRequest(Path.GetFileName(message.FilePath)));
         }
 
         offlocSem.Release();

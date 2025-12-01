@@ -35,14 +35,14 @@ public class OfflocCleanerBackgroundService(
         }
         else
         {
-            var request = new OfflocFileProcessingStarted(message.FileName, message.FileId, message.ArchiveFileName);
-            await messageService.SendDbRequestAndWaitForResponseAsync<OfflocFileProcessingStarted, ResultOfflocFileProcessingStarted>(request);
+            var request = new StartOfflocFileProcessingRequest(message.FileName, message.FileId, message.ArchiveFileName);
+            await messageService.SendDbRequestAndWaitForResponseAsync(request);
             await cleaningService.CleanFile(file);
         }
     }
     private async Task<bool> HasAlreadyBeenProcessedAsync(string file)
     {
-        var res = await messageService.SendDbRequestAndWaitForResponseAsync<GetOfflocFilesMessage, OfflocFilesReturnMessage>(new GetOfflocFilesMessage());
+        var res = await messageService.SendDbRequestAndWaitForResponseAsync(new GetOfflocFilesRequest());
         return res.OfflocFiles.Contains(file);
     }
 }

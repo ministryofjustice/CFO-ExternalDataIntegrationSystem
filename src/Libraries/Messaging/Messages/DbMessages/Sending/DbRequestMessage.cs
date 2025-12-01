@@ -1,8 +1,15 @@
-﻿using Messaging.Queues;
+﻿using Messaging.Messages.DbMessages.Receiving;
+using Messaging.Queues;
 
 namespace Messaging.Messages.DbMessages.Sending;
 
-public abstract class DbRequestMessage : DbMessage
+public abstract class DbRequestMessage<TResponse> : DbMessage 
+    where TResponse : DbResponseMessage, new()
 {
     public TDbQueue ReplyQueue { get; set; }
+
+    protected DbRequestMessage()
+    {
+        ReplyQueue = new TResponse().Queue;
+    }
 }
