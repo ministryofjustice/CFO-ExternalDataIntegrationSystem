@@ -4,8 +4,6 @@
     <OutputType>Exe</OutputType>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
-    <DockerfileContext>..\..\..</DockerfileContext>
     <UserSecretsId>bed042b3-1d10-47f8-9b97-b516f3ae5895</UserSecretsId>
   </PropertyGroup>
   

@@ -4,15 +4,13 @@ using Infrastructure;
 using Infrastructure.Middlewares;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Identity.Web;
-using Namotion.Reflection;
 using OpenApiContact = NSwag.OpenApiContact;
 using OpenApiInfo = NSwag.OpenApiInfo;
 using OpenApiSecurityScheme = NSwag.OpenApiSecurityScheme;
 
-
 var builder = WebApplication.CreateBuilder(args);
 
-IConfiguration configuration = builder.Configuration;
+builder.UseDmsSerilog();
 
 // Add service defaults & Aspire components.
 builder.AddServiceDefaults();
@@ -96,7 +94,7 @@ app.UseStaticFiles(new StaticFileOptions()
 // Configure the HTTP request pipeline.
 app.UseExceptionHandler();
 
-if (configuration["IsDevelopment"] is not null && configuration.GetValue<bool>("IsDevelopment"))
+if (builder.Configuration["IsDevelopment"] is not null && builder.Configuration.GetValue<bool>("IsDevelopment"))
 {
     app.RegisterDevelopmentEndpoints();
 

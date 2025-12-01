@@ -25,22 +25,22 @@ public static class DatabaseExtensions
 
         builder.Services.AddDbContext<AuditContext>((sp, options) =>
         {
-            options.UseSqlServer(builder.Configuration.GetConnectionString("AuditDb"));
+            options.UseSqlServer(GetRequiredConnectionString(builder.Configuration, "AuditDb"));
         });
 
         builder.Services.AddDbContext<DeliusContext>((sp, options) =>
         {
-            options.UseSqlServer(builder.Configuration.GetConnectionString("DeliusRunningPictureDb"));
+            options.UseSqlServer(GetRequiredConnectionString(builder.Configuration, "DeliusRunningPictureDb"));
         });
         
         builder.Services.AddDbContext<OfflocContext>((sp, options) =>
         {
-            options.UseSqlServer(builder.Configuration.GetConnectionString("OfflocRunningPictureDb"));
+            options.UseSqlServer(GetRequiredConnectionString(builder.Configuration, "OfflocRunningPictureDb"));
         });
 
         builder.Services.AddDbContext<ClusteringContext>((sp, options) =>
         {
-            options.UseSqlServer(builder.Configuration.GetConnectionString("ClusterDb"));
+            options.UseSqlServer(GetRequiredConnectionString(builder.Configuration, "ClusterDb"));
             options.AddInterceptors(sp.GetRequiredService<AuditSaveChangesInterceptor>());
         });
 
@@ -51,4 +51,7 @@ public static class DatabaseExtensions
 
         return builder;
     }
+
+    private static string GetRequiredConnectionString(IConfiguration configuration, string name) =>
+        configuration.GetConnectionString(name) ?? throw new InvalidOperationException($"Connection string '{name}' is not configured.");
 }

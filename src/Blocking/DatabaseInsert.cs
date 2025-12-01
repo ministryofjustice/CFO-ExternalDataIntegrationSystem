@@ -1,42 +1,29 @@
-﻿
 using Blocking.ConfigurationModels;
 using Microsoft.Data.SqlClient;
-using System.ComponentModel.DataAnnotations;
 using System.Data;
-using System.Data.SqlTypes;
-using System.Runtime.InteropServices.JavaScript;
 using Newtonsoft.Json;
-using System.Linq.Expressions;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Options;
 
 namespace Blocking;
 
-public class DatabaseInsert
+public class DatabaseInsert(
+    IConfiguration configuration,
+    IOptions<StoredProceduresConfig> storedProceduresOptions,
+    IOptions<BlockingQueriesConfig> blockingQueriesOptions)
 {
-	private readonly string connString;
-
-    private readonly string truncateProcedure;
-    private readonly string insertCandidatesProcedure;
-    private readonly BlockingQueriesConfig blockingQueriesConfig;
-
-    public DatabaseInsert(ServerConfiguration config)
-    {
-        connString = config.connectionString;
-
-        (truncateProcedure, insertCandidatesProcedure, blockingQueriesConfig) =
-            (config.storedProceduresConfig.TruncateStoredProcedure,
-            config.storedProceduresConfig.InsertCandidatesStoredProcedure,
-            config.blockingQueriesConfig);
-    }
-
     public async Task ClearTables()
     {
-        SqlConnection conn = new SqlConnection(connString);
+        var connectionString = configuration.GetConnectionString("MatchingDb") 
+            ?? throw new InvalidOperationException("Connection string 'MatchingDb' is not configured.");
+
+        SqlConnection conn = new SqlConnection(connectionString);
 		
 		await conn.OpenAsync();
 
 		using (conn)
 		{
-			SqlCommand command = new SqlCommand(truncateProcedure, conn);
+			SqlCommand command = new SqlCommand(storedProceduresOptions.Value.TruncateStoredProcedure, conn);
 			command.CommandTimeout = 120;
 			command.CommandType = CommandType.StoredProcedure;
 
@@ -47,28 +34,32 @@ public class DatabaseInsert
 			catch (SqlException ex)
 			{
 				Console.WriteLine(ex.ToString());
-				throw ex;
+				throw;
 			}
 		}
 	}
 
     public async Task InsertCandidates()
     {
-		var blockingQueriesGroups = blockingQueriesConfig.BlockingQueriesGroups;
+		var blockingQueriesGroups = blockingQueriesOptions.Value.BlockingQueriesGroups;
 
         if (blockingQueriesGroups == null || blockingQueriesGroups.Length == 0)
 		{
 			//throw exception? or publish a different message? or may be next phase
 			return;
 		}
+
+		var connectionString = configuration.GetConnectionString("MatchingDb") 
+            ?? throw new InvalidOperationException("Connection string 'MatchingDb' is not configured.");
+
 		var jsonQueries = JsonConvert.SerializeObject(blockingQueriesGroups);
-		SqlConnection conn = new SqlConnection(connString);
+		SqlConnection conn = new SqlConnection(connectionString);
 
 		await conn.OpenAsync();
 
 		using (conn)
 		{
-			SqlCommand command = new SqlCommand(insertCandidatesProcedure, conn);
+			SqlCommand command = new SqlCommand(storedProceduresOptions.Value.InsertCandidatesStoredProcedure, conn);
 			command.CommandTimeout = 600;
 			command.CommandType = CommandType.StoredProcedure;
             command.Parameters.AddWithValue("@jsonQueries", jsonQueries);
@@ -80,7 +71,7 @@ public class DatabaseInsert
 			catch (SqlException ex)
 			{
 				Console.WriteLine(ex.ToString());
-				throw ex;
+				throw;
 			}
 		}
 	}
