@@ -3,11 +3,11 @@
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
   </PropertyGroup>
   <ItemGroup>
-    <PackageVersion Include="Aspire.Hosting.AppHost" Version="13.0.0" />
-    <PackageVersion Include="Aspire.Hosting.RabbitMQ" Version="13.0.0" />
-    <PackageVersion Include="Aspire.Hosting.Redis" Version="13.0.0" />
-    <PackageVersion Include="Aspire.Hosting.SqlServer" Version="13.0.0" />
-    <PackageVersion Include="Aspire.RabbitMQ.Client" Version="13.0.0" />
+    <PackageVersion Include="Aspire.Hosting.AppHost" Version="13.0.1" />
+    <PackageVersion Include="Aspire.Hosting.RabbitMQ" Version="13.0.1" />
+    <PackageVersion Include="Aspire.Hosting.Redis" Version="13.0.1" />
+    <PackageVersion Include="Aspire.Hosting.SqlServer" Version="13.0.1" />
+    <PackageVersion Include="Aspire.RabbitMQ.Client" Version="13.0.1" />
     <PackageVersion Include="AWSSDK.Extensions.NETCore.Setup" Version="4.0.3.14" />
     <PackageVersion Include="AWSSDK.SecurityToken" Version="4.0.5.1" />
     <PackageVersion Include="CommunityToolkit.Aspire.Hosting.Minio" Version="13.0.0" />
@@ -60,8 +60,8 @@
     <PackageVersion Include="Rebus.RabbitMq" Version="10.1.0" />
     <PackageVersion Include="Rebus.ServiceProvider" Version="10.7.0" />
     <PackageVersion Include="Sentry.Serilog" Version="6.0.0-preview.2-prerelease" />
-    <PackageVersion Include="Serilog.Extensions.Hosting" Version="9.0.1-dev-02307" />
-    <PackageVersion Include="Serilog.Settings.Configuration" Version="9.0.1-dev-02319" />
+    <PackageVersion Include="Serilog.Extensions.Hosting" Version="10.0.0" />
+    <PackageVersion Include="Serilog.Settings.Configuration" Version="10.0.0" />
     <PackageVersion Include="Serilog.Sinks.Console" Version="6.1.1" />
     <PackageVersion Include="Serilog.Sinks.File" Version="7.0.0" />
     <PackageVersion Include="SimMetrics.Net" Version="1.0.5" />
