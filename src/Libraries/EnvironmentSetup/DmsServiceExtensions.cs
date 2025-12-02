@@ -2,8 +2,9 @@ using FileStorage;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Sentry;
+using Microsoft.Extensions.Hosting.WindowsServices;
 using Serilog;
+using Serilog.Events;
 
 namespace EnvironmentSetup;
 
@@ -17,25 +18,25 @@ public static class DmsServiceExtensions
     /// </summary>
     public static IHostApplicationBuilder UseDmsSerilog(this IHostApplicationBuilder builder)
     {
-        var sentryDsn = builder.Configuration["SENTRY_DSN"];
-        
-        if (!string.IsNullOrWhiteSpace(sentryDsn))
+        builder.Services.AddSerilog(config =>
         {
-            SentrySdk.Init(options =>
+            config.ReadFrom.Configuration(builder.Configuration);
+            
+            if (builder.Configuration["SENTRY_DSN"] is { Length: > 0 } dsn)
             {
-                options.Dsn = sentryDsn;
-                options.Environment = builder.Environment.EnvironmentName;
-                options.TracesSampleRate = 1.0;
-                options.AttachStacktrace = true;
-                options.SendDefaultPii = false;
-                options.AutoSessionTracking = true;
-            });
-        }
-        
-        builder.Services.AddSerilog(config => config
-            .ReadFrom.Configuration(builder.Configuration)
-            .WriteTo.File(Path.Combine("logs", "fatal.txt"), Serilog.Events.LogEventLevel.Fatal)
-            .WriteTo.Sentry());
+                config.WriteTo.Sentry(options =>
+                {
+                    options.Dsn = dsn;
+                    options.Environment = builder.Environment.EnvironmentName;
+                    options.TracesSampleRate = 0.1;
+                    options.AttachStacktrace = true;
+                    options.SendDefaultPii = true;
+                    options.AutoSessionTracking = true;
+                    options.MinimumEventLevel = LogEventLevel.Information;
+                    options.MinimumBreadcrumbLevel = LogEventLevel.Information;
+                });
+            }
+        });
 
         return builder;
     }
@@ -49,8 +50,6 @@ public static class DmsServiceExtensions
         services.AddWindowsService();
         return services;
     }
-
-
 
     /// <summary>
     /// Configures file location paths for services that process files.
@@ -78,6 +77,13 @@ public static class DmsServiceExtensions
     /// </remarks>
     public static IHostApplicationBuilder AddDmsCoreWorkerService(this IHostApplicationBuilder builder)
     {
+        // Ensure the current directory is set correctly when running as a Windows Service
+        // This ensures relative paths in appsettings.json work as expected (i.e. for Serilog log files)
+        if (WindowsServiceHelpers.IsWindowsService())
+        {
+            Directory.SetCurrentDirectory(AppContext.BaseDirectory);
+        }
+
         builder.UseDmsSerilog();
         builder.Services.AddDmsWindowsService();
         builder.Services.AddDmsFileLocations(builder.Configuration);
