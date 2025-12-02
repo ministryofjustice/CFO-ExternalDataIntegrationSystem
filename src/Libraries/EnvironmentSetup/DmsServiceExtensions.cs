@@ -17,7 +17,7 @@ public static class DmsServiceExtensions
     /// </summary>
     public static IHostApplicationBuilder UseDmsSerilog(this IHostApplicationBuilder builder)
     {
-        var sentryDsn = builder.Configuration["Sentry:Dsn"];
+        var sentryDsn = builder.Configuration["SENTRY_DSN"];
         
         if (!string.IsNullOrWhiteSpace(sentryDsn))
         {
