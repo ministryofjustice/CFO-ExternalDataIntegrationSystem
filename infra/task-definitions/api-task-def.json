@@ -1,10 +1,10 @@
 {
     "containerDefinitions": [
         {
-            "name": "dms-visualiser-container",
+            "name": "api-container",
             "image": "PLACEHOLDER",
-            "cpu": 256,
-            "memory": 512,
+            "cpu": 512,
+            "memory": 1024,
             "portMappings": [
                 {
                     "containerPort": 8080,
@@ -21,12 +21,13 @@
             ],
             "essential": true,
             "environment": [],
+            "secrets": [],
             "mountPoints": [],
             "volumesFrom": [],
             "logConfiguration": {
                 "logDriver": "awslogs",
                 "options": {
-                    "awslogs-group": "ecs/dms-visualiser",
+                    "awslogs-group": "/ecs/dms-api",
                     "awslogs-region": "eu-west-2",
                     "awslogs-stream-prefix": "ecs"
                 }
@@ -34,45 +35,17 @@
             "systemControls": []
         }
     ],
-    "family": "dms-visualiser-task",
-    "taskRoleArn": "arn:aws:iam::035941410605:role/DMS-PreProd_ecs_task_role",
+    "family": "dms-api-task",
     "executionRoleArn": "ecsTaskExecutionRole",
     "networkMode": "awsvpc",
-    "revision": 6,
     "volumes": [],
-    "status": "ACTIVE",
-    "requiresAttributes": [
-        {
-            "name": "com.amazonaws.ecs.capability.logging-driver.awslogs"
-        },
-        {
-            "name": "ecs.capability.execution-role-awslogs"
-        },
-        {
-            "name": "com.amazonaws.ecs.capability.ecr-auth"
-        },
-        {
-            "name": "com.amazonaws.ecs.capability.docker-remote-api.1.19"
-        },
-        {
-            "name": "ecs.capability.execution-role-ecr-pull"
-        },
-        {
-            "name": "com.amazonaws.ecs.capability.docker-remote-api.1.18"
-        },
-        {
-            "name": "ecs.capability.task-eni"
-        }
-    ],
     "placementConstraints": [],
     "compatibilities": [
-        "EC2",
-        "MANAGED_INSTANCES",
         "FARGATE"
     ],
     "requiresCompatibilities": [
         "FARGATE"
     ],
-    "cpu": "256",
-    "memory": "512"
+    "cpu": "512",
+    "memory": "1024"
 }

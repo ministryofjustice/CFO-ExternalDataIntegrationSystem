@@ -6,71 +6,26 @@ on:
       - main
 
 permissions:
-  id-token: write # required for OIDC authentication with AWS
+  id-token: write
+  contents: read
 
 jobs:
-  deploy:
-    runs-on: ubuntu-latest
+  deploy-preprod:
+    if: github.ref == 'refs/heads/develop'
+    uses: ./.github/workflows/deploy-reusable.yml
+    with:
+      environment: preprod
+      aws-region: eu-west-2
+    secrets:
+      AWS_ROLE_ARN: ${{ secrets.AWS_ROLE_ARN }}
+      AWS_SECRETS_ARN: ${{ secrets.AWS_SECRETS_ARN }}
 
-    environment: ${{ github.ref_name == 'main' && 'prod' || 'dev' }}
-
-    env:
-      REPOSITORY: dms_visualiser
-      IMAGE_TAG: ${{ github.ref_name == 'main' && 'prod' || 'dev' }}-${{ github.sha }}
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@8df5847569e6427dd6c4fb1cf565c83acfa8afa7 # v6.0.0
-        with:
-          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
-          aws-region: eu-west-2
-
-      - name: Login to Amazon ECR
-        id: login-ecr
-        uses: aws-actions/amazon-ecr-login@183a1442edf41672e66566b7fc560e297a290896 # v2.1.1
-
-      - name: Setup .NET
-        uses: actions/setup-dotnet@c2fa09f4bde5ebb9d1777cf28262a3eb3db3ced7 # v5.2.0
-        with:
-          dotnet-version: 10.0.x
-
-      - name: Run tests
-        run: dotnet test --configuration Release
-
-      - name: Build and Publish Image
-        id: build-image
-        run: |
-          dotnet publish src/Visualiser/Visualiser.csproj \
-          --configuration Release \
-          --target:PublishContainer \
-          --property:ContainerRegistry=${{ steps.login-ecr.outputs.registry }} \
-          --property:ContainerRepository=$REPOSITORY \
-          --property:ContainerImageTag=$IMAGE_TAG
-
-          IMAGE=${{ steps.login-ecr.outputs.registry }}/${REPOSITORY}:${IMAGE_TAG}
-          echo "IMAGE=${IMAGE}" >> $GITHUB_OUTPUT
-
-      - name: Render ECS task definition
-        id: render-task-def
-        uses: aws-actions/amazon-ecs-render-task-definition@77954e213ba1f9f9cb016b86a1d4f6fcdea0d57e # v1.8.4
-        with:
-          task-definition: infra/dms-visualiser-task-def.json
-          container-name: dms-visualiser-container
-          image: ${{ steps.build-image.outputs.image }}
-          environment-variables: |
-            VERY_IMPORTANT=DO_NOT_DELETE_ME
-            DOTNET_ENVIRONMENT=PreProduction
-          secrets: |
-            AzureAd__ClientId=${{ secrets.AWS_SECRETS_ARN }}:Client_ID::
-            AzureAd__ClientSecret=${{ secrets.AWS_SECRETS_ARN }}:Client_Secret::
-            API__BaseUrl=${{ secrets.AWS_SECRETS_ARN }}:API_Base_URL::
-
-      - name: Deploy ECS service
-        uses: aws-actions/amazon-ecs-deploy-task-definition@fc8fc60f3a60ffd500fcb13b209c59d221ac8c8c # v2.6.1
-        with:
-          task-definition: ${{ steps.render-task-def.outputs.task-definition }}
-          service: dms-visualiser-service-1
-          cluster: dms-visualiser-cluster
+  deploy-prod:
+    if: github.ref == 'refs/heads/main'
+    uses: ./.github/workflows/deploy-reusable.yml
+    with:
+      environment: prod
+      aws-region: eu-west-2
+    secrets:
+      AWS_ROLE_ARN: ${{ secrets.AWS_ROLE_ARN }}
+      AWS_SECRETS_ARN: ${{ secrets.AWS_SECRETS_ARN }}
