@@ -1,0 +1,124 @@
+name: Reusable Deploy
+
+on:
+  workflow_call:
+    inputs:
+      environment:
+        required: true
+        type: string
+        description: 'Environment name (preprod or prod)'
+      aws-region:
+        required: false
+        type: string
+        default: 'eu-west-2'
+    secrets:
+      AWS_ROLE_ARN:
+        required: true
+      AWS_SECRETS_ARN:
+        required: true
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  load-services:
+    runs-on: ubuntu-latest
+    outputs:
+      services: ${{ steps.load.outputs.services }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+      
+      - name: Load service mappings
+        id: load
+        run: |
+          services=$(jq -c '.services' infra/services.json)
+          echo "services=${services}" >> $GITHUB_OUTPUT
+          echo "Loaded services:"
+          echo "${services}" | jq '.'
+
+  deploy:
+    needs: load-services
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
+    
+    strategy:
+      matrix:
+        service: ${{ fromJson(needs.load-services.outputs.services) }}
+      fail-fast: false
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ inputs.aws-region }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Run tests
+        run: dotnet test --configuration Release
+
+      - name: Build and Publish Image
+        id: build-image
+        env:
+          REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          REPOSITORY: ${{ inputs.environment }}/${{ matrix.service.name }}
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          PROJECT_PATH="src/${{ matrix.service.project }}"
+          
+          if [ ! -f "$PROJECT_PATH" ]; then
+            echo "Project not found: $PROJECT_PATH - Skipping"
+            echo "skip=true" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+          
+          echo "Building and publishing: $PROJECT_PATH"
+          
+          dotnet publish "$PROJECT_PATH" \
+            --configuration Release \
+            --target:PublishContainer \
+            --property:ContainerRegistry=$REGISTRY \
+            --property:ContainerRepository=$REPOSITORY \
+            --property:ContainerImageTag=$IMAGE_TAG
+          
+          IMAGE="${REGISTRY}/${REPOSITORY}:${IMAGE_TAG}"
+          echo "IMAGE=${IMAGE}" >> $GITHUB_OUTPUT
+          echo "skip=false" >> $GITHUB_OUTPUT
+          echo "Published image: ${IMAGE}"
+
+      - name: Render ECS task definition
+        if: steps.build-image.outputs.skip != 'true'
+        id: render-task-def
+        uses: aws-actions/amazon-ecs-render-task-definition@v1.8.1
+        with:
+          task-definition: ${{ matrix.service.taskDef }}
+          container-name: ${{ matrix.service.container }}
+          image: ${{ steps.build-image.outputs.image }}
+          environment-variables: |
+            DOTNET_ENVIRONMENT=${{ inputs.environment == 'prod' && 'Production' || 'PreProduction' }}
+          secrets: |
+            AzureAd__ClientId=${{ secrets.AWS_SECRETS_ARN }}:Client_ID::
+            AzureAd__ClientSecret=${{ secrets.AWS_SECRETS_ARN }}:Client_Secret::
+            API__BaseUrl=${{ secrets.AWS_SECRETS_ARN }}:API_Base_URL::
+
+      - name: Deploy ECS service
+        if: steps.build-image.outputs.skip != 'true'
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v2
+        with:
+          task-definition: ${{ steps.render-task-def.outputs.task-definition }}
+          service: ${{ matrix.service.name }}-service-1
+          cluster: ${{ matrix.service.name }}-cluster
+          wait-for-service-stability: true
