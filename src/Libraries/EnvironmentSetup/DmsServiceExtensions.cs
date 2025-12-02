@@ -2,6 +2,7 @@ using FileStorage;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Sentry;
 using Serilog;
 
 namespace EnvironmentSetup;
@@ -12,12 +13,29 @@ public static class DmsServiceExtensions
     /// Configures Serilog logging for all DMS applications.
     /// Works for both ASP.NET Core apps and Worker Services.
     /// Reads configuration from appsettings.json Serilog section.
+    /// Integrates with Sentry for error tracking.
     /// </summary>
     public static IHostApplicationBuilder UseDmsSerilog(this IHostApplicationBuilder builder)
     {
+        var sentryDsn = builder.Configuration["Sentry:Dsn"];
+        
+        if (!string.IsNullOrWhiteSpace(sentryDsn))
+        {
+            SentrySdk.Init(options =>
+            {
+                options.Dsn = sentryDsn;
+                options.Environment = builder.Environment.EnvironmentName;
+                options.TracesSampleRate = 1.0;
+                options.AttachStacktrace = true;
+                options.SendDefaultPii = false;
+                options.AutoSessionTracking = true;
+            });
+        }
+        
         builder.Services.AddSerilog(config => config
             .ReadFrom.Configuration(builder.Configuration)
-            .WriteTo.File(Path.Combine("logs", "fatal.txt"), Serilog.Events.LogEventLevel.Fatal));
+            .WriteTo.File(Path.Combine("logs", "fatal.txt"), Serilog.Events.LogEventLevel.Fatal)
+            .WriteTo.Sentry());
 
         return builder;
     }
