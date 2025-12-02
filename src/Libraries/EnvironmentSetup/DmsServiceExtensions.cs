@@ -2,6 +2,7 @@ using FileStorage;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Hosting.WindowsServices;
 using Serilog;
 using Serilog.Events;
 
@@ -76,6 +77,13 @@ public static class DmsServiceExtensions
     /// </remarks>
     public static IHostApplicationBuilder AddDmsCoreWorkerService(this IHostApplicationBuilder builder)
     {
+        // Ensure the current directory is set correctly when running as a Windows Service
+        // This ensures relative paths in appsettings.json work as expected (i.e. for Serilog log files)
+        if (WindowsServiceHelpers.IsWindowsService())
+        {
+            Directory.SetCurrentDirectory(AppContext.BaseDirectory);
+        }
+
         builder.UseDmsSerilog();
         builder.Services.AddDmsWindowsService();
         builder.Services.AddDmsFileLocations(builder.Configuration);
