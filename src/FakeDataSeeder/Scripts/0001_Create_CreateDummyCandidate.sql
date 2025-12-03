@@ -36,6 +36,17 @@ BEGIN
 		RETURN;
 	END
 
+	IF EXISTS(SELECT TOP(1) NOMSnumber FROM OfflocRunningPictureDb.OfflocRunningPicture.PersonalDetails where NOMSnumber = @NomisNumber)
+	BEGIN
+		PRINT 'Nomis already exists';
+		RETURN;
+	END
+
+	IF EXISTS(SELECT TOP(1) CRN FROM DeliusRunningPictureDb.DeliusRunningPicture.Offenders where CRN = @Crn)
+	BEGIN
+		PRINT 'Delius already exists';
+		RETURN;
+	END
 
 	SELECT TOP 1 @OffenderToOffenderManagerMappingId = Id FROM [DeliusRunningPictureDb].[DeliusRunningPicture].OffenderToOffenderManagerMappings ORDER BY Id DESC;
 	SET @OffenderToOffenderManagerMappingId = @OffenderToOffenderManagerMappingId +1;
