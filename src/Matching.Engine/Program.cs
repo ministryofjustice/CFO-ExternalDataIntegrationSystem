@@ -1,4 +1,6 @@
-﻿try
+﻿using Messaging.Extensions;
+
+try
 {
     var builder = Host.CreateApplicationBuilder(args);
 
@@ -9,7 +11,7 @@
     });
 
     builder.AddDmsCoreWorkerService();
-    builder.AddMessagingServices();
+    builder.Services.AddDmsRabbitMQ(builder.Configuration);
 
     builder.AddApplicationServices();
 

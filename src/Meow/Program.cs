@@ -7,13 +7,11 @@ try
 {
     var builder = Host.CreateApplicationBuilder(args);
 
-    builder.UseDmsSerilog();
+    builder.AddDmsCoreWorkerService();
 
     builder.Services.AddScoped<ICurrentUserService, MeowUserService>();
 
     builder.AddDatabaseServices();
-
-    builder.Services.AddDmsWindowsService();
 
     builder.Services.AddRebus(configure =>
     {
