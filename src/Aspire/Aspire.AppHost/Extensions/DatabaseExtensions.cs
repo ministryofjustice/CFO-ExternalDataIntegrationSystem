@@ -8,8 +8,6 @@ public static class DatabaseExtensions
         this IDistributedApplicationBuilder builder,
         IResourceBuilder<ParameterResource> password)
     {
-        var home = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
-
 #pragma warning disable ASPIREPROXYENDPOINTS001
         return builder.AddSqlServer("sql", password, 61749)
             .WithDataVolume("dms-data")
@@ -79,9 +77,7 @@ public static class DatabaseExtensions
         {
             builder.AddProject<FakeDataSeeder>("FakeDataSeeder")
                 .WithReference(cluster)
-                .WaitForCompletion(clusterSqlProj)
-                .WaitForCompletion(offlocRunningPictureSqlProj)
-                .WaitForCompletion(deliusRunningPictureSqlProj);
+                .WaitForCompletion(clusterSqlProj);
         }
 
         return new DmsDatabaseResources(
