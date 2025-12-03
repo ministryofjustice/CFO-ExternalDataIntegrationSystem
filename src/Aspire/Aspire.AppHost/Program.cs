@@ -1,4 +1,5 @@
 using Aspire.AppHost.Extensions;
+using Microsoft.Extensions.Configuration;
 
 var builder = DistributedApplication.CreateBuilder(args);
 
@@ -8,6 +9,8 @@ var isDevelopment = builder.AddParameter("isDevelopment");
 var rabbitPassword = builder.AddParameter("rabbitPassword", true);
 var sqlPassword = builder.AddParameter("sqlPassword", true);
 var minioPassword = builder.AddParameter("minioPassword", true);
+var seedData = builder.Configuration.GetValue<bool>("Parameters:seedData");
+var startCoreServices = builder.Configuration.GetValue<bool>("Parameters:startCoreServices");
 
 var hostMount = HostExtensions.Create(Path.Combine(builder.AppHostDirectory, "DMS_STAGING"));
 var targetMount = "/app/";
@@ -16,7 +19,7 @@ var targetMount = "/app/";
 var sql = builder.AddDmsSqlServer(sqlPassword)
     .WithBindMount(hostMount, targetMount);
 
-var databases = builder.AddDmsDatabases(sql, seedData: false);
+var databases = builder.AddDmsDatabases(sql, seedData);
 
 // API setup
 var apiService = builder.AddDmsApi(databases, apiKey, isDevelopment);
@@ -24,19 +27,23 @@ var apiService = builder.AddDmsApi(databases, apiKey, isDevelopment);
 // Visualiser setup
 builder.AddDmsVisualiser(apiService);
 
-var rabbit = builder
+if (startCoreServices)
+{
+    var rabbit = builder
     .AddRabbitMQ("RabbitMQ", password: rabbitPassword)
     .WithManagementPlugin(port: 15672);
 
-// MinIO (s3 emulation)
-var minio = builder.AddMinioContainer("minio", rootPassword: minioPassword)
+    // MinIO (s3 emulation)
+    var minio = builder
+    .AddMinioContainer("minio", rootPassword: minioPassword)
     .WithDataVolume("dms-minio-data");
 
-builder.AddDmsServices(
-    minio,
-    rabbit,
-    databases,
-    hostMount,
-    targetMount);
+    builder.AddDmsServices(
+        minio,
+        rabbit,
+        databases,
+        hostMount,
+        targetMount);
+}
 
 builder.Build().Run();
