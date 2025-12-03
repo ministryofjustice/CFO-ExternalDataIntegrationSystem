@@ -32,7 +32,9 @@ Any queries, please contact andrew.grocott@justice.gov.uk or visit our slack cha
 
 ## Prerequisites
 - [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0)
-- **Visual Studio Code users**: Install the [C# Dev Kit extension](https://marketplace.visualstudio.com/items?itemName=ms-dotnettools.csdevkit)
+- **Visual Studio Code users**:
+    - [C# Dev Kit Extension](https://marketplace.visualstudio.com/items?itemName=ms-dotnettools.csdevkit)
+    - [Aspire Extension](https://marketplace.visualstudio.com/items?itemName=microsoft-aspire.aspire-vscode)
 
 ## Setup (development)
 1. **(Optional)** To use the Visualiser app, you must configure secret(s) for applications in the *src* directory:
