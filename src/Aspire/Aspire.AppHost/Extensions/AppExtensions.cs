@@ -48,10 +48,9 @@ public static class AppExtensions
         builder.AddDmsService<Meow>("Meow", rabbit, databases, hostMount).WithExplicitStart();
         builder.AddDmsService<Offloc_Cleaner>("Offloc-Cleaner", rabbit, databases, hostMount);
         builder.AddDmsService<Offloc_Parser>("Offloc-Parser", rabbit, databases, hostMount);
-
+        
         builder.AddDmsService<FileSync>("FileSync", rabbit, databases, hostMount)
             .WithReference(minio).WaitFor(minio)
-            .WithExplicitStart()
             .WithEnvironment("MinIO:BucketName", "cfo-dms-files");
             
         return builder;
