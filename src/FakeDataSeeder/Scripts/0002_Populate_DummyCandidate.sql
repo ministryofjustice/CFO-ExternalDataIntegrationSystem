@@ -36,11 +36,11 @@ BEGIN
 	exec CreateDummyCandidate '1CFG5298O','Victor','Jordan','28/07/1961 00:00','A8430TA','B007256','TRUE','Male','British','White','NOMIS','MTI','HFS';
 	exec CreateDummyCandidate '1CFG9775P','Barry','Stone','14/08/1960 00:00','A1067SA','B008155','TRUE','Female','British','White','DELIUS','LNI','N02';
 	exec CreateDummyCandidate '1CFG6849L','Bruce','Parker','20/02/1977 00:00','A7483AB','B009597','TRUE','Male','British','White','DELIUS','NLI','NBR';
-	exec CreateDummyCandidate '1CFG8347B','Clark','Queen','06/10/2005 00:00','A1056JA','B005305','TRUE','Female','British','White','NOMIS','KVI','N23';
+	exec CreateDummyCandidate '1CFG8347A','Clark','Queen','06/10/2005 00:00','A1056JA','B005305','TRUE','Female','British','White','NOMIS','KVI','N23';
 	exec CreateDummyCandidate '1CFG4189E','Bruce','Curry','14/04/1956 00:00','A3064CA','B006480','TRUE','Female','British','Black','NOMIS','HHI','N32';
 	exec CreateDummyCandidate '1CFG5514M','Clark','Curry','28/05/1962 00:00','A7236EA','B005528','TRUE','Female','British','White','NOMIS','DMI','N54';
 	exec CreateDummyCandidate '1CFG5252T','Peter','Queen','23/09/1964 00:00','A4570WA','B008719','TRUE','Female','British','White','DELIUS','SDI','SSP';
-	exec CreateDummyCandidate '1CFG6789D','Clark','Parker','24/10/1968 00:00','A6440GA','B002584','TRUE','Male','British','White','DELIUS','SLI','N35';
+	exec CreateDummyCandidate '1CFG6789E','Clark','Parker','24/10/1968 00:00','A6440GA','B002584','TRUE','Male','British','White','DELIUS','SLI','N35';
 	exec CreateDummyCandidate '1CFG1848U','Barry','Jordan','09/06/1981 00:00','A7126QA','B004852','TRUE','Female','British','White','DELIUS','SPI','N37';
 	exec CreateDummyCandidate '1CFG4892S','Arthur','Allen','09/10/1960 00:00','A6249NA','B008270','TRUE','Male','British','White','NOMIS','WHI','N59';
 	exec CreateDummyCandidate '1CFG5866O','Peter','Jordan','07/10/2001 00:00','A9186BA','B008561','TRUE','Female','British','Black','NOMIS','CWI','C19';
