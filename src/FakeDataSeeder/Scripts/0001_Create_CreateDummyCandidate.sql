@@ -36,6 +36,17 @@ BEGIN
 		RETURN;
 	END
 
+	IF EXISTS(SELECT TOP(1) NOMSnumber FROM OfflocRunningPictureDb.OfflocRunningPicture.PersonalDetails where NOMSnumber = @NomisNumber)
+	BEGIN
+		PRINT 'Nomis already exists';
+		RETURN;
+	END
+
+	IF EXISTS(SELECT TOP(1) CRN FROM DeliusRunningPictureDb.DeliusRunningPicture.Offenders where CRN = @Crn)
+	BEGIN
+		PRINT 'Delius already exists';
+		RETURN;
+	END
 
 	SELECT TOP 1 @OffenderToOffenderManagerMappingId = Id FROM [DeliusRunningPictureDb].[DeliusRunningPicture].OffenderToOffenderManagerMappings ORDER BY Id DESC;
 	SET @OffenderToOffenderManagerMappingId = @OffenderToOffenderManagerMappingId +1;
@@ -67,10 +78,10 @@ BEGIN
 
 	IF @ClusterId IS NULL
 	BEGIN
-		INSERT INTO [reference].[UPCI2] (UPCI2) VALUES(@Identifier);
-		SELECT @ClusterId = SCOPE_IDENTITY()
+		-- Find the next available ClusterId
+		SELECT @ClusterId = (SELECT COALESCE(MAX(ClusterId), 0) + 1 FROM [output].[Clusters]);
+		UPDATE [reference].[UPCI2] SET UPCI2 = @Identifier WHERE ClusterId = @ClusterId
 	END
-
 
 	IF LEN(@NomisNumber)>0 and LEN(@Crn) > 0
 	BEGIN
