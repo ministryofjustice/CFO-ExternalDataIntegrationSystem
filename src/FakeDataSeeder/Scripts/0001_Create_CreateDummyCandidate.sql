@@ -78,10 +78,10 @@ BEGIN
 
 	IF @ClusterId IS NULL
 	BEGIN
-		INSERT INTO [reference].[UPCI2] (UPCI2) VALUES(@Identifier);
-		SELECT @ClusterId = SCOPE_IDENTITY()
+		-- Find the next available ClusterId
+		SELECT @ClusterId = (SELECT COALESCE(MAX(ClusterId), 0) + 1 FROM [output].[Clusters]);
+		UPDATE [reference].[UPCI2] SET UPCI2 = @Identifier WHERE ClusterId = @ClusterId
 	END
-
 
 	IF LEN(@NomisNumber)>0 and LEN(@Crn) > 0
 	BEGIN
