@@ -14,6 +14,8 @@ builder.UseDmsSerilog();
 
 // Add service defaults & Aspire components.
 builder.AddServiceDefaults();
+builder.Services.AddRequestTimeouts();
+builder.Services.AddOutputCache();
 
 builder.Services.AddOpenApiDocument(options =>
 {
@@ -119,6 +121,9 @@ if (builder.Configuration["IsDevelopment"] is not null && builder.Configuration.
 
 app.UseAuthentication();
 app.UseAuthorization();
+
+app.UseRequestTimeouts();
+app.UseOutputCache();
 
 app.RegisterClusteringEndpoints()
    .RegisterDeliusEndpoints()
