@@ -59,3 +59,240 @@ When running via Aspire, the following services are available:
 | **MinIO** | S3-compatible file storage |  *random port* (check Aspire) | Username: `minioadmin`<br>Password: `minioadmin` |
 | **MSSQL** | Application databases (staging, running picture, matching, cluster) | `127.0.0.1,61749` | Username: `sa`<br>Password: `P@ssword123!` |
 | **RabbitMQ** | Message broker for inter-service communication | http://localhost:15672 | Username: `guest`<br>Password: `guest` |
+
+## Message Flow Diagram
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                         INITIAL FILE DETECTION                              │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+    ┌──────────────┐
+    │   FileSync   │  (Monitors storage for new files)
+    └──────┬───────┘
+           │
+           ├─────────────────────────────────────────┐
+           │                                         │
+           ▼                                         ▼
+    DeliusDownloadFinishedMessage           OfflocDownloadFinished
+           │                                         │
+           │                                         │
+           ▼                                         ▼
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                      PARSING & CLEANING STAGE                               │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+    ┌──────────────────┐                    ┌─────────────────┐
+    │  Delius.Parser   │                    │ Offloc.Cleaner  │
+    │                  │                    │                 │
+    │ (Parses Delius   │                    │ (Cleans Offloc  │
+    │  files into      │                    │  files, removes │
+    │  structured      │                    │  redundant      │
+    │  records)        │                    │  fields)        │
+    └────────┬─────────┘                    └────────┬────────┘
+             │                                       │
+             │ Sends DB requests:                    │
+             │ - StartDeliusFileProcessingRequest    │
+             │                                       │
+             ▼                                       ▼
+    DeliusParserFinishedMessage         OfflocCleanerFinishedMessage
+             │                                       │
+             │                                       │
+             │                                       ▼
+             │                              ┌─────────────────┐
+             │                              │ Offloc.Parser   │
+             │                              │                 │
+             │                              │ (Parses cleaned │
+             │                              │  Offloc files   │
+             │                              │  into structured│
+             │                              │  records)       │
+             │                              └────────┬────────┘
+             │                                       │
+             │                                       │ Sends DB requests:
+             │                                       │ - StartOfflocFileProcessingRequest
+             │                                       │
+             │                                       ▼
+             │                         OfflocParserFinishedMessage
+             │                                       │
+             └───────────────┬───────────────────────┘
+                             │
+                             ▼
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                    STAGING & IMPORT STAGE                                   │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+                    ┌────────────────┐
+                    │     Import     │
+                    │                │
+                    │ (Coordinates   │
+                    │  staging and   │
+                    │  merging of    │
+                    │  both data     │
+                    │  sources)      │
+                    └───────┬────────┘
+                            │
+                            │ Sends DB requests:
+                            │ - StageDeliusRequest
+                            │ - MergeDeliusRequest
+                            │ - StageOfflocRequest
+                            │ - MergeOfflocRequest
+                            │
+                            ▼
+                    ┌────────────────┐
+                    │ DbInteractions │
+                    │                │
+                    │ (Stages data   │
+                    │  from parsers, │
+                    │  merges into   │
+                    │  running       │
+                    │  picture DB)   │
+                    └───────┬────────┘
+                            │
+                            │ Sends responses:
+                            │ - StageDeliusResponse
+                            │ - MergeDeliusResponse
+                            │ - StageOfflocResponse
+                            │ - MergeOfflocResponse
+                            │ - DeliusFilesCleanupMessage
+                            │ - OfflocFilesCleanupMessage
+                            │
+                            ▼
+                    ImportFinishedMessage
+                            │
+                            │
+                            ▼
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                      MATCHING & BLOCKING STAGE                              │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+                    ┌────────────────┐
+                    │    Blocking    │
+                    │                │
+                    │ (Generates     │
+                    │  candidate     │
+                    │  pairs of      │
+                    │  records that  │
+                    │  may match)    │
+                    └───────┬────────┘
+                            │
+                            ▼
+                  BlockingFinishedMessage
+                            │
+                            │
+                            ▼
+            ┌───────────────────────────────┐
+            │   Matching.Engine             │
+            │   (ComparatorService)         │
+            │                               │
+            │ (Compares candidate pairs     │
+            │  using matching rules to      │
+            │  identify potential matches)  │
+            └───────────────┬───────────────┘
+                            │
+                            ▼
+              MatchingScoreCandidatesMessage
+                            │
+                            │
+                            ▼
+            ┌───────────────────────────────┐
+            │   Matching.Engine             │
+            │   (ScorerService)             │
+            │                               │
+            │ (Scores comparisons using     │
+            │  Bayesian probability to      │
+            │  determine match likelihood)  │
+            └───────────────┬───────────────┘
+                            │
+                            ▼
+          MatchingScoreCandidatesFinishedMessage
+                            │
+                            │
+                            ▼
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                        CLUSTERING STAGE                                     │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+            ┌───────────────────────────────┐
+            │   Matching.Engine             │
+            │   (ClusteringService)         │
+            │                               │
+            │ (Pre-processes clustering:    │
+            │  prepares data for grouping)  │
+            └───────────────┬───────────────┘
+                            │
+                            ▼
+          ClusteringPreProcessingStartedMessage
+                            │
+                            │
+                            ▼
+            ┌───────────────────────────────┐
+            │   Matching.Engine             │
+            │   (ComparatorService)         │
+            │                               │
+            │ (Compares outstanding edges   │
+            │  for clustering)              │
+            └───────────────┬───────────────┘
+                            │
+                            ▼
+          MatchingScoreOutstandingEdgesMessage
+                            │
+                            │
+                            ▼
+            ┌───────────────────────────────┐
+            │   Matching.Engine             │
+            │   (ScorerService)             │
+            │                               │
+            │ (Scores outstanding edges)    │
+            └───────────────┬───────────────┘
+                            │
+                            ▼
+          ClusteringPreProcessingFinishedMessage
+                            │
+                            │
+                            ▼
+            ┌───────────────────────────────┐
+            │   Matching.Engine             │
+            │   (ClusteringService)         │
+            │                               │
+            │ (Post-processes clustering:   │
+            │  groups related records into  │
+            │  clusters representing        │
+            │  unique individuals)          │
+            └───────────────┬───────────────┘
+                            │
+                            ▼
+          ClusteringPostProcessingFinishedMessage
+                            │
+                            │
+                            ▼
+                    ┌────────────────┐
+                    │   FileSync     │
+                    │                │
+                    │ (Triggers next │
+                    │  processing    │
+                    │  cycle if      │
+                    │  configured)   │
+                    └────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                        DATA CONSUMPTION                                     │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+                    ┌────────────────┐
+                    │      API       │
+                    │                │
+                    │ (Exposes REST  │
+                    │  endpoints for │
+                    │  querying      │
+                    │  processed     │
+                    │  data)         │
+                    └───────┬────────┘
+                            │
+                            ▼
+                    External Consumers
+                    (e.g., CATS system)
+```
