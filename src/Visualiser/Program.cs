@@ -8,7 +8,9 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.UseDmsSerilog();
 
-builder.Services.AddHealthChecks();
+builder.AddServiceDefaults();
+builder.Services.AddRequestTimeouts();
+builder.Services.AddOutputCache();
 
 builder.Services.AddAuthentication(OpenIdConnectDefaults.AuthenticationScheme)
     .AddMicrosoftIdentityWebApp(builder.Configuration)
@@ -51,14 +53,17 @@ app.UseHttpsRedirection();
 
 app.UseRouting();
 
-app.MapHealthChecks("/healthz").AllowAnonymous();
-
 app.UseAuthentication();
 app.UseAuthorization();
+
+app.UseRequestTimeouts();
+app.UseOutputCache();
 
 app.MapStaticAssets();
 app.MapRazorPages()
    .WithStaticAssets();
+
 app.MapControllers();
+app.MapDefaultEndpoints();
 
 app.Run();
