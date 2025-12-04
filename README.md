@@ -25,9 +25,6 @@ CFO DMS is built as a microservices architecture using .NET Aspire for orchestra
 
 Supporting services include **DbInteractions** (complex database operations), **Blocking** (matching rules), **Cleanup** (data maintenance), and **Logging**. Services communicate asynchronously via RabbitMQ message queues.
 
-## Queries
-Any queries, please contact andrew.grocott@justice.gov.uk or visit our slack channel. https://app.slack.com/client/T02DYEB3A/C011Z8PGWCU/details/
-
 # Development Setup and Execution Guide
 
 ## Prerequisites
