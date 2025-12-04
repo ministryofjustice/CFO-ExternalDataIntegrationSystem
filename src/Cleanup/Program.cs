@@ -11,10 +11,10 @@ try
     var builder = Host.CreateApplicationBuilder(args);
 
     builder.AddDmsCoreWorkerService();
+    builder.Services.AddDmsRabbitMQ(builder.Configuration);
 
     builder.Services.AddSingleton<OfflocCleanupService>();
     builder.Services.AddSingleton<DeliusCleanupService>();
-    builder.Services.AddDmsRabbitMQ(builder.Configuration);
 
     builder.Services.AddHostedService<CleanupBackgroundService>();
 
