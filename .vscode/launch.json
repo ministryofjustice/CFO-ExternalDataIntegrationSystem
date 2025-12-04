@@ -5,10 +5,10 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "C#: Aspire.AppHost [Default Configuration]",
-            "type": "dotnet",
+            "type": "aspire",
             "request": "launch",
-            "projectPath": "${workspaceFolder}/src/Aspire/Aspire.AppHost/Aspire.AppHost.csproj"
+            "name": "Aspire: Launch AppHost",
+            "program": "" // Uses the default AppHost defined in .aspire/settings.json
         }
     ]
 }
