@@ -14,10 +14,9 @@ try
     var builder = Host.CreateApplicationBuilder(args);
 
     builder.AddDmsCoreWorkerService();
+    builder.Services.AddDmsRabbitMQ(builder.Configuration);
 
     builder.Services.AddOptions<ServerConfiguration>().BindConfiguration("ServerConfiguration");
-
-    builder.Services.AddDmsRabbitMQ(builder.Configuration);
     builder.Services.AddSingleton<IDbInteractionService, DbInteractionService>();
 
     builder.Services.AddHostedService<DbBackgroundService>();

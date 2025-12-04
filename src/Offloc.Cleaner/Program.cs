@@ -12,6 +12,7 @@ try
     var builder = Host.CreateApplicationBuilder(args);
 
     builder.AddDmsCoreWorkerService();
+    builder.Services.AddDmsRabbitMQ(builder.Configuration);
     
     builder.Services.AddSingleton(
         new RedundantFieldsWrapper(
@@ -19,7 +20,6 @@ try
         ));
 
     builder.Services.AddSingleton<ICleaningStrategy, SequentialCleaningStrategy>();
-    builder.Services.AddDmsRabbitMQ(builder.Configuration);
 
     builder.Services.AddHostedService<OfflocCleanerBackgroundService>();
 

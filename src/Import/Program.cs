@@ -1,5 +1,5 @@
 using Messaging.Extensions;
-﻿using Import;
+using Import;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -10,7 +10,6 @@ try
 {
     var builder = Host.CreateApplicationBuilder(args);
 
-    builder.Configuration.AddEnvironmentVariables();
     builder.AddDmsCoreWorkerService();
     builder.Services.AddDmsRabbitMQ(builder.Configuration);
 
