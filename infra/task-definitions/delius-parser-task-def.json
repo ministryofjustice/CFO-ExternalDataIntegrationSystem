@@ -28,7 +28,6 @@
         }
     ],
     "family": "dms-delius-parser-task",
-    "executionRoleArn": "ecsTaskExecutionRole",
     "networkMode": "awsvpc",
     "volumes": [
         {
