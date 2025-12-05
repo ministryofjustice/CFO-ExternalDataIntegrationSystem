@@ -28,7 +28,6 @@
         }
     ],
     "family": "dms-import-task",
-    "executionRoleArn": "ecsTaskExecutionRole",
     "networkMode": "awsvpc",
     "volumes": [
         {

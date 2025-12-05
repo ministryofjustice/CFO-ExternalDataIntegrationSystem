@@ -34,9 +34,7 @@
             "systemControls": []
         }
     ],
-    "family": "dms-visualiser-task",
-    "taskRoleArn": "arn:aws:iam::035941410605:role/DMS-PreProd_ecs_task_role",
-    "executionRoleArn": "ecsTaskExecutionRole",
+    "family": "visualiser-task",
     "networkMode": "awsvpc",
     "revision": 6,
     "volumes": [],
