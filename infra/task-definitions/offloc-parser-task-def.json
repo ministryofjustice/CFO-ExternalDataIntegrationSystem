@@ -28,7 +28,6 @@
         }
     ],
     "family": "dms-offloc-parser-task",
-    "executionRoleArn": "ecsTaskExecutionRole",
     "networkMode": "awsvpc",
     "volumes": [
         {

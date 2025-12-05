@@ -28,7 +28,6 @@
         }
     ],
     "family": "dms-offloc-cleaner-task",
-    "executionRoleArn": "ecsTaskExecutionRole",
     "networkMode": "awsvpc",
     "volumes": [
         {

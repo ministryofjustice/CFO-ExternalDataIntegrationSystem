@@ -28,7 +28,6 @@
         }
     ],
     "family": "dms-blocking-task",
-    "executionRoleArn": "ecsTaskExecutionRole",
     "networkMode": "awsvpc",
     "volumes": [
         {

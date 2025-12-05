@@ -28,7 +28,6 @@
         }
     ],
     "family": "dms-logging-task",
-    "executionRoleArn": "ecsTaskExecutionRole",
     "networkMode": "awsvpc",
     "volumes": [
         {
