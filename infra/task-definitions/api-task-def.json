@@ -36,7 +36,6 @@
         }
     ],
     "family": "dms-api-task",
-    "executionRoleArn": "ecsTaskExecutionRole",
     "networkMode": "awsvpc",
     "volumes": [],
     "placementConstraints": [],
