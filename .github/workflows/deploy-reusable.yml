@@ -16,6 +16,10 @@ on:
         required: true
       AWS_SECRETS_ARN:
         required: true
+      AWS_TASK_ROLE_ARN:
+        required: true
+      AWS_EXECUTION_ROLE_ARN:
+        required: true
 
 permissions:
   id-token: write
@@ -107,12 +111,29 @@ jobs:
           task-definition: ${{ matrix.service.taskDef }}
           container-name: ${{ matrix.service.container }}
           image: ${{ steps.build-image.outputs.image }}
+          task-role-arn: ${{ secrets.AWS_TASK_ROLE_ARN }}
+          execution-role-arn: ${{ secrets.AWS_EXECUTION_ROLE_ARN }}
           environment-variables: |
             DOTNET_ENVIRONMENT=${{ inputs.environment == 'prod' && 'Production' || 'PreProduction' }}
           secrets: |
+            API__BaseUrl=${{ secrets.AWS_SECRETS_ARN }}:API_Base_URL::
+            Authentication__ApiKey=${{ secrets.AWS_SECRETS_ARN }}:Authentication_ApiKey::
+            AWS__S3__BucketName=${{ secrets.AWS_SECRETS_ARN }}:S3_BucketName::
             AzureAd__ClientId=${{ secrets.AWS_SECRETS_ARN }}:Client_ID::
             AzureAd__ClientSecret=${{ secrets.AWS_SECRETS_ARN }}:Client_Secret::
-            API__BaseUrl=${{ secrets.AWS_SECRETS_ARN }}:API_Base_URL::
+            ConnectionStrings__AuditDb=${{ secrets.AWS_SECRETS_ARN }}:AuditDb::
+            ConnectionStrings__ClusterDb=${{ secrets.AWS_SECRETS_ARN }}:ClusterDb::
+            ConnectionStrings__DeliusRunningPictureDb=${{ secrets.AWS_SECRETS_ARN }}:DeliusRunningPictureDb::
+            ConnectionStrings__DeliusStagingDb=${{ secrets.AWS_SECRETS_ARN }}:DeliusStagingDb::
+            ConnectionStrings__MatchingDb=${{ secrets.AWS_SECRETS_ARN }}:MatchingDb::
+            ConnectionStrings__OfflocRunningPictureDb=${{ secrets.AWS_SECRETS_ARN }}:OfflocRunningPictureDb::
+            ConnectionStrings__OfflocStagingDb=${{ secrets.AWS_SECRETS_ARN }}:OfflocStagingDb::
+            ConnectionStrings__CatsRabbitMQ=${{ secrets.AWS_SECRETS_ARN }}:CatsRabbitMQ::
+            ConnectionStrings__RabbitMQ=${{ secrets.AWS_SECRETS_ARN }}:RabbitMQ::
+            DMSFilesBasePath=${{ secrets.AWS_SECRETS_ARN }}:DMSFilesBasePath::
+            Sentry_Dsn=${{ secrets.AWS_SECRETS_ARN }}:Sentry_Dsn::
+
+            
 
       - name: Deploy ECS service
         if: steps.build-image.outputs.skip != 'true'

@@ -28,7 +28,6 @@
         }
     ],
     "family": "dms-meow-task",
-    "executionRoleArn": "ecsTaskExecutionRole",
     "networkMode": "awsvpc",
     "volumes": [
         {

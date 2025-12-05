@@ -28,7 +28,6 @@
         }
     ],
     "family": "dms-filesync-task",
-    "executionRoleArn": "ecsTaskExecutionRole",
     "networkMode": "awsvpc",
     "volumes": [
         {

@@ -19,6 +19,8 @@ jobs:
     secrets:
       AWS_ROLE_ARN: ${{ secrets.AWS_ROLE_ARN }}
       AWS_SECRETS_ARN: ${{ secrets.AWS_SECRETS_ARN }}
+      AWS_TASK_ROLE_ARN: ${{ secrets.AWS_TASK_ROLE_ARN }}
+      AWS_EXECUTION_ROLE_ARN: ${{ secrets.AWS_EXECUTION_ROLE_ARN }}
 
   deploy-prod:
     if: github.ref == 'refs/heads/main'
@@ -29,3 +31,5 @@ jobs:
     secrets:
       AWS_ROLE_ARN: ${{ secrets.AWS_ROLE_ARN }}
       AWS_SECRETS_ARN: ${{ secrets.AWS_SECRETS_ARN }}
+      AWS_TASK_ROLE_ARN: ${{ secrets.AWS_TASK_ROLE_ARN }}
+      AWS_EXECUTION_ROLE_ARN: ${{ secrets.AWS_EXECUTION_ROLE_ARN }}
