@@ -11,19 +11,24 @@ HMPPS CFO DMS
 HMPPS Creating Future Opportunities (CFO) - Data Management System (DMS). It is intended for internal use only and is used to process PNOMIS and NDelius offender data to supply CATS (Case Assessment and Tracking System - also used by HMPPS CFO) with accurate offender movements and updates.
 
 ## Architecture
-CFO DMS is built as a microservices architecture using .NET Aspire for orchestration. Data flows through the following pipeline:
+CFO DMS is built as a distributed microservices architecture. Data flows through the following pipeline:
 
-**File Ingestion → Parsing/Cleaning → Staging → Import → Running Picture → Blocking/Matching → Clustering**
+**File Ingestion → Parsing/Cleaning → Staging → Import → Running Picture → Blocking/Matching → Clustering → Data Consumption**
 
-1. **FileSync** monitors MinIO/S3/FileSystem storage and syncs incoming files
-2. **Parsers/Cleaners** (Offloc, Delius) transform raw PNOMIS and NDelius files into structured records in staging databases
-3. **Import** validates and migrates data from staging to running picture databases
-4. **Matching Engine** identifies and links related offender records across systems
-5. **Cluster database** maintains grouped offender data
-6. **API** exposes the processed data via REST endpoints for downstream consumers (e.g., CATS)
-7. **Visualiser** provides a web UI for exploring and visualising relationships between offender data
+### Pipeline Applications
+1. **File Ingestion** - [**FileSync**](src/FileSync) monitors MinIO/S3/FileSystem storage and syncs incoming files
+2. **Parsing/Cleaning** - [**Offloc.Parser**](src/Offloc.Parser), [**Offloc.Cleaner**](src/Offloc.Cleaner), [**Delius.Parser**](src/Delius.Parser) transform raw p-NOMIS and nDelius files into structured records
+3. **Staging/Import/Running Picture** - [**Import**](src/Import) validates and migrates data from staging to running picture databases
+4. **Blocking/Matching** - [**Blocking**](src/Blocking) generates candidate record pairs, [**Matching.Engine**](src/Matching.Engine) identifies and links related offender records across systems
+5. **Clustering** - [**Matching.Engine**](src/Matching.Engine) groups related records into clusters representing unique individuals
+6. **Data Consumption** - [**API**](src/API) exposes the processed data via REST endpoints for downstream consumers (e.g., CATS), [**Visualiser**](src/Visualiser) provides a web UI for exploring and visualising relationships between offender data
 
-Supporting services include **DbInteractions** (complex database operations), **Blocking** (matching rules), **Cleanup** (data maintenance), and **Logging**. Services communicate asynchronously via RabbitMQ message queues.
+### Supporting Applications
+- [**Cleanup**](src/Cleanup) - Performs data maintenance tasks
+- [**DbInteractions**](src/DbInteractions) handles complex database operations
+- [**Logging**](src/Logging) - Centralised logging service
+
+Services communicate asynchronously via RabbitMQ message queues. See the Message Flow Diagram below for detailed service interactions.
 
 # Development Setup and Execution Guide
 
