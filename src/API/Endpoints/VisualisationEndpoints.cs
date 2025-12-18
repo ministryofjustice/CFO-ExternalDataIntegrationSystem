@@ -22,9 +22,9 @@ public static class VisualisationEndpoints
 
         group.MapPost("/Save", SaveNetworkAsync)
             .ProducesProblem(StatusCodes.Status500InternalServerError)
-            .RequireAuthorization("write");
+            .RequireAuthorization("visualisation-write");
 
-        group.RequireAuthorization("read");
+        group.RequireAuthorization("visualisation-read");
 
         return routes;
     }
