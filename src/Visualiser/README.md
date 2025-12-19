@@ -3,6 +3,7 @@
 1. New app registration in Entra
 	- Supported account types: Single tenant
 	- Redirect URI: Platform = web, URI = https://localhost:7123/signin-oidc
+	- NOTE: You do not need to configure Implicit grant and hybrid flows
 2.	Register permissions under "API Permissions" section. Configure scopes:
 	- `email`
 	- `openid`
