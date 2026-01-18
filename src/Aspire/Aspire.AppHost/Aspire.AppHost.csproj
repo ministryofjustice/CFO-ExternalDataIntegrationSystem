@@ -20,6 +20,12 @@
 
 
     <ItemGroup>
+      <PackageReference Include="Microsoft.Data.SqlClient" VersionOverride="6.1.4" />
+      <PackageReference Include="Microsoft.Extensions.Configuration" VersionOverride="10.0.2" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" />
         <ProjectReference Include="..\..\API\API.csproj" />
         <ProjectReference Include="..\..\Database\DeliusRunningPictureDb\DeliusRunningPictureDb.sqlproj" />
         <ProjectReference Include="..\..\Database\DeliusStagingDb\DeliusStagingDb.sqlproj" />
