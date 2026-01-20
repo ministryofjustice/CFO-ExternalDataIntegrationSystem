@@ -73,6 +73,17 @@ builder.Services.AddAuthorization(options =>
 {
     options.AddPolicy("read", policy => policy.RequireScope("dms.read"));
     options.AddPolicy("write", policy => policy.RequireScope("dms.write"));
+
+    options.AddPolicy("visualisation-read", policy => 
+        policy.RequireAuthenticatedUser()
+              .RequireScope("visualiser.read")
+              .AddAuthenticationSchemes(JwtBearerDefaults.AuthenticationScheme));
+
+    options.AddPolicy("visualisation-write", policy => 
+        policy.RequireAuthenticatedUser()
+              .RequireScope("visualiser.write")
+              .AddAuthenticationSchemes(JwtBearerDefaults.AuthenticationScheme));
+
     options.FallbackPolicy = options.DefaultPolicy;
 });
 
