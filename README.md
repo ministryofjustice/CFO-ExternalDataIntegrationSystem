@@ -47,6 +47,46 @@ Services communicate asynchronously via RabbitMQ message queues. See the Message
         }
         ```
 
+## Database Deployment (Test Environments)
+
+The `publish_db.py` script is provided for deploying database projects to test environments.
+
+### Prerequisites
+- Python 3
+- .NET SDK with sqlpackage tool installed
+
+### Usage
+1. **Set required environment variables** before running:
+   ```bash
+   export SERVER="your-test-sql-server-address"
+   export DB_USER="your-database-username"
+   export DB_PASS="your-database-password"
+   ```
+
+2. **Run the script from the project root directory**:
+   ```bash
+   # Preview changes without deploying
+   python3 publish_db.py --dry-run
+   
+   # Deploy to test environment (Release build - recommended)
+   python3 publish_db.py
+   
+   # Deploy using Debug build
+   python3 publish_db.py --config Debug
+   ```
+
+The script will build and publish all database projects (AuditDb, OfflocStagingDb, DeliusStagingDb, OfflocRunningPictureDb, DeliusRunningPictureDb, MatchingDb, ClusterDb) to the specified test server. You will be prompted to confirm before deployment begins.
+
+#### Seeding Test Data
+
+If you want to seed the test data, you can run the Fake Data Seeder project. 
+
+   ```bash
+      export ConnectionStrings__ClusterDb="Server=$SERVER;Database=ClusterDb;User Id=$DB_USER;Password=$DB_PASS;TrustServerCertificate=True;"
+
+      dotnet run --project ./src/FakeDataSeeder/FakeDataSeeder.csproj;  
+   ```
+
 ## Running the apps
 The recommended way to run and debug these apps is using .NET Aspire.
 - **Using Visual Studio Code**: open the project and press `F5`, selecting the *Default Configuration*.
