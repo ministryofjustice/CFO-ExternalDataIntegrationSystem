@@ -106,6 +106,8 @@ BEGIN
 			,@PrimaryRecord
 			,CASE WHEN @PrimaryRecord = 'NOMIS' THEN @NomisNumber ELSE @Crn END);
 
+	INSERT INTO [reference].UPCI2 ( UPCI2 ) VALUES ( @Identifier )
+
 	IF(@RecordCount=2)
 	BEGIN
 		--Insert output.ClusterMembership table data
