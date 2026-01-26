@@ -4,10 +4,10 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageVersion Include="Aspire.Hosting.AppHost" Version="13.0.2" />
-    <PackageVersion Include="Aspire.Hosting.RabbitMQ" Version="13.0.2" />
-    <PackageVersion Include="Aspire.Hosting.Redis" Version="13.0.2" />
-    <PackageVersion Include="Aspire.Hosting.SqlServer" Version="13.0.2" />
-    <PackageVersion Include="Aspire.RabbitMQ.Client" Version="13.0.2" />
+    <PackageVersion Include="Aspire.Hosting.RabbitMQ" Version="13.1.0" />
+    <PackageVersion Include="Aspire.Hosting.Redis" Version="13.1.0" />
+    <PackageVersion Include="Aspire.Hosting.SqlServer" Version="13.1.0" />
+    <PackageVersion Include="Aspire.RabbitMQ.Client" Version="13.1.0" />
     <PackageVersion Include="AWSSDK.Extensions.NETCore.Setup" Version="4.0.3.15" />
     <PackageVersion Include="AWSSDK.SecurityToken" Version="4.0.5.2" />
     <PackageVersion Include="CommunityToolkit.Aspire.Hosting.Minio" Version="13.0.0" />
