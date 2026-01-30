@@ -1,4 +1,5 @@
 @page "{handler?}"
+@using System.Globalization
 
 @model ProcessedFilesModel
 
@@ -25,20 +26,52 @@
     <table class="table table-striped table-bordered">
         <thead>
             <tr>
+                <th>
+                    Offloc
+                </th>
+            </tr>
+            <tr>
             <th>File name</th>
             <th>Date</th>
             <th>Status</th>
             </tr>
         </thead>
         <tbody>
-            @foreach(var file in Model.ProcessedFiles)
+            @foreach(var file in Model.OffLocFiles)
             {
                 <tr>
                     <td>@file.FileName</td>
-                    <td>@file.ValidFrom</td>
+                    <td>@file.ValidFrom.ToString(new CultureInfo("en-GB"))</td>
                     <td>@file.Status</td>
                 </tr>
             }
         </tbody>        
     </table>
+
+     <table class="table table-striped table-bordered mt-2">
+        <thead>
+            <tr>
+                <th>
+                    Delius
+                </th>
+            </tr>
+            <tr>
+            <th>File name</th>
+            <th>Date</th>
+            <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach(var file in Model.DeliusFiles)
+            {
+                <tr>
+                    <td>@file.FileName</td>
+                    <td>@file.ValidFrom.ToString(new CultureInfo("en-GB"))</td>
+                    <td>@file.Status</td>
+                </tr>
+            }
+        </tbody>        
+    </table>
+
+
 }
