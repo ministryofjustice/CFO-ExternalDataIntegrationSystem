@@ -16,6 +16,16 @@ namespace Visualiser.Pages
         // Bindable property for the view
         public ProcessedFileDto[] ProcessedFiles { get; private set; } = Array.Empty<ProcessedFileDto>();
 
+        public ProcessedFileDto[] OffLocFiles => ProcessedFiles
+                        .Where(c => c.FileName.StartsWith("cfoextract", StringComparison.CurrentCultureIgnoreCase) == false)
+                        .OrderByDescending(c => c.ValidFrom)
+                        .ToArray();
+
+        public ProcessedFileDto[] DeliusFiles => ProcessedFiles
+                        .Where(c => c.FileName.StartsWith("cfoextract", StringComparison.CurrentCultureIgnoreCase))
+                        .OrderByDescending(c => c.ValidFrom)
+                        .ToArray();
+
         public async Task<IActionResult> OnGetAsync()
         {
             HttpResponseMessage? response = null;
