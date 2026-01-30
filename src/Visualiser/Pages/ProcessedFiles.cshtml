@@ -1,0 +1,44 @@
+@page "{handler?}"
+
+@model ProcessedFilesModel
+
+@{
+    ViewData["Title"] = "Processed Files";
+}
+
+<h1>Most recent processed files</h1>
+
+
+
+@if (!Model.ModelState.IsValid)
+{
+    <div class="alert alert-danger">
+        @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+        {
+            <div>@error.ErrorMessage</div>
+        }
+    </div>
+}
+
+@if(Model.ProcessedFiles is { Length: > 0 })
+{
+    <table class="table table-striped table-bordered">
+        <thead>
+            <tr>
+            <th>File name</th>
+            <th>Date</th>
+            <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach(var file in Model.ProcessedFiles)
+            {
+                <tr>
+                    <td>@file.FileName</td>
+                    <td>@file.ValidFrom</td>
+                    <td>@file.Status</td>
+                </tr>
+            }
+        </tbody>        
+    </table>
+}
