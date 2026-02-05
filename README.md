@@ -49,11 +49,45 @@ Services communicate asynchronously via RabbitMQ message queues. See the Message
 
 ## Database Deployment (Test Environments)
 
+If you are deploying to test DROP existing databases before continuing. 
+
+````sql
+DECLARE @Databases TABLE (DbName sysname);
+
+INSERT INTO @Databases (DbName)
+VALUES
+    ('ClusterDb'),
+    ('DeliusRunningPictureDb'),
+    ('DeliusStagingDb'),
+    ('MatchingDb'),
+    ('OfflocRunningPictureDb'),
+    ('OfflocStagingDb'),
+    ('AuditDb');
+
+DECLARE @sql nvarchar(max) = N'';
+
+SELECT @sql += '
+IF EXISTS (SELECT 1 FROM sys.databases WHERE name = ''' + DbName + ''')
+BEGIN
+    ALTER DATABASE [' + DbName + '] SET SINGLE_USER WITH ROLLBACK IMMEDIATE;
+    DROP DATABASE [' + DbName + '];
+END;'
+FROM @Databases;
+
+EXEC sys.sp_executesql @sql;
+````
+
 The `publish_db.py` script is provided for deploying database projects to test environments.
 
 ### Prerequisites
-- Python 3
-- .NET SDK with sqlpackage tool installed
+
+| Requirement | How to check | How to install (bash) |
+|------------|-------------|------------------------|
+| **Python 3** | `python3 --version` | **macOS (Homebrew)**<br>`brew install python`<br><br>**Ubuntu / Debian**<br>`sudo apt update && sudo apt install -y python3 python3-pip` |
+| **.NET SDK 8.x** | `dotnet --list-sdks` | **macOS (Homebrew)**<br>`brew install --cask dotnet-sdk@8`<br><br>**Ubuntu / Debian**<br>`sudo apt update && sudo apt install -y dotnet-sdk-8.0` |
+| **.NET SDK 10.x** | `dotnet --list-sdks` | **macOS (Homebrew)**<br>`brew install --cask dotnet-sdk@10`<br><br>**Ubuntu / Debian**<br>`sudo apt update && sudo apt install -y dotnet-sdk-10.0` |
+| **sqlpackage (dotnet tool)** | `dotnet tool list -g` | `dotnet tool install -g microsoft.sqlpackage` |
+
 
 ### Usage
 1. **Set required environment variables** before running:
