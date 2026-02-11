@@ -76,7 +76,7 @@ jobs:
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
 
-      - name: Fetch IAM Role ARNs from Secrets Manager
+      - name: Fetch IAM Role ARNs and EFS config from Secrets Manager
         id: fetch-roles
         run: |
           SECRET_JSON=$(aws secretsmanager get-secret-value \
@@ -86,13 +86,19 @@ jobs:
           
           TASK_ROLE=$(echo "$SECRET_JSON" | jq -r '.Task_Role_ARN')
           EXEC_ROLE=$(echo "$SECRET_JSON" | jq -r '.Execution_Role_ARN')
+          EFS_FS_ID=$(echo "$SECRET_JSON" | jq -r '.EFS_File_System_ID')
+          EFS_AP_ID=$(echo "$SECRET_JSON" | jq -r '.EFS_Access_Point_ID')
           
           # Mask secrets in logs
           echo "::add-mask::$TASK_ROLE"
           echo "::add-mask::$EXEC_ROLE"
+          echo "::add-mask::$EFS_FS_ID"
+          echo "::add-mask::$EFS_AP_ID"
           
           echo "task-role=${TASK_ROLE}" >> $GITHUB_OUTPUT
           echo "exec-role=${EXEC_ROLE}" >> $GITHUB_OUTPUT
+          echo "efs-fs-id=${EFS_FS_ID}" >> $GITHUB_OUTPUT
+          echo "efs-ap-id=${EFS_AP_ID}" >> $GITHUB_OUTPUT
 
       - name: Setup .NET
         uses: actions/setup-dotnet@v5
@@ -173,6 +179,14 @@ jobs:
           echo "secrets<<EOF" >> $GITHUB_OUTPUT
           echo "$SECRETS_STRING" >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Replace EFS placeholders in task definition
+        if: steps.build-image.outputs.skip != 'true'
+        run: |
+          sed -i.bak \
+            -e 's/EFS_FILE_SYSTEM_ID/${{ steps.fetch-roles.outputs.efs-fs-id }}/g' \
+            -e 's/EFS_ACCESS_POINT_ID/${{ steps.fetch-roles.outputs.efs-ap-id }}/g' \
+            ${{ matrix.service.taskDef }}
 
       - name: Render ECS task definition
         if: steps.build-image.outputs.skip != 'true'

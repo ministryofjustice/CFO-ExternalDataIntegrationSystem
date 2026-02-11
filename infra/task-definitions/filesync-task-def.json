@@ -1,50 +1,53 @@
 {
-    "containerDefinitions": [
+  "containerDefinitions": [
+    {
+      "name": "filesync-container",
+      "image": "PLACEHOLDER",
+      "cpu": 512,
+      "memory": 1024,
+      "essential": true,
+      "environment": [],
+      "secrets": [],
+      "mountPoints": [
         {
-            "name": "filesync-container",
-            "image": "PLACEHOLDER",
-            "cpu": 512,
-            "memory": 1024,
-            "essential": true,
-            "environment": [],
-            "secrets": [],
-            "mountPoints": [
-                {
-                    "sourceVolume": "dms-efs",
-                    "containerPath": "/mnt/efs",
-                    "readOnly": false
-                }
-            ],
-            "volumesFrom": [],
-            "logConfiguration": {
-                "logDriver": "awslogs",
-                "options": {
-                    "awslogs-group": "/ecs/dms-filesync",
-                    "awslogs-region": "eu-west-2",
-                    "awslogs-stream-prefix": "ecs"
-                }
-            },
-            "systemControls": []
+          "sourceVolume": "dms-efs",
+          "containerPath": "/mnt/efs",
+          "readOnly": false
         }
-    ],
-    "family": "dms-filesync-task",
-    "networkMode": "awsvpc",
-    "volumes": [
-        {
-            "name": "dms-efs",
-            "efsVolumeConfiguration": {
-                "fileSystemId": "EFS_FILE_SYSTEM_ID",
-                "transitEncryption": "ENABLED"
-            }
+      ],
+      "volumesFrom": [],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/dms-filesync",
+          "awslogs-region": "eu-west-2",
+          "awslogs-stream-prefix": "ecs"
         }
-    ],
-    "placementConstraints": [],
-    "compatibilities": [
-        "FARGATE"
-    ],
-    "requiresCompatibilities": [
-        "FARGATE"
-    ],
-    "cpu": "512",
-    "memory": "1024"
+      },
+      "systemControls": []
+    }
+  ],
+  "family": "dms-filesync-task",
+  "networkMode": "awsvpc",
+  "volumes": [
+    {
+      "name": "dms-efs",
+      "efsVolumeConfiguration": {
+        "fileSystemId": "EFS_FILE_SYSTEM_ID",
+        "transitEncryption": "ENABLED",
+        "authorizationConfig": {
+          "accessPointId": "EFS_ACCESS_POINT_ID"
+        }
+      }
+    }
+  ],
+  "placementConstraints": [],
+  "compatibilities": [
+    "FARGATE"
+  ],
+  "requiresCompatibilities": [
+    "FARGATE"
+  ],
+  "cpu": "512",
+  "memory": "1024"
 }
