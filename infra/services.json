@@ -4,73 +4,138 @@
       "name": "api",
       "project": "API/API.csproj",
       "taskDef": "infra/task-definitions/api-task-def.json",
-      "container": "api-container"
+      "container": "api-container",
+      "secrets": [
+        "AuditDb",
+        "DeliusRunningPictureDb",
+        "OfflocRunningPictureDb",
+        "ClusterDb",
+        "Client_ID",
+        "Authentication_ApiKey",
+        "Sentry_Dsn"
+      ]
     },
     {
       "name": "offloc-cleaner",
       "project": "Offloc.Cleaner/Offloc.Cleaner.csproj",
       "taskDef": "infra/task-definitions/offloc-cleaner-task-def.json",
-      "container": "offloc-cleaner-container"
+      "container": "offloc-cleaner-container",
+      "secrets": [
+        "RabbitMQ",
+        "Sentry_Dsn"
+      ]
     },
     {
       "name": "matching-engine",
       "project": "Matching.Engine/Matching.Engine.csproj",
       "taskDef": "infra/task-definitions/matching-engine-task-def.json",
-      "container": "matching-engine-container"
+      "container": "matching-engine-container",
+      "secrets": [
+        "ClusterDb",
+        "MatchingDb",
+        "RabbitMQ",
+        "Sentry_Dsn"
+      ]
     },
     {
       "name": "cleanup",
       "project": "Cleanup/Cleanup.csproj",
       "taskDef": "infra/task-definitions/cleanup-task-def.json",
-      "container": "cleanup-container"
+      "container": "cleanup-container",
+      "secrets": [
+        "RabbitMQ",
+        "Sentry_Dsn"
+      ]
     },
     {
       "name": "import",
       "project": "Import/Import.csproj",
       "taskDef": "infra/task-definitions/import-task-def.json",
-      "container": "import-container"
+      "container": "import-container",
+      "secrets": [
+        "RabbitMQ",
+        "Sentry_Dsn"
+      ]
     },
     {
       "name": "visualiser",
       "project": "Visualiser/Visualiser.csproj",
       "taskDef": "infra/task-definitions/visualiser-task-def.json",
-      "container": "visualiser-container"
+      "container": "visualiser-container",
+      "secrets": [
+        "API_Base_URL",
+        "Client_ID",
+        "Client_Secret",
+        "Sentry_Dsn"
+      ]
     },
     {
       "name": "offloc-parser",
       "project": "Offloc.Parser/Offloc.Parser.csproj",
       "taskDef": "infra/task-definitions/offloc-parser-task-def.json",
-      "container": "offloc-parser-container"
+      "container": "offloc-parser-container",
+      "secrets": [
+        "OfflocStagingDb",
+        "RabbitMQ",
+        "Sentry_Dsn"
+      ]
     },
     {
       "name": "delius-parser",
       "project": "Delius.Parser/Delius.Parser.csproj",
       "taskDef": "infra/task-definitions/delius-parser-task-def.json",
-      "container": "delius-parser-container"
+      "container": "delius-parser-container",
+      "secrets": [
+        "DeliusStagingDb",
+        "RabbitMQ",
+        "Sentry_Dsn"
+      ]
     },
     {
       "name": "blocking",
       "project": "Blocking/Blocking.csproj",
       "taskDef": "infra/task-definitions/blocking-task-def.json",
-      "container": "blocking-container"
+      "container": "blocking-container",
+      "secrets": [
+        "MatchingDb",
+        "RabbitMQ",
+        "Sentry_Dsn"
+      ]
     },
     {
       "name": "logging",
       "project": "Logging/Logging.csproj",
       "taskDef": "infra/task-definitions/logging-task-def.json",
-      "container": "logging-container"
+      "container": "logging-container",
+      "secrets": [
+        "RabbitMQ",
+        "Sentry_Dsn"
+      ]
     },
     {
       "name": "filesync",
       "project": "FileSync/FileSync.csproj",
       "taskDef": "infra/task-definitions/filesync-task-def.json",
-      "container": "filesync-container"
+      "container": "filesync-container",
+      "secrets": [
+        "S3_BucketName",
+        "RabbitMQ",
+        "Sentry_Dsn"
+      ]
     },
     {
       "name": "meow",
       "project": "Meow/Meow.csproj",
       "taskDef": "infra/task-definitions/meow-task-def.json",
-      "container": "meow-container"
+      "container": "meow-container",
+      "secrets": [
+        "AuditDb",
+        "DeliusRunningPictureDb",
+        "OfflocRunningPictureDb",
+        "ClusterDb",
+        "CatsRabbitMQ",
+        "Sentry_Dsn"
+      ]
     }
   ]
 }
