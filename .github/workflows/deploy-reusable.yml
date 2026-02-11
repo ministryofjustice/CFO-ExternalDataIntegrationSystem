@@ -16,6 +16,20 @@ on:
         required: true
       AWS_SECRETS_ARN:
         required: true
+  workflow_dispatch:
+    inputs:
+      environment:
+        required: true
+        type: choice
+        description: 'Environment to deploy to'
+        options:
+          - preprod
+          - prod
+      aws-region:
+        required: false
+        type: string
+        default: 'eu-west-2'
+        description: 'AWS region'
 
 permissions:
   id-token: write
