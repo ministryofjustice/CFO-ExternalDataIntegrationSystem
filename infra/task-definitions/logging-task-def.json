@@ -1,50 +1,53 @@
 {
-    "containerDefinitions": [
+  "containerDefinitions": [
+    {
+      "name": "logging-container",
+      "image": "PLACEHOLDER",
+      "cpu": 256,
+      "memory": 512,
+      "essential": true,
+      "environment": [],
+      "secrets": [],
+      "mountPoints": [
         {
-            "name": "logging-container",
-            "image": "PLACEHOLDER",
-            "cpu": 256,
-            "memory": 512,
-            "essential": true,
-            "environment": [],
-            "secrets": [],
-            "mountPoints": [
-                {
-                    "sourceVolume": "dms-efs",
-                    "containerPath": "/mnt/efs",
-                    "readOnly": false
-                }
-            ],
-            "volumesFrom": [],
-            "logConfiguration": {
-                "logDriver": "awslogs",
-                "options": {
-                    "awslogs-group": "/ecs/dms-logging",
-                    "awslogs-region": "eu-west-2",
-                    "awslogs-stream-prefix": "ecs"
-                }
-            },
-            "systemControls": []
+          "sourceVolume": "dms-efs",
+          "containerPath": "/mnt/efs",
+          "readOnly": false
         }
-    ],
-    "family": "dms-logging-task",
-    "networkMode": "awsvpc",
-    "volumes": [
-        {
-            "name": "dms-efs",
-            "efsVolumeConfiguration": {
-                "fileSystemId": "EFS_FILE_SYSTEM_ID",
-                "transitEncryption": "ENABLED"
-            }
+      ],
+      "volumesFrom": [],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/dms-logging",
+          "awslogs-region": "eu-west-2",
+          "awslogs-stream-prefix": "ecs"
         }
-    ],
-    "placementConstraints": [],
-    "compatibilities": [
-        "FARGATE"
-    ],
-    "requiresCompatibilities": [
-        "FARGATE"
-    ],
-    "cpu": "256",
-    "memory": "512"
+      },
+      "systemControls": []
+    }
+  ],
+  "family": "dms-logging-task",
+  "networkMode": "awsvpc",
+  "volumes": [
+    {
+      "name": "dms-efs",
+      "efsVolumeConfiguration": {
+        "fileSystemId": "EFS_FILE_SYSTEM_ID",
+        "transitEncryption": "ENABLED",
+        "authorizationConfig": {
+          "accessPointId": "EFS_ACCESS_POINT_ID"
+        }
+      }
+    }
+  ],
+  "placementConstraints": [],
+  "compatibilities": [
+    "FARGATE"
+  ],
+  "requiresCompatibilities": [
+    "FARGATE"
+  ],
+  "cpu": "256",
+  "memory": "512"
 }
