@@ -131,6 +131,49 @@ jobs:
           echo "skip=false" >> $GITHUB_OUTPUT
           echo "Published image: ${IMAGE}"
 
+      - name: Build secrets list for service
+        id: build-secrets
+        run: |
+          # Get the secrets array for this service from services.json
+          SECRETS_JSON='${{ toJson(matrix.service.secrets) }}'
+          
+          # Build the secrets string dynamically
+          SECRETS_STRING=""
+          
+          # Map of secret keys to their connection string names
+          declare -A SECRET_MAP=(
+            ["API_Base_URL"]="API__BaseUrl"
+            ["Authentication_ApiKey"]="Authentication__ApiKey"
+            ["S3_BucketName"]="AWS__S3__BucketName"
+            ["Client_ID"]="AzureAd__ClientId"
+            ["Client_Secret"]="AzureAd__ClientSecret"
+            ["AuditDb"]="ConnectionStrings__AuditDb"
+            ["ClusterDb"]="ConnectionStrings__ClusterDb"
+            ["DeliusRunningPictureDb"]="ConnectionStrings__DeliusRunningPictureDb"
+            ["DeliusStagingDb"]="ConnectionStrings__DeliusStagingDb"
+            ["MatchingDb"]="ConnectionStrings__MatchingDb"
+            ["OfflocRunningPictureDb"]="ConnectionStrings__OfflocRunningPictureDb"
+            ["OfflocStagingDb"]="ConnectionStrings__OfflocStagingDb"
+            ["CatsRabbitMQ"]="ConnectionStrings__CatsRabbitMQ"
+            ["RabbitMQ"]="ConnectionStrings__RabbitMQ"
+            ["DMSFilesBasePath"]="DMSFilesBasePath"
+            ["Sentry_Dsn"]="Sentry_Dsn"
+          )
+          
+          # Parse JSON array and build secrets string
+          for secret in $(echo "$SECRETS_JSON" | jq -r '.[]'); do
+            env_var_name="${SECRET_MAP[$secret]}"
+            if [ -n "$env_var_name" ]; then
+              SECRETS_STRING+="${env_var_name}=\${{ secrets.AWS_SECRETS_ARN }}:${secret}::"$'\n'
+            fi
+          done
+          
+          # Remove trailing newline and save
+          SECRETS_STRING=$(echo "$SECRETS_STRING" | sed '/^$/d')
+          echo "secrets<<EOF" >> $GITHUB_OUTPUT
+          echo "$SECRETS_STRING" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
       - name: Render ECS task definition
         if: steps.build-image.outputs.skip != 'true'
         id: render-task-def
@@ -143,23 +186,7 @@ jobs:
           execution-role-arn: ${{ steps.fetch-roles.outputs.exec-role }}
           environment-variables: |
             DOTNET_ENVIRONMENT=${{ inputs.environment == 'prod' && 'Production' || 'PreProduction' }}
-          secrets: |
-            API__BaseUrl=${{ secrets.AWS_SECRETS_ARN }}:API_Base_URL::
-            Authentication__ApiKey=${{ secrets.AWS_SECRETS_ARN }}:Authentication_ApiKey::
-            AWS__S3__BucketName=${{ secrets.AWS_SECRETS_ARN }}:S3_BucketName::
-            AzureAd__ClientId=${{ secrets.AWS_SECRETS_ARN }}:Client_ID::
-            AzureAd__ClientSecret=${{ secrets.AWS_SECRETS_ARN }}:Client_Secret::
-            ConnectionStrings__AuditDb=${{ secrets.AWS_SECRETS_ARN }}:AuditDb::
-            ConnectionStrings__ClusterDb=${{ secrets.AWS_SECRETS_ARN }}:ClusterDb::
-            ConnectionStrings__DeliusRunningPictureDb=${{ secrets.AWS_SECRETS_ARN }}:DeliusRunningPictureDb::
-            ConnectionStrings__DeliusStagingDb=${{ secrets.AWS_SECRETS_ARN }}:DeliusStagingDb::
-            ConnectionStrings__MatchingDb=${{ secrets.AWS_SECRETS_ARN }}:MatchingDb::
-            ConnectionStrings__OfflocRunningPictureDb=${{ secrets.AWS_SECRETS_ARN }}:OfflocRunningPictureDb::
-            ConnectionStrings__OfflocStagingDb=${{ secrets.AWS_SECRETS_ARN }}:OfflocStagingDb::
-            ConnectionStrings__CatsRabbitMQ=${{ secrets.AWS_SECRETS_ARN }}:CatsRabbitMQ::
-            ConnectionStrings__RabbitMQ=${{ secrets.AWS_SECRETS_ARN }}:RabbitMQ::
-            DMSFilesBasePath=${{ secrets.AWS_SECRETS_ARN }}:DMSFilesBasePath::
-            Sentry_Dsn=${{ secrets.AWS_SECRETS_ARN }}:Sentry_Dsn::
+          secrets: ${{ steps.build-secrets.outputs.secrets }}
 
             
 
