@@ -92,6 +92,20 @@
       ]
     },
     {
+      "name": "dbinteractions",
+      "project": "DbInteractions/DbInteractions.csproj",
+      "taskDef": "infra/task-definitions/dbinteractions-task-def.json",
+      "container": "dbinteractions-container",
+      "secrets": [
+        "DeliusRunningPictureDb",
+        "OfflocRunningPictureDb",
+        "DeliusStagingDb",
+        "OfflocStagingDb",
+        "RabbitMQ",
+        "Sentry_Dsn"
+      ]
+    },
+    {
       "name": "blocking",
       "project": "Blocking/Blocking.csproj",
       "taskDef": "infra/task-definitions/blocking-task-def.json",
