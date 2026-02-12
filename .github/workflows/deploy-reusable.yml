@@ -209,6 +209,6 @@ jobs:
         uses: aws-actions/amazon-ecs-deploy-task-definition@v2
         with:
           task-definition: ${{ steps.render-task-def.outputs.task-definition }}
-          service: ${{ matrix.service.name }}-service-1
-          cluster: ${{ matrix.service.name }}-cluster
+          service: DMS-${{ inputs.environment == 'prod' && 'Prod' || 'PreProd' }}-${{ matrix.service.name }}-service
+          cluster: DMS-${{ inputs.environment == 'prod' && 'Prod' || 'PreProd' }}-Cluster
           wait-for-service-stability: true
