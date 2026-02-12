@@ -1,0 +1,53 @@
+{
+  "containerDefinitions": [
+    {
+      "name": "dbinteractions-container",
+      "image": "PLACEHOLDER",
+      "cpu": 512,
+      "memory": 1024,
+      "essential": true,
+      "environment": [],
+      "secrets": [],
+      "mountPoints": [
+        {
+          "sourceVolume": "dms-efs",
+          "containerPath": "/mnt/efs",
+          "readOnly": false
+        }
+      ],
+      "volumesFrom": [],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/dms-dbinteractions",
+          "awslogs-region": "eu-west-2",
+          "awslogs-stream-prefix": "ecs"
+        }
+      },
+      "systemControls": []
+    }
+  ],
+  "family": "dms-dbinteractions-task",
+  "networkMode": "awsvpc",
+  "volumes": [
+    {
+      "name": "dms-efs",
+      "efsVolumeConfiguration": {
+        "fileSystemId": "EFS_FILE_SYSTEM_ID",
+        "transitEncryption": "ENABLED",
+        "authorizationConfig": {
+          "accessPointId": "EFS_ACCESS_POINT_ID"
+        }
+      }
+    }
+  ],
+  "placementConstraints": [],
+  "compatibilities": [
+    "FARGATE"
+  ],
+  "requiresCompatibilities": [
+    "FARGATE"
+  ],
+  "cpu": "512",
+  "memory": "1024"
+}
