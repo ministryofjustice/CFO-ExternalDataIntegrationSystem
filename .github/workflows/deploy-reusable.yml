@@ -1,0 +1,17 @@
+name: Reusable Deploy
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        required: true
+        type: choice
+        options:
+          - preprod
+          - prod
+
+jobs:
+  placeholder:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "Triggered from feature branch. This placeholder should not run."
