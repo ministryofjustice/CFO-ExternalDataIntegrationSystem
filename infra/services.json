@@ -21,6 +21,7 @@
       "taskDef": "infra/task-definitions/offloc-cleaner-task-def.json",
       "container": "offloc-cleaner-container",
       "secrets": [
+        "DMSFilesBasePath",
         "RabbitMQ",
         "Sentry_Dsn"
       ]
@@ -43,6 +44,7 @@
       "taskDef": "infra/task-definitions/cleanup-task-def.json",
       "container": "cleanup-container",
       "secrets": [
+        "DMSFilesBasePath",
         "RabbitMQ",
         "Sentry_Dsn"
       ]
@@ -75,6 +77,7 @@
       "taskDef": "infra/task-definitions/offloc-parser-task-def.json",
       "container": "offloc-parser-container",
       "secrets": [
+        "DMSFilesBasePath",
         "OfflocStagingDb",
         "RabbitMQ",
         "Sentry_Dsn"
@@ -86,6 +89,7 @@
       "taskDef": "infra/task-definitions/delius-parser-task-def.json",
       "container": "delius-parser-container",
       "secrets": [
+        "DMSFilesBasePath",
         "DeliusStagingDb",
         "RabbitMQ",
         "Sentry_Dsn"
@@ -97,6 +101,7 @@
       "taskDef": "infra/task-definitions/dbinteractions-task-def.json",
       "container": "dbinteractions-container",
       "secrets": [
+        "DMSFilesBasePath",
         "DeliusRunningPictureDb",
         "OfflocRunningPictureDb",
         "DeliusStagingDb",
@@ -132,6 +137,7 @@
       "taskDef": "infra/task-definitions/filesync-task-def.json",
       "container": "filesync-container",
       "secrets": [
+        "DMSFilesBasePath",
         "S3_BucketName",
         "RabbitMQ",
         "Sentry_Dsn"
