@@ -66,6 +66,15 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v5
 
+      # Debug logging 
+      - name: Print debug info
+        run: |
+          echo "Deploying to environment: ${{ inputs.environment }}"
+          echo "Deploying service: ${{ matrix.service.name }}"
+          echo "Project path: src/${{ matrix.service.project }}"
+          echo "Ref: ${{ github.ref }}"
+          echo "Repository: ${{ github.repository }}"
+
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
