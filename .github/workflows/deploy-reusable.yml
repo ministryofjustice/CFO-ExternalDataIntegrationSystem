@@ -112,8 +112,8 @@ jobs:
         id: build-image
         env:
           REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          REPOSITORY: ${{ inputs.environment }}/${{ matrix.service.name }}
-          IMAGE_TAG: ${{ github.sha }}
+          REPOSITORY: dms-${{ inputs.environment }}-apps
+          IMAGE_TAG: ${{ matrix.service.name }}-${{ github.sha }}
         run: |
           PROJECT_PATH="src/${{ matrix.service.project }}"
           
