@@ -126,9 +126,13 @@ jobs:
 
           TASK_ROLE=$(echo "$SECRET_JSON" | jq -r '.Task_Role_ARN')
           EXEC_ROLE=$(echo "$SECRET_JSON" | jq -r '.Execution_Role_ARN')
+          EFS_FS_ID=$(echo "$SECRET_JSON" | jq -r '.EFS_File_System_ID')
+          EFS_AP_ID=$(echo "$SECRET_JSON" | jq -r '.EFS_Access_Point_ID')
 
           echo "task_role=$TASK_ROLE" >> $GITHUB_OUTPUT
           echo "exec_role=$EXEC_ROLE" >> $GITHUB_OUTPUT
+          echo "efs-fs-id=$EFS_FS_ID" >> $GITHUB_OUTPUT
+          echo "efs-ap-id=$EFS_AP_ID" >> $GITHUB_OUTPUT
 
       - name: Build secrets list for service
         id: build-secrets
@@ -193,11 +197,14 @@ jobs:
             -e 's/EFS_ACCESS_POINT_ID/${{ steps.fetch-secrets.outputs.efs-ap-id }}/g' \
             "$TASK_DEF_PATH"
           
-          # Step 2: Inject IAM roles
+          # Step 2: Inject IAM roles and set family name to match Terraform convention
+          FAMILY_NAME="DMS-${{ inputs.environment == 'prod' && 'Prod' || 'PreProd' }}-${{ matrix.service.name }}-task"
+          
           UPDATED_TASK_DEF=$(jq \
             --arg task_role "${{ steps.fetch-secrets.outputs.task_role }}" \
             --arg exec_role "${{ steps.fetch-secrets.outputs.exec_role }}" \
-            '.taskRoleArn = $task_role | .executionRoleArn = $exec_role' \
+            --arg family "$FAMILY_NAME" \
+            '.taskRoleArn = $task_role | .executionRoleArn = $exec_role | .family = $family' \
             "$TASK_DEF_PATH")
 
           UPDATED_TASK_DEF_FILE="rendered-task-def.json"

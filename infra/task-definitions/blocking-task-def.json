@@ -27,7 +27,7 @@
       "systemControls": []
     }
   ],
-  "family": "dms-blocking-task",
+  "family": "PLACEHOLDER",
   "networkMode": "awsvpc",
   "volumes": [
     {

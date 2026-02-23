@@ -27,7 +27,7 @@
       "systemControls": []
     }
   ],
-  "family": "dms-delius-parser-task",
+  "family": "PLACEHOLDER",
   "networkMode": "awsvpc",
   "volumes": [
     {
