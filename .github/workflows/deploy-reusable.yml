@@ -156,10 +156,13 @@ jobs:
             ["Sentry_Dsn"]="Sentry_Dsn"
           )
           
+          # Get the full secret ARN
+          SECRET_ARN="${{ secrets.AWS_SECRETS_ARN }}"
+          
           for secret in $(echo "$SECRETS_JSON" | jq -r '.[]'); do
             env_var_name="${SECRET_MAP[$secret]}"
             if [ -n "$env_var_name" ]; then
-              SECRETS_STRING+="${env_var_name}=\${{ secrets.AWS_SECRETS_ARN }}:${secret}::"$'\n'
+              SECRETS_STRING+="${env_var_name}=${SECRET_ARN}:${secret}::"$'\n'
             fi
           done
 
@@ -171,10 +174,10 @@ jobs:
           echo "$SECRETS_STRING" >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
 
-      - name: Inject roles in task definition
+      - name: Replace EFS placeholders and inject roles in task definition
         id: inject-roles
         run: |
-          TASK_DEF_PATH="${{ matrix.service.taskdef }}"
+          TASK_DEF_PATH="${{ matrix.service.taskDef }}"
           
           if [ ! -f "$TASK_DEF_PATH" ]; then
             echo "Task definition not found: $TASK_DEF_PATH - Skipping"
@@ -182,8 +185,15 @@ jobs:
             exit 0
           fi
 
-          echo "Injecting roles into task definition: $TASK_DEF_PATH"
-
+          echo "Processing task definition: $TASK_DEF_PATH"
+          
+          # Step 1: Replace EFS placeholders
+          sed -i.bak \
+            -e 's/EFS_FILE_SYSTEM_ID/${{ steps.fetch-secrets.outputs.efs-fs-id }}/g' \
+            -e 's/EFS_ACCESS_POINT_ID/${{ steps.fetch-secrets.outputs.efs-ap-id }}/g' \
+            "$TASK_DEF_PATH"
+          
+          # Step 2: Inject IAM roles
           UPDATED_TASK_DEF=$(jq \
             --arg task_role "${{ steps.fetch-secrets.outputs.task_role }}" \
             --arg exec_role "${{ steps.fetch-secrets.outputs.exec_role }}" \
