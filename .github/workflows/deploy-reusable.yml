@@ -130,13 +130,13 @@ jobs:
           echo "task_role=$TASK_ROLE" >> $GITHUB_OUTPUT
           echo "exec_role=$EXEC_ROLE" >> $GITHUB_OUTPUT
 
-      - name: Build ECS secrets for service
+      - name: Build secrets list for service
         id: build-secrets
         run: |
-          SECRETS_JSON=${{ toJson(matrix.service.secrets) }}
-          SERVICE_NAME=${{ matrix.service.name }}
-          SECRET_ARN=${{ secrets.AWS_SECRETS_ARN }}
-
+          SECRETS_JSON='${{ toJson(matrix.service.secrets) }}'
+          
+          SECRETS_STRING=""
+          
           declare -A SECRET_MAP=(
             ["API_Base_URL"]="API__BaseUrl"
             ["Authentication_ApiKey"]="Authentication__ApiKey"
@@ -155,21 +155,18 @@ jobs:
             ["DMSFilesBasePath"]="DMSFilesBasePath"
             ["Sentry_Dsn"]="Sentry_Dsn"
           )
-
-          SECRETS_LIST=""
-          echo "$SECRETS_JSON" | jq -r '.[]' | while read -r secret; do
-            ENV_NAME="${SECRET_MAP[$secret]}"
-            if [ -n "$ENV_NAME" ]; then
-              SECRETS_LIST+="${ENV_NAME}=${SECRET_ARN}:${secret}::"$'\n'
+          
+          for secret in $(echo "$SECRETS_JSON" | jq -r '.[]'); do
+            env_var_name="${SECRET_MAP[$secret]}"
+            if [ -n "$env_var_name" ]; then
+              SECRETS_STRING+="${env_var_name}=\${{ secrets.AWS_SECRETS_ARN }}:${secret}::"$'\n'
             fi
           done
 
-          SECRETS_LIST=$(echo "$SECRETS_LIST" | sed '/^$/d')
-
-          echo "### DEBUG ECS SECRETS - SERVICE: $SERVICE_NAME ###"
-          echo "$SECRETS_LIST"
-          echo "### END DEBUG ###"
-
+          echo "Built secrets string:"
+          echo "$SECRETS_STRING"
+          
+          SECRETS_STRING=$(echo "$SECRETS_STRING" | sed '/^$/d')
           echo "secrets<<EOF" >> $GITHUB_OUTPUT
-          echo "$SECRETS_LIST" >> $GITHUB_OUTPUT
+          echo "$SECRETS_STRING" >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
