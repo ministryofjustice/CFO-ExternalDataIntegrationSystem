@@ -190,19 +190,20 @@ jobs:
             '.taskRoleArn = $task_role | .executionRoleArn = $exec_role' \
             "$TASK_DEF_PATH")
 
-          echo "Updated task definition:"
-          echo "$UPDATED_TASK_DEF" | jq '.'
+          UPDATED_TASK_DEF_FILE="rendered-task-def.json"
+          echo "$UPDATED_TASK_DEF" > "$UPDATED_TASK_DEF_FILE"
 
-          echo "updated_task_def<<EOF" >> $GITHUB_OUTPUT
-          echo "$UPDATED_TASK_DEF" >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
+          echo "Updated task definition:"
+          cat "$UPDATED_TASK_DEF_FILE" | jq '.'
+
+          echo "updated_task_def_file=$UPDATED_TASK_DEF_FILE" >> $GITHUB_OUTPUT
           echo "skip=false" >> $GITHUB_OUTPUT
 
       - name: Render ECS task definition with secrets
         id: render-task-def
         uses: aws-actions/amazon-ecs-render-task-definition@v1.8.1
         with:
-          task-definition: ${{ steps.inject-roles.outputs.updated_task_def }}
+          task-definition: ${{ steps.inject-roles.outputs.updated_task_def_file }}
           container-name: ${{ matrix.service.container }}
           image: amazon/amazon-ecs-sample:latest
           # image: ${{ steps.build-image.outputs.IMAGE }}
