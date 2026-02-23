@@ -197,3 +197,19 @@ jobs:
           echo "$UPDATED_TASK_DEF" >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
           echo "skip=false" >> $GITHUB_OUTPUT
+
+      - name: Render ECS task definition with secrets
+        id: render-task-def
+        uses: aws-actions/amazon-ecs-render-task-definition@v1.8.1
+        with:
+          task-definition: ${{ steps.inject-roles.outputs.updated_task_def }}
+          container-name: ${{ matrix.service.container }}
+          # image: ${{ steps.build-image.outputs.IMAGE }}
+          environment-variables: |
+            DOTNET_ENVIRONMENT=${{ inputs.environment == 'prod' && 'Production' || 'PreProduction' }}
+          secrets: ${{ steps.build-secrets.outputs.secrets }}
+
+      - name: Preview rendered ECS task definition
+        run: |
+          echo "Rendered task definition:"
+          echo "${{ steps.render-task-def.outputs.task-definition }}" | jq '.'
