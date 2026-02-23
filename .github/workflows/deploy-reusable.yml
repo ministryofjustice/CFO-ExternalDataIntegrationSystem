@@ -191,10 +191,13 @@ jobs:
 
           echo "Processing task definition: $TASK_DEF_PATH"
           
-          # Step 1: Replace EFS placeholders
+          # Step 1: Replace placeholders (EFS, CloudWatch)
+          LOG_GROUP_NAME="dms-${{ inputs.environment == 'prod' && 'prod' || 'preprod' }}/ecs"
+          
           sed -i.bak \
             -e 's/EFS_FILE_SYSTEM_ID/${{ steps.fetch-secrets.outputs.efs-fs-id }}/g' \
             -e 's/EFS_ACCESS_POINT_ID/${{ steps.fetch-secrets.outputs.efs-ap-id }}/g' \
+            -e "s|PLACEHOLDER|$LOG_GROUP_NAME|g" \
             "$TASK_DEF_PATH"
           
           # Step 2: Inject IAM roles and set family name to match Terraform convention
