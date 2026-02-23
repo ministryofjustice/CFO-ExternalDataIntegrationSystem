@@ -27,9 +27,9 @@
       "logConfiguration": {
         "logDriver": "awslogs",
         "options": {
-          "awslogs-group": "/ecs/dms-api",
+          "awslogs-group": "PLACEHOLDER",
           "awslogs-region": "eu-west-2",
-          "awslogs-stream-prefix": "ecs"
+          "awslogs-stream-prefix": "ecs/api"
         }
       },
       "systemControls": []

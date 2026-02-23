@@ -19,9 +19,9 @@
       "logConfiguration": {
         "logDriver": "awslogs",
         "options": {
-          "awslogs-group": "/ecs/dms-matching-engine",
+          "awslogs-group": "PLACEHOLDER",
           "awslogs-region": "eu-west-2",
-          "awslogs-stream-prefix": "ecs"
+          "awslogs-stream-prefix": "ecs/matching-engine"
         }
       },
       "systemControls": []
