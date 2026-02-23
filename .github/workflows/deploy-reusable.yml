@@ -198,7 +198,7 @@ jobs:
             "$TASK_DEF_PATH"
           
           # Step 2: Inject IAM roles and set family name to match Terraform convention
-          FAMILY_NAME="DMS-${{ inputs.environment == 'prod' && 'Prod' || 'PreProd' }}-${{ matrix.service.name }}-task"
+          FAMILY_NAME="dms-${{ inputs.environment == 'prod' && 'prod' || 'preprod' }}-${{ matrix.service.name }}-task"
           
           UPDATED_TASK_DEF=$(jq \
             --arg task_role "${{ steps.fetch-secrets.outputs.task_role }}" \
@@ -232,6 +232,6 @@ jobs:
         uses: aws-actions/amazon-ecs-deploy-task-definition@v2
         with:
           task-definition: ${{ steps.render-task-def.outputs.task-definition }}
-          service: DMS-${{ inputs.environment == 'prod' && 'Prod' || 'PreProd' }}-${{ matrix.service.name }}-service
-          cluster: DMS-${{ inputs.environment == 'prod' && 'Prod' || 'PreProd' }}-Cluster
+          service: dms-${{ inputs.environment == 'prod' && 'prod' || 'preprod' }}-${{ matrix.service.name }}-service
+          cluster: dms-${{ inputs.environment == 'prod' && 'prod' || 'preprod' }}-cluster
           wait-for-service-stability: true
