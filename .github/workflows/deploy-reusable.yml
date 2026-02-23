@@ -170,3 +170,30 @@ jobs:
           echo "secrets<<EOF" >> $GITHUB_OUTPUT
           echo "$SECRETS_STRING" >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Inject roles in task definition
+        id: inject-roles
+        run: |
+          TASK_DEF_PATH="${{ matrix.service.task_def }}"
+          
+          if [ ! -f "$TASK_DEF_PATH" ]; then
+            echo "Task definition not found: $TASK_DEF_PATH - Skipping"
+            echo "skip=true" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
+          echo "Injecting roles into task definition: $TASK_DEF_PATH"
+
+          UPDATED_TASK_DEF=$(jq \
+            --arg task_role "${{ steps.fetch-secrets.outputs.task_role }}" \
+            --arg exec_role "${{ steps.fetch-secrets.outputs.exec_role }}" \
+            '.taskRoleArn = $task_role | .executionRoleArn = $exec_role' \
+            "$TASK_DEF_PATH")
+
+          echo "Updated task definition:"
+          echo "$UPDATED_TASK_DEF" | jq '.'
+
+          echo "updated_task_def<<EOF" >> $GITHUB_OUTPUT
+          echo "$UPDATED_TASK_DEF" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+          echo "skip=false" >> $GITHUB_OUTPUT
