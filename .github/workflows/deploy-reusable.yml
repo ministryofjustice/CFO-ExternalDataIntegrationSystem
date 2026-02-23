@@ -133,9 +133,9 @@ jobs:
       - name: Build ECS secrets for service
         id: build-secrets
         run: |
-          SECRETS_JSON="${{ toJson(matrix.service.secrets) }}"
-          SERVICE_NAME="${{ matrix.service.name }}"
-          SECRET_ARN="${{ secrets.AWS_SECRETS_ARN }}"
+          SECRETS_JSON=${{ toJson(matrix.service.secrets) }}
+          SERVICE_NAME=${{ matrix.service.name }}
+          SECRET_ARN=${{ secrets.AWS_SECRETS_ARN }}
 
           declare -A SECRET_MAP=(
             ["API_Base_URL"]="API__BaseUrl"
