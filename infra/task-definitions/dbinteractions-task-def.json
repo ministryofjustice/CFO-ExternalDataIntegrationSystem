@@ -27,7 +27,7 @@
       "systemControls": []
     }
   ],
-  "family": "dms-dbinteractions-task",
+  "family": "PLACEHOLDER",
   "networkMode": "awsvpc",
   "volumes": [
     {

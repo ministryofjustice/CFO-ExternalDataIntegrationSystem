@@ -27,7 +27,7 @@
       "systemControls": []
     }
   ],
-  "family": "dms-filesync-task",
+  "family": "PLACEHOLDER",
   "networkMode": "awsvpc",
   "volumes": [
     {
