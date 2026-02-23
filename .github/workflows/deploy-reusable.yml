@@ -157,7 +157,7 @@ jobs:
           )
 
           SECRETS_LIST=""
-          for secret in $(echo "$SECRETS_JSON" | jq -r '.[]'); do
+          echo "$SECRETS_JSON" | jq -r '.[]' | while read -r secret; do
             ENV_NAME="${SECRET_MAP[$secret]}"
             if [ -n "$ENV_NAME" ]; then
               SECRETS_LIST+="${ENV_NAME}=${SECRET_ARN}:${secret}::"$'\n'
