@@ -214,4 +214,4 @@ jobs:
       - name: Preview rendered ECS task definition
         run: |
           echo "Rendered task definition:"
-          echo "${{ steps.render-task-def.outputs.task-definition }}" | jq '.'
+          cat "${{ steps.inject-roles.outputs.updated_task_def_file }}" | jq '.'
