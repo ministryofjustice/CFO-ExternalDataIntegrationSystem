@@ -127,9 +127,49 @@ jobs:
           TASK_ROLE=$(echo "$SECRET_JSON" | jq -r '.Task_Role_ARN')
           EXEC_ROLE=$(echo "$SECRET_JSON" | jq -r '.Execution_Role_ARN')
 
-          echo "Task/Exec role ARNs:"
-          echo "Task Role: $TASK_ROLE"
-          echo "Exec Role: $EXEC_ROLE"
-
           echo "task_role=$TASK_ROLE" >> $GITHUB_OUTPUT
           echo "exec_role=$EXEC_ROLE" >> $GITHUB_OUTPUT
+
+      - name: Build ECS secrets for service
+        id: build-secrets
+        run: |
+          SECRETS_JSON="${{ toJson(matrix.service.secrets) }}"
+          SERVICE_NAME="${{ matrix.service.name }}"
+          SECRET_ARN="${{ secrets.AWS_SECRETS_ARN }}"
+
+          declare -A SECRET_MAP=(
+            ["API_Base_URL"]="API__BaseUrl"
+            ["Authentication_ApiKey"]="Authentication__ApiKey"
+            ["S3_BucketName"]="AWS__S3__BucketName"
+            ["Client_ID"]="AzureAd__ClientId"
+            ["Client_Secret"]="AzureAd__ClientSecret"
+            ["AuditDb"]="ConnectionStrings__AuditDb"
+            ["ClusterDb"]="ConnectionStrings__ClusterDb"
+            ["DeliusRunningPictureDb"]="ConnectionStrings__DeliusRunningPictureDb"
+            ["DeliusStagingDb"]="ConnectionStrings__DeliusStagingDb"
+            ["MatchingDb"]="ConnectionStrings__MatchingDb"
+            ["OfflocRunningPictureDb"]="ConnectionStrings__OfflocRunningPictureDb"
+            ["OfflocStagingDb"]="ConnectionStrings__OfflocStagingDb"
+            ["CatsRabbitMQ"]="ConnectionStrings__CatsRabbitMQ"
+            ["RabbitMQ"]="ConnectionStrings__RabbitMQ"
+            ["DMSFilesBasePath"]="DMSFilesBasePath"
+            ["Sentry_Dsn"]="Sentry_Dsn"
+          )
+
+          SECRETS_LIST=""
+          for secret in $(echo "$SECRETS_JSON" | jq -r '.[]'); do
+            ENV_NAME="${SECRET_MAP[$secret]}"
+            if [ -n "$ENV_NAME" ]; then
+              SECRETS_LIST+="${ENV_NAME}=${SECRET_ARN}:${secret}::"$'\n'
+            fi
+          done
+
+          SECRETS_LIST=$(echo "$SECRETS_LIST" | sed '/^$/d')
+
+          echo "### DEBUG ECS SECRETS - SERVICE: $SERVICE_NAME ###"
+          echo "$SECRETS_LIST"
+          echo "### END DEBUG ###"
+
+          echo "secrets<<EOF" >> $GITHUB_OUTPUT
+          echo "$SECRETS_LIST" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
