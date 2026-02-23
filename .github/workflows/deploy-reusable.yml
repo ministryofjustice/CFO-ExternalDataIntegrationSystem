@@ -116,17 +116,20 @@ jobs:
       - name: Testing workflow steps
         run: echo "The testing / deployment of the image have been skipped for this demo, but the workflow is correctly iterating over the services and would deploy the built image to ECS if those steps were uncommented."
       
-      - name : Fetch required secrets
+      - name: Fetch required secrets
         id: fetch-secrets
         run: |
           SECRET_JSON=$(aws secretsmanager get-secret-value \
-              --secret-id ${{ secrets.AWS_SECRETS_ARN }} \
-              --query 'SecretString' \
-              --output text)
-            
-            TASK_ROLE=$(echo "$SECRET_JSON" | jq -r '.Task_Role_ARN')
-            EXEC_ROLE=$(echo "$SECRET_JSON" | jq -r '.Execution_Role_ARN')
+            --secret-id ${{ secrets.AWS_SECRETS_ARN }} \
+            --query 'SecretString' \
+            --output text)
 
-          echo "Task/Exec role arns (not masked as they are not sensitive):"
-          echo "TASK_ROLE=${TASK_ROLE}" >> $GITHUB_OUTPUT
-          echo "EXEC_ROLE=${EXEC_ROLE}" >> $GITHUB_OUTPUT
+          TASK_ROLE=$(echo "$SECRET_JSON" | jq -r '.Task_Role_ARN')
+          EXEC_ROLE=$(echo "$SECRET_JSON" | jq -r '.Execution_Role_ARN')
+
+          echo "Task/Exec role ARNs:"
+          echo "Task Role: $TASK_ROLE"
+          echo "Exec Role: $EXEC_ROLE"
+
+          echo "task_role=$TASK_ROLE" >> $GITHUB_OUTPUT
+          echo "exec_role=$EXEC_ROLE" >> $GITHUB_OUTPUT
