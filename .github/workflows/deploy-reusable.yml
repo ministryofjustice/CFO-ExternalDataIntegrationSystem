@@ -174,7 +174,7 @@ jobs:
       - name: Inject roles in task definition
         id: inject-roles
         run: |
-          TASK_DEF_PATH=${{ matrix.service.task_def }}
+          TASK_DEF_PATH="${{ matrix.service.taskdef }}"
           
           if [ ! -f "$TASK_DEF_PATH" ]; then
             echo "Task definition not found: $TASK_DEF_PATH - Skipping"
