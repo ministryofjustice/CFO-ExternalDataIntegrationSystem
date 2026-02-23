@@ -27,7 +27,7 @@
       "systemControls": []
     }
   ],
-  "family": "dms-logging-task",
+  "family": "PLACEHOLDER",
   "networkMode": "awsvpc",
   "volumes": [
     {

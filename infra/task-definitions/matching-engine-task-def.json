@@ -27,7 +27,7 @@
       "systemControls": []
     }
   ],
-  "family": "dms-matching-engine-task",
+  "family": "PLACEHOLDER",
   "networkMode": "awsvpc",
   "volumes": [
     {

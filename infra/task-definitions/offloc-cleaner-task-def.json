@@ -27,7 +27,7 @@
       "systemControls": []
     }
   ],
-  "family": "dms-offloc-cleaner-task",
+  "family": "PLACEHOLDER",
   "networkMode": "awsvpc",
   "volumes": [
     {
