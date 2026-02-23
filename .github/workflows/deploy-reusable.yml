@@ -201,6 +201,15 @@ jobs:
             -e 's/EFS_ACCESS_POINT_ID/${{ steps.fetch-roles.outputs.efs-ap-id }}/g' \
             ${{ matrix.service.taskDef }}
 
+      - name: Inject IAM roles into task definition
+        if: steps.build-image.outputs.skip != 'true'
+        run: |
+          jq --arg taskRole "${{ steps.fetch-roles.outputs.task-role }}" \
+             --arg execRole "${{ steps.fetch-roles.outputs.exec-role }}" \
+             '.taskRoleArn = $taskRole | .executionRoleArn = $execRole' \
+             ${{ matrix.service.taskDef }} > task-def-updated.json
+          mv task-def-updated.json ${{ matrix.service.taskDef }}
+
       - name: Render ECS task definition
         if: steps.build-image.outputs.skip != 'true'
         id: render-task-def
@@ -209,8 +218,6 @@ jobs:
           task-definition: ${{ matrix.service.taskDef }}
           container-name: ${{ matrix.service.container }}
           image: ${{ steps.build-image.outputs.image }}
-          task-role-arn: ${{ steps.fetch-roles.outputs.task-role }}
-          execution-role-arn: ${{ steps.fetch-roles.outputs.exec-role }}
           environment-variables: |
             DOTNET_ENVIRONMENT=${{ inputs.environment == 'prod' && 'Production' || 'PreProduction' }}
           secrets: ${{ steps.build-secrets.outputs.secrets }}
