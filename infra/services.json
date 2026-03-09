@@ -10,7 +10,7 @@
         "DeliusRunningPictureDb",
         "OfflocRunningPictureDb",
         "ClusterDb",
-        "Client_ID",
+        "API_Client_ID",
         "Authentication_ApiKey",
         "Sentry_Dsn"
       ]
