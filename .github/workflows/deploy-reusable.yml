@@ -146,6 +146,7 @@ jobs:
             ["Authentication_ApiKey"]="Authentication__ApiKey"
             ["S3_BucketName"]="AWS__S3__BucketName"
             ["Client_ID"]="AzureAd__ClientId"
+            ["API_Client_ID"]="AzureAd__ClientId"
             ["Client_Secret"]="AzureAd__ClientSecret"
             ["AuditDb"]="ConnectionStrings__AuditDb"
             ["ClusterDb"]="ConnectionStrings__ClusterDb"
