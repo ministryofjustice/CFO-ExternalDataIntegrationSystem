@@ -7,7 +7,7 @@ using System.Net;
 using System.Text;
 using System.Text.Json;
 namespace Visualiser.Pages;
-
+[ValidateAntiForgeryToken]
 public class IndexModel(IDownstreamApi api) : PageModel
 {
     public void OnGet() { }
