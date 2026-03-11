@@ -10,6 +10,7 @@ using Microsoft.Identity.Client;
 
 namespace Visualiser.Pages
 {
+    [ValidateAntiForgeryToken]
     public class ProcessedFilesModel(IDownstreamApi api) : PageModel
     {
 
