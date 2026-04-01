@@ -192,21 +192,48 @@ public class DbInteractionService : IDbInteractionService
     public async Task StageOffloc(string fileName)
     {
         string folderName = fileName.Split('.').First();
+        string folderPath = Path.Combine(fileLocations.offlocOutput, folderName);
+
         await messageService.PublishAsync(new StatusUpdateMessage($"Offloc staging started for file {fileName}."));
+
+        var tableNames = new[]
+        {
+            "Activities", "Addresses", "Agencies", "Assessments", "Bookings",
+            "Employment", "Flags", "Identifiers", "IncentiveLevel", "Locations",
+            "MainOffence", "Movements", "OffenderAgencies", "OffenderStatus",
+            "OtherOffences", "PersonalDetails", "PNC", "PreviousPrisonNumbers",
+            "SentenceInformation", "SexOffenders"
+        };
 
         var offlocConn = new SqlConnection(configuration.GetConnectionString("OfflocStagingDb")!);
         using (offlocConn)
         {
             await offlocConn.OpenAsync();
-            SqlCommand command = new SqlCommand(serverConfig.OfflocStagingProcedure, offlocConn);
-            command.CommandTimeout = 600;
-            command.CommandType = CommandType.StoredProcedure;
-            command.Parameters.AddWithValue("@basePath", $"{fileLocations.offlocOutput}/{folderName}/");
-            command.Parameters.AddWithValue("@processedFile", fileName);
 
             try
             {
-                var result = await command.ExecuteNonQueryAsync();
+                foreach (var table in tableNames)
+                {
+                    var filePath = Path.Combine(folderPath, $"{table}.txt");
+                    if (!File.Exists(filePath)) continue;
+
+                    var columns = await GetTableColumns(offlocConn, "OfflocStaging", table);
+                    var dataTable = ReadPipeDelimitedFile(filePath, columns);
+
+                    using var bulkCopy = new SqlBulkCopy(offlocConn)
+                    {
+                        DestinationTableName = $"[OfflocStaging].[{table}]",
+                        BulkCopyTimeout = 600
+                    };
+                    await bulkCopy.WriteToServerAsync(dataTable);
+                }
+
+                // Calls StandardiseData + updates ProcessedFiles
+                SqlCommand command = new SqlCommand(serverConfig.OfflocStagingProcedure, offlocConn);
+                command.CommandTimeout = 600;
+                command.CommandType = CommandType.StoredProcedure;
+                command.Parameters.AddWithValue("@processedFile", fileName);
+                await command.ExecuteNonQueryAsync();
             }
             catch (Exception e)
             {
@@ -215,7 +242,39 @@ public class DbInteractionService : IDbInteractionService
             }
         }
 
-        await messageService.PublishAsync(new StatusUpdateMessage($"Offloc staging finished for file {fileName}."));
+        await messageService.PublishAsync(new StatusUpdateMessage($"Offloc Staging completed."));
+    }
+
+    private async Task<List<string>> GetTableColumns(SqlConnection conn, string schema, string table)
+    {
+        var columns = new List<string>();
+        using var cmd = new SqlCommand(
+            "SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = @schema AND TABLE_NAME = @table ORDER BY ORDINAL_POSITION",
+            conn);
+        cmd.Parameters.AddWithValue("@schema", schema);
+        cmd.Parameters.AddWithValue("@table", table);
+        using var reader = await cmd.ExecuteReaderAsync();
+        while (await reader.ReadAsync())
+            columns.Add(reader.GetString(0));
+        return columns;
+    }
+
+    private DataTable ReadPipeDelimitedFile(string filePath, List<string> columns)
+    {
+        var dataTable = new DataTable();
+        foreach (var col in columns)
+            dataTable.Columns.Add(col, typeof(string));
+
+        foreach (var line in File.ReadLines(filePath))
+        {
+            if (string.IsNullOrWhiteSpace(line)) continue;
+            var values = line.Split('|');
+            var row = dataTable.NewRow();
+            for (int i = 0; i < Math.Min(values.Length, columns.Count); i++)
+                row[i] = values[i];
+            dataTable.Rows.Add(row);
+        }
+        return dataTable;
     }
     //Calls merge and then on completion
     public async Task StandardiseDeliusStaging()
