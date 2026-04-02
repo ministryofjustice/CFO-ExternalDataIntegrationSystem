@@ -14,7 +14,6 @@ public class DbInteractionService : IDbInteractionService
     private readonly IFileLocations fileLocations;
     private readonly ServerConfiguration serverConfig;
     private readonly IConfiguration configuration;
-    private readonly bool inContainer;
     private readonly IMessageService messageService;
 
     public DbInteractionService(
@@ -27,7 +26,6 @@ public class DbInteractionService : IDbInteractionService
         this.configuration = config;
         this.fileLocations = fileLocations;
         this.messageService = messageService;
-        this.inContainer = config.GetValue<bool>("RUNNING_IN_CONTAINER");
     }
 
     public async Task<string[]> GetProcessedDeliusFileNames()
@@ -151,34 +149,48 @@ public class DbInteractionService : IDbInteractionService
     public async Task StageDelius(string fileName, string filePath)
     {
         string folderName = filePath.Split('/').Last();
+        string folderPath = Path.Combine(fileLocations.deliusOutput, folderName);
 
         await messageService.PublishAsync(new StatusUpdateMessage($"Delius staging started for file number {fileName}"));
 
-        string containerFlag = string.Empty;
-        if (inContainer)
+        var tableNames = new[]
         {
-            containerFlag = "Y";
-        }
-        else
-        {
-            containerFlag = "N";
-        }
+            "AdditionalIdentifier", "AliasDetails", "Disability", "Disposal", "EventDetails",
+            "Header", "MainOffence", "OAS", "OffenderAddress", "OffenderManager",
+            "OffenderManagerBuildings", "OffenderManagerTeam", "OffenderToOffenderManagerMappings",
+            "Offenders", "OffenderTransfer", "PersonalCircumstances", "Provision",
+            "RegistrationDetails", "Requirement"
+        };
 
         var deliusConn = new SqlConnection(configuration.GetConnectionString("DeliusStagingDb")!);
         using (deliusConn)
         {
             await deliusConn.OpenAsync();
 
-            SqlCommand cmd = new SqlCommand(serverConfig.DeliusStagingProcedure, deliusConn);
-            cmd.CommandType = CommandType.StoredProcedure;
-            cmd.CommandTimeout = 600;
-            cmd.Parameters.AddWithValue("@basePath", $"{fileLocations.deliusOutput}/{folderName}/");
-            cmd.Parameters.AddWithValue("@processedFile", fileName);
-            cmd.Parameters.AddWithValue("@inContainer", containerFlag);
-
             try
             {
-                var res = await cmd.ExecuteNonQueryAsync();
+                foreach (var table in tableNames)
+                {
+                    var tableFilePath = Path.Combine(folderPath, $"{table}.txt");
+                    if (!File.Exists(tableFilePath)) continue;
+
+                    var columns = await GetTableColumns(deliusConn, "DeliusStaging", table);
+                    var dataTable = ReadPipeDelimitedFile(tableFilePath, columns);
+
+                    using var bulkCopy = new SqlBulkCopy(deliusConn)
+                    {
+                        DestinationTableName = $"[DeliusStaging].[{table}]",
+                        BulkCopyTimeout = 600
+                    };
+                    await bulkCopy.WriteToServerAsync(dataTable);
+                }
+
+                // Calls StandardiseData + updates ProcessedFiles
+                SqlCommand command = new SqlCommand(serverConfig.DeliusStagingProcedure, deliusConn);
+                command.CommandType = CommandType.StoredProcedure;
+                command.CommandTimeout = 600;
+                command.Parameters.AddWithValue("@processedFile", fileName);
+                await command.ExecuteNonQueryAsync();
             }
             catch (Exception e)
             {
@@ -187,7 +199,7 @@ public class DbInteractionService : IDbInteractionService
             }
         }
 
-        await messageService.PublishAsync(new StatusUpdateMessage($"Delius staging finished for file {fileName}."));
+        await messageService.PublishAsync(new StatusUpdateMessage($"Delius Staging completed."));
     }
 
     public async Task StageOffloc(string fileName)
@@ -266,7 +278,9 @@ public class DbInteractionService : IDbInteractionService
     }
 
     private static readonly string[] DateTypes = ["date", "datetime", "datetime2", "smalldatetime"];
-    private static readonly string[] IntTypes = ["int", "smallint", "tinyint", "bigint"];
+    private static readonly string[] IntTypes = ["int", "smallint", "tinyint"];
+    private static readonly string[] LongTypes = ["bigint"];
+    private static readonly string[] BinaryTypes = ["varbinary", "binary"];
     private static readonly CultureInfo UkCulture = new CultureInfo("en-GB");
 
     private DataTable ReadPipeDelimitedFile(string filePath, List<(string Name, int? MaxLength, string DataType)> columns)
@@ -276,8 +290,12 @@ public class DbInteractionService : IDbInteractionService
         {
             if (DateTypes.Contains(col.DataType))
                 dataTable.Columns.Add(col.Name, typeof(DateTime)).AllowDBNull = true;
+            else if (LongTypes.Contains(col.DataType))
+                dataTable.Columns.Add(col.Name, typeof(long)).AllowDBNull = true;
             else if (IntTypes.Contains(col.DataType))
                 dataTable.Columns.Add(col.Name, typeof(int)).AllowDBNull = true;
+            else if (BinaryTypes.Contains(col.DataType))
+                dataTable.Columns.Add(col.Name, typeof(byte[])).AllowDBNull = true;
             else
                 dataTable.Columns.Add(col.Name, typeof(string));
         }
@@ -294,7 +312,7 @@ public class DbInteractionService : IDbInteractionService
 
                 if (string.IsNullOrWhiteSpace(value))
                 {
-                    row[i] = DateTypes.Contains(col.DataType) || IntTypes.Contains(col.DataType)
+                    row[i] = DateTypes.Contains(col.DataType) || IntTypes.Contains(col.DataType) || LongTypes.Contains(col.DataType) || BinaryTypes.Contains(col.DataType)
                         ? DBNull.Value
                         : (object)"";
                     continue;
@@ -306,9 +324,25 @@ public class DbInteractionService : IDbInteractionService
                         ? dt
                         : DBNull.Value;
                 }
+                else if (LongTypes.Contains(col.DataType))
+                {
+                    row[i] = long.TryParse(value, out var l) ? l : DBNull.Value;
+                }
                 else if (IntTypes.Contains(col.DataType))
                 {
                     row[i] = int.TryParse(value, out var n) ? n : DBNull.Value;
+                }
+                else if (BinaryTypes.Contains(col.DataType))
+                {
+                    try
+                    {
+                        var hex = value.StartsWith("0x", StringComparison.OrdinalIgnoreCase) ? value[2..] : value;
+                        row[i] = Convert.FromHexString(hex);
+                    }
+                    catch
+                    {
+                        row[i] = DBNull.Value;
+                    }
                 }
                 else
                 {
