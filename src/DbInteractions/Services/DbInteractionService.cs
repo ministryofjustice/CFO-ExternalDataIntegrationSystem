@@ -245,25 +245,29 @@ public class DbInteractionService : IDbInteractionService
         await messageService.PublishAsync(new StatusUpdateMessage($"Offloc Staging completed."));
     }
 
-    private async Task<List<string>> GetTableColumns(SqlConnection conn, string schema, string table)
+    private async Task<List<(string Name, int? MaxLength)>> GetTableColumns(SqlConnection conn, string schema, string table)
     {
-        var columns = new List<string>();
+        var columns = new List<(string Name, int? MaxLength)>();
         using var cmd = new SqlCommand(
-            "SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = @schema AND TABLE_NAME = @table ORDER BY ORDINAL_POSITION",
+            "SELECT COLUMN_NAME, CHARACTER_MAXIMUM_LENGTH FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = @schema AND TABLE_NAME = @table ORDER BY ORDINAL_POSITION",
             conn);
         cmd.Parameters.AddWithValue("@schema", schema);
         cmd.Parameters.AddWithValue("@table", table);
         using var reader = await cmd.ExecuteReaderAsync();
         while (await reader.ReadAsync())
-            columns.Add(reader.GetString(0));
+        {
+            var name = reader.GetString(0);
+            var maxLength = reader.IsDBNull(1) ? (int?)null : reader.GetInt32(1);
+            columns.Add((name, maxLength));
+        }
         return columns;
     }
 
-    private DataTable ReadPipeDelimitedFile(string filePath, List<string> columns)
+    private DataTable ReadPipeDelimitedFile(string filePath, List<(string Name, int? MaxLength)> columns)
     {
         var dataTable = new DataTable();
         foreach (var col in columns)
-            dataTable.Columns.Add(col, typeof(string));
+            dataTable.Columns.Add(col.Name, typeof(string));
 
         foreach (var line in File.ReadLines(filePath))
         {
@@ -271,7 +275,13 @@ public class DbInteractionService : IDbInteractionService
             var values = line.Split('|');
             var row = dataTable.NewRow();
             for (int i = 0; i < Math.Min(values.Length, columns.Count); i++)
-                row[i] = values[i];
+            {
+                var value = values[i];
+                var maxLength = columns[i].MaxLength;
+                if (maxLength.HasValue && maxLength.Value > 0 && value.Length > maxLength.Value)
+                    value = value[..maxLength.Value];
+                row[i] = value;
+            }
             dataTable.Rows.Add(row);
         }
         return dataTable;
