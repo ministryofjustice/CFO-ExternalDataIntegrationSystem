@@ -5,6 +5,7 @@ using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 using System.Data;
+using System.Globalization;
 
 namespace DbInteractions.Services;
 
@@ -245,11 +246,11 @@ public class DbInteractionService : IDbInteractionService
         await messageService.PublishAsync(new StatusUpdateMessage($"Offloc Staging completed."));
     }
 
-    private async Task<List<(string Name, int? MaxLength)>> GetTableColumns(SqlConnection conn, string schema, string table)
+    private async Task<List<(string Name, int? MaxLength, string DataType)>> GetTableColumns(SqlConnection conn, string schema, string table)
     {
-        var columns = new List<(string Name, int? MaxLength)>();
+        var columns = new List<(string Name, int? MaxLength, string DataType)>();
         using var cmd = new SqlCommand(
-            "SELECT COLUMN_NAME, CHARACTER_MAXIMUM_LENGTH FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = @schema AND TABLE_NAME = @table ORDER BY ORDINAL_POSITION",
+            "SELECT COLUMN_NAME, CHARACTER_MAXIMUM_LENGTH, DATA_TYPE FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = @schema AND TABLE_NAME = @table ORDER BY ORDINAL_POSITION",
             conn);
         cmd.Parameters.AddWithValue("@schema", schema);
         cmd.Parameters.AddWithValue("@table", table);
@@ -258,16 +259,28 @@ public class DbInteractionService : IDbInteractionService
         {
             var name = reader.GetString(0);
             var maxLength = reader.IsDBNull(1) ? (int?)null : reader.GetInt32(1);
-            columns.Add((name, maxLength));
+            var dataType = reader.GetString(2);
+            columns.Add((name, maxLength, dataType));
         }
         return columns;
     }
 
-    private DataTable ReadPipeDelimitedFile(string filePath, List<(string Name, int? MaxLength)> columns)
+    private static readonly string[] DateTypes = ["date", "datetime", "datetime2", "smalldatetime"];
+    private static readonly string[] IntTypes = ["int", "smallint", "tinyint", "bigint"];
+    private static readonly CultureInfo UkCulture = new CultureInfo("en-GB");
+
+    private DataTable ReadPipeDelimitedFile(string filePath, List<(string Name, int? MaxLength, string DataType)> columns)
     {
         var dataTable = new DataTable();
         foreach (var col in columns)
-            dataTable.Columns.Add(col.Name, typeof(string));
+        {
+            if (DateTypes.Contains(col.DataType))
+                dataTable.Columns.Add(col.Name, typeof(DateTime)).AllowDBNull = true;
+            else if (IntTypes.Contains(col.DataType))
+                dataTable.Columns.Add(col.Name, typeof(int)).AllowDBNull = true;
+            else
+                dataTable.Columns.Add(col.Name, typeof(string));
+        }
 
         foreach (var line in File.ReadLines(filePath))
         {
@@ -277,10 +290,33 @@ public class DbInteractionService : IDbInteractionService
             for (int i = 0; i < Math.Min(values.Length, columns.Count); i++)
             {
                 var value = values[i];
-                var maxLength = columns[i].MaxLength;
-                if (maxLength.HasValue && maxLength.Value > 0 && value.Length > maxLength.Value)
-                    value = value[..maxLength.Value];
-                row[i] = value;
+                var col = columns[i];
+
+                if (string.IsNullOrWhiteSpace(value))
+                {
+                    row[i] = DateTypes.Contains(col.DataType) || IntTypes.Contains(col.DataType)
+                        ? DBNull.Value
+                        : (object)"";
+                    continue;
+                }
+
+                if (DateTypes.Contains(col.DataType))
+                {
+                    row[i] = DateTime.TryParse(value, UkCulture, DateTimeStyles.None, out var dt)
+                        ? dt
+                        : DBNull.Value;
+                }
+                else if (IntTypes.Contains(col.DataType))
+                {
+                    row[i] = int.TryParse(value, out var n) ? n : DBNull.Value;
+                }
+                else
+                {
+                    var maxLength = col.MaxLength;
+                    if (maxLength.HasValue && maxLength.Value > 0 && value.Length > maxLength.Value)
+                        value = value[..maxLength.Value];
+                    row[i] = value;
+                }
             }
             dataTable.Rows.Add(row);
         }
