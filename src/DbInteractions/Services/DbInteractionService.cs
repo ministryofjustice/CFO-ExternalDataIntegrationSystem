@@ -312,9 +312,7 @@ public class DbInteractionService : IDbInteractionService
 
                 if (string.IsNullOrWhiteSpace(value))
                 {
-                    row[i] = DateTypes.Contains(col.DataType) || IntTypes.Contains(col.DataType) || LongTypes.Contains(col.DataType) || BinaryTypes.Contains(col.DataType)
-                        ? DBNull.Value
-                        : (object)"";
+                    row[i] = DBNull.Value;
                     continue;
                 }
 
