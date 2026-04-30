@@ -5,7 +5,6 @@ using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 using System.Data;
-using System.Globalization;
 
 namespace DbInteractions.Services;
 
@@ -14,6 +13,7 @@ public class DbInteractionService : IDbInteractionService
     private readonly IFileLocations fileLocations;
     private readonly ServerConfiguration serverConfig;
     private readonly IConfiguration configuration;
+    private readonly bool inContainer;
     private readonly IMessageService messageService;
 
     public DbInteractionService(
@@ -26,6 +26,7 @@ public class DbInteractionService : IDbInteractionService
         this.configuration = config;
         this.fileLocations = fileLocations;
         this.messageService = messageService;
+        this.inContainer = config.GetValue<bool>("RUNNING_IN_CONTAINER");
     }
 
     public async Task<string[]> GetProcessedDeliusFileNames()
@@ -149,48 +150,34 @@ public class DbInteractionService : IDbInteractionService
     public async Task StageDelius(string fileName, string filePath)
     {
         string folderName = filePath.Split('/').Last();
-        string folderPath = Path.Combine(fileLocations.deliusOutput, folderName);
 
         await messageService.PublishAsync(new StatusUpdateMessage($"Delius staging started for file number {fileName}"));
 
-        var tableNames = new[]
+        string containerFlag = string.Empty;
+        if (inContainer)
         {
-            "AdditionalIdentifier", "AliasDetails", "Disability", "Disposal", "EventDetails",
-            "Header", "MainOffence", "OAS", "OffenderAddress", "OffenderManager",
-            "OffenderManagerBuildings", "OffenderManagerTeam", "OffenderToOffenderManagerMappings",
-            "Offenders", "OffenderTransfer", "PersonalCircumstances", "Provision",
-            "RegistrationDetails", "Requirement"
-        };
+            containerFlag = "Y";
+        }
+        else
+        {
+            containerFlag = "N";
+        }
 
         var deliusConn = new SqlConnection(configuration.GetConnectionString("DeliusStagingDb")!);
         using (deliusConn)
         {
             await deliusConn.OpenAsync();
 
+            SqlCommand cmd = new SqlCommand(serverConfig.DeliusStagingProcedure, deliusConn);
+            cmd.CommandType = CommandType.StoredProcedure;
+            cmd.CommandTimeout = 600;
+            cmd.Parameters.AddWithValue("@basePath", $"{fileLocations.deliusOutput}/{folderName}/");
+            cmd.Parameters.AddWithValue("@processedFile", fileName);
+            cmd.Parameters.AddWithValue("@inContainer", containerFlag);
+
             try
             {
-                foreach (var table in tableNames)
-                {
-                    var tableFilePath = Path.Combine(folderPath, $"{table}.txt");
-                    if (!File.Exists(tableFilePath)) continue;
-
-                    var columns = await GetTableColumns(deliusConn, "DeliusStaging", table);
-                    var dataTable = ReadPipeDelimitedFile(tableFilePath, columns);
-
-                    using var bulkCopy = new SqlBulkCopy(deliusConn)
-                    {
-                        DestinationTableName = $"[DeliusStaging].[{table}]",
-                        BulkCopyTimeout = 600
-                    };
-                    await bulkCopy.WriteToServerAsync(dataTable);
-                }
-
-                // Calls StandardiseData + updates ProcessedFiles
-                SqlCommand command = new SqlCommand(serverConfig.DeliusStagingProcedure, deliusConn);
-                command.CommandType = CommandType.StoredProcedure;
-                command.CommandTimeout = 600;
-                command.Parameters.AddWithValue("@processedFile", fileName);
-                await command.ExecuteNonQueryAsync();
+                var res = await cmd.ExecuteNonQueryAsync();
             }
             catch (Exception e)
             {
@@ -199,54 +186,27 @@ public class DbInteractionService : IDbInteractionService
             }
         }
 
-        await messageService.PublishAsync(new StatusUpdateMessage($"Delius Staging completed."));
+        await messageService.PublishAsync(new StatusUpdateMessage($"Delius staging finished for file {fileName}."));
     }
 
     public async Task StageOffloc(string fileName)
     {
         string folderName = fileName.Split('.').First();
-        string folderPath = Path.Combine(fileLocations.offlocOutput, folderName);
-
         await messageService.PublishAsync(new StatusUpdateMessage($"Offloc staging started for file {fileName}."));
-
-        var tableNames = new[]
-        {
-            "Activities", "Addresses", "Agencies", "Assessments", "Bookings",
-            "Employment", "Flags", "Identifiers", "IncentiveLevel", "Locations",
-            "MainOffence", "Movements", "OffenderAgencies", "OffenderStatus",
-            "OtherOffences", "PersonalDetails", "PNC", "PreviousPrisonNumbers",
-            "SentenceInformation", "SexOffenders"
-        };
 
         var offlocConn = new SqlConnection(configuration.GetConnectionString("OfflocStagingDb")!);
         using (offlocConn)
         {
             await offlocConn.OpenAsync();
+            SqlCommand command = new SqlCommand(serverConfig.OfflocStagingProcedure, offlocConn);
+            command.CommandTimeout = 600;
+            command.CommandType = CommandType.StoredProcedure;
+            command.Parameters.AddWithValue("@basePath", $"{fileLocations.offlocOutput}/{folderName}/");
+            command.Parameters.AddWithValue("@processedFile", fileName);
 
             try
             {
-                foreach (var table in tableNames)
-                {
-                    var filePath = Path.Combine(folderPath, $"{table}.txt");
-                    if (!File.Exists(filePath)) continue;
-
-                    var columns = await GetTableColumns(offlocConn, "OfflocStaging", table);
-                    var dataTable = ReadPipeDelimitedFile(filePath, columns);
-
-                    using var bulkCopy = new SqlBulkCopy(offlocConn)
-                    {
-                        DestinationTableName = $"[OfflocStaging].[{table}]",
-                        BulkCopyTimeout = 600
-                    };
-                    await bulkCopy.WriteToServerAsync(dataTable);
-                }
-
-                // Calls StandardiseData + updates ProcessedFiles
-                SqlCommand command = new SqlCommand(serverConfig.OfflocStagingProcedure, offlocConn);
-                command.CommandTimeout = 600;
-                command.CommandType = CommandType.StoredProcedure;
-                command.Parameters.AddWithValue("@processedFile", fileName);
-                await command.ExecuteNonQueryAsync();
+                var result = await command.ExecuteNonQueryAsync();
             }
             catch (Exception e)
             {
@@ -255,104 +215,7 @@ public class DbInteractionService : IDbInteractionService
             }
         }
 
-        await messageService.PublishAsync(new StatusUpdateMessage($"Offloc Staging completed."));
-    }
-
-    private async Task<List<(string Name, int? MaxLength, string DataType)>> GetTableColumns(SqlConnection conn, string schema, string table)
-    {
-        var columns = new List<(string Name, int? MaxLength, string DataType)>();
-        using var cmd = new SqlCommand(
-            "SELECT COLUMN_NAME, CHARACTER_MAXIMUM_LENGTH, DATA_TYPE FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = @schema AND TABLE_NAME = @table ORDER BY ORDINAL_POSITION",
-            conn);
-        cmd.Parameters.AddWithValue("@schema", schema);
-        cmd.Parameters.AddWithValue("@table", table);
-        using var reader = await cmd.ExecuteReaderAsync();
-        while (await reader.ReadAsync())
-        {
-            var name = reader.GetString(0);
-            var maxLength = reader.IsDBNull(1) ? (int?)null : reader.GetInt32(1);
-            var dataType = reader.GetString(2);
-            columns.Add((name, maxLength, dataType));
-        }
-        return columns;
-    }
-
-    private static readonly string[] DateTypes = ["date", "datetime", "datetime2", "smalldatetime"];
-    private static readonly string[] IntTypes = ["int", "smallint", "tinyint"];
-    private static readonly string[] LongTypes = ["bigint"];
-    private static readonly string[] BinaryTypes = ["varbinary", "binary"];
-    private static readonly CultureInfo UkCulture = new CultureInfo("en-GB");
-
-    private DataTable ReadPipeDelimitedFile(string filePath, List<(string Name, int? MaxLength, string DataType)> columns)
-    {
-        var dataTable = new DataTable();
-        foreach (var col in columns)
-        {
-            if (DateTypes.Contains(col.DataType))
-                dataTable.Columns.Add(col.Name, typeof(DateTime)).AllowDBNull = true;
-            else if (LongTypes.Contains(col.DataType))
-                dataTable.Columns.Add(col.Name, typeof(long)).AllowDBNull = true;
-            else if (IntTypes.Contains(col.DataType))
-                dataTable.Columns.Add(col.Name, typeof(int)).AllowDBNull = true;
-            else if (BinaryTypes.Contains(col.DataType))
-                dataTable.Columns.Add(col.Name, typeof(byte[])).AllowDBNull = true;
-            else
-                dataTable.Columns.Add(col.Name, typeof(string));
-        }
-
-        foreach (var line in File.ReadLines(filePath))
-        {
-            if (string.IsNullOrWhiteSpace(line)) continue;
-            var values = line.Split('|');
-            var row = dataTable.NewRow();
-            for (int i = 0; i < Math.Min(values.Length, columns.Count); i++)
-            {
-                var value = values[i];
-                var col = columns[i];
-
-                if (string.IsNullOrWhiteSpace(value))
-                {
-                    row[i] = DBNull.Value;
-                    continue;
-                }
-
-                if (DateTypes.Contains(col.DataType))
-                {
-                    row[i] = DateTime.TryParse(value, UkCulture, DateTimeStyles.None, out var dt)
-                        ? dt
-                        : DBNull.Value;
-                }
-                else if (LongTypes.Contains(col.DataType))
-                {
-                    row[i] = long.TryParse(value, out var l) ? l : DBNull.Value;
-                }
-                else if (IntTypes.Contains(col.DataType))
-                {
-                    row[i] = int.TryParse(value, out var n) ? n : DBNull.Value;
-                }
-                else if (BinaryTypes.Contains(col.DataType))
-                {
-                    try
-                    {
-                        var hex = value.StartsWith("0x", StringComparison.OrdinalIgnoreCase) ? value[2..] : value;
-                        row[i] = Convert.FromHexString(hex);
-                    }
-                    catch
-                    {
-                        row[i] = DBNull.Value;
-                    }
-                }
-                else
-                {
-                    var maxLength = col.MaxLength;
-                    if (maxLength.HasValue && maxLength.Value > 0 && value.Length > maxLength.Value)
-                        value = value[..maxLength.Value];
-                    row[i] = value;
-                }
-            }
-            dataTable.Rows.Add(row);
-        }
-        return dataTable;
+        await messageService.PublishAsync(new StatusUpdateMessage($"Offloc staging finished for file {fileName}."));
     }
     //Calls merge and then on completion
     public async Task StandardiseDeliusStaging()

@@ -18,11 +18,6 @@ public class FileLocations : IFileLocations
     public FileLocations(string basePath)
     {
         this._basePath = basePath.Replace("~", Environment.GetFolderPath(Environment.SpecialFolder.UserProfile));
-
-        Directory.CreateDirectory(deliusInput);
-        Directory.CreateDirectory(deliusOutput);
-        Directory.CreateDirectory(offlocInput);
-        Directory.CreateDirectory(offlocOutput);
     }
     
     public string basePath { get => _basePath; }

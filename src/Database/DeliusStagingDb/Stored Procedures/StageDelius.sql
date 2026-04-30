@@ -1,19 +1,47 @@
 ﻿CREATE PROCEDURE [DeliusStaging].[StageDelius]
-	@processedFile VARCHAR(50)
+	@basePath VARCHAR(100), -- Should be in the format /app/delius/{fileName}.
+	@processedFile VARCHAR(50),
+	@inContainer VARCHAR(1)
 AS
-BEGIN
-	SET NOCOUNT ON;
-	SET DATEFORMAT DMY;
+	IF @inContainer = 'N'
+	BEGIN 
+		SET NOCOUNT ON; 
+		SET DATEFORMAT DMY;
+	END;
 
-	BEGIN TRANSACTION;
+	CREATE TABLE #TableNames(Id int Primary Key Identity, fileName VARCHAR(50));
+	INSERT INTO #TableNames(fileName) VALUES
+		('AdditionalIdentifier'), ('AliasDetails'), ('Disability'), ('Disposal'), ('EventDetails'), ('Header'), ('MainOffence'), 
+		('OAS'), ('OffenderAddress'), ('OffenderManager'), ('OffenderManagerBuildings'), ('OffenderManagerTeam'), 
+		('OffenderToOffenderManagerMappings'), ('Offenders'), ('OffenderTransfer'), ('PersonalCircumstances'), 
+		('Provision'), ('RegistrationDetails'), ('Requirement');
+	
+	DECLARE @i int;
+	DECLARE @sql NVARCHAR(250);
+	DECLARE @fileName VARCHAR(150);
+
+	SET @i = 1;
+
+	BEGIN TRANSACTION;	
 	BEGIN TRY
-		DECLARE @retMessage VARCHAR(500);
-		EXEC [DeliusStaging].[StandardiseData] @retMessage OUTPUT;
+		WHILE @i <= (Select COUNT(*) FROM #TableNames)
+		BEGIN
+			SET @fileName = (SELECT fileName FROM #TableNames WHERE Id = @i);
+			SET @sql = 'BULK INSERT DeliusStaging.' + @fileName + ' FROM ''' + @basePath + @fileName + '.txt''' +
+			' WITH (FieldTerminator=''|'', RowTerminator = ''0x0d0a'', MAXERRORS = 1000)';
+			
+			EXEC (@sql);
+			SET @i = @i+1;
+		END
+
+		--Standardise Delius Data
+        Declare @retMessage varchar(500);
+		EXEC [DeliusStaging].[StandardiseData] @retMessage;
 
 		UPDATE [DeliusRunningPictureDb].[DeliusRunningPicture].[ProcessedFiles]
 		SET [Status] = 'Imported'
 		WHERE FileName = @processedFile;
-
+		
 		COMMIT TRANSACTION;
 	END TRY
 	BEGIN CATCH
@@ -21,4 +49,3 @@ BEGIN
 		THROW;
 	END CATCH
 RETURN 0
-END
