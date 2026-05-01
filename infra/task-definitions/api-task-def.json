@@ -1,0 +1,50 @@
+{
+  "containerDefinitions": [
+    {
+      "name": "api-container",
+      "image": "PLACEHOLDER",
+      "cpu": 512,
+      "memory": 1024,
+      "portMappings": [
+        {
+          "containerPort": 8080,
+          "hostPort": 8080,
+          "protocol": "tcp",
+          "name": "http"
+        },
+        {
+          "containerPort": 8081,
+          "hostPort": 8081,
+          "protocol": "tcp",
+          "name": "https"
+        }
+      ],
+      "essential": true,
+      "environment": [],
+      "secrets": [],
+      "mountPoints": [],
+      "volumesFrom": [],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "PLACEHOLDER",
+          "awslogs-region": "eu-west-2",
+          "awslogs-stream-prefix": "ecs/api"
+        }
+      },
+      "systemControls": []
+    }
+  ],
+  "family": "PLACEHOLDER",
+  "networkMode": "awsvpc",
+  "volumes": [],
+  "placementConstraints": [],
+  "compatibilities": [
+    "FARGATE"
+  ],
+  "requiresCompatibilities": [
+    "FARGATE"
+  ],
+  "cpu": "512",
+  "memory": "1024"
+}
