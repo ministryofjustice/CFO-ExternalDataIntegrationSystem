@@ -16,12 +16,6 @@ updates:
 
     open-pull-requests-limit: 1
 
-    ignore:
-      - dependency-name: "AutoMapper"
-      - dependency-name: "AutoMapper.*"
-      - dependency-name: "MediatR"
-      - dependency-name: "MediatR.*"
-
     groups:
       all-dependencies:
         patterns:
