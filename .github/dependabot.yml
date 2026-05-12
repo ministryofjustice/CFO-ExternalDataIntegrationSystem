@@ -9,7 +9,7 @@ updates:
     cooldown:
       default-days: 7
 
-    target-branch: "develop"
+    target-branch: "main"
 
     commit-message:
       prefix: "deps"
