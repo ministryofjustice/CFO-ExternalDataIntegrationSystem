@@ -1,17 +1,242 @@
 name: Reusable Deploy
 
 on:
+  workflow_call:
+    inputs:
+      environment:
+        required: true
+        type: string
+        description: 'Environment name (preprod or prod)'
+      aws-region:
+        required: false
+        type: string
+        default: 'eu-west-2'
+    secrets:
+      AWS_ROLE_ARN:
+        required: true
+      AWS_SECRETS_ARN:
+        required: true
   workflow_dispatch:
     inputs:
       environment:
         required: true
         type: choice
+        description: 'Environment to deploy to'
         options:
           - preprod
           - prod
+      aws-region:
+        required: false
+        type: string
+        default: 'eu-west-2'
+        description: 'AWS region'
+
+permissions:
+  id-token: write
+  contents: read
 
 jobs:
-  placeholder:
+  load-services:
     runs-on: ubuntu-latest
+    outputs:
+      services: ${{ steps.load.outputs.services }}
     steps:
-      - run: echo "Triggered from feature branch. This placeholder should not run."
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      
+      - name: Load service mappings
+        id: load
+        run: |
+          services=$(jq -c '.services' infra/services.json)
+          echo "services=${services}" >> $GITHUB_OUTPUT
+          echo "Loaded services:"
+          echo "${services}" | jq '.'
+
+  deploy:
+    needs: load-services
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
+    
+    strategy:
+      matrix:
+        service: ${{ fromJson(needs.load-services.outputs.services) }}
+      fail-fast: false
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@8df5847569e6427dd6c4fb1cf565c83acfa8afa7 # v6.0.0
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ inputs.aws-region }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@183a1442edf41672e66566b7fc560e297a290896 # v2.1.1
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@c2fa09f4bde5ebb9d1777cf28262a3eb3db3ced7 # v5.2.0
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Run tests
+        run: dotnet test --configuration Release
+
+      - name: Build and Publish Image
+        id: build-image
+        env:
+          REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          REPOSITORY: dms-${{ inputs.environment }}-apps
+          IMAGE_TAG: ${{ matrix.service.name }}-${{ github.sha }}
+        run: |
+          PROJECT_PATH="src/${{ matrix.service.project }}"
+          
+          if [ ! -f "$PROJECT_PATH" ]; then
+            echo "Project not found: $PROJECT_PATH - Skipping"
+            echo "skip=true" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+          
+          echo "Building and publishing: $PROJECT_PATH"
+          
+          dotnet publish "$PROJECT_PATH" \
+            --configuration Release \
+            --target:PublishContainer \
+            --property:ContainerRegistry=$REGISTRY \
+            --property:ContainerRepository=$REPOSITORY \
+            --property:ContainerImageTag=$IMAGE_TAG
+          
+          IMAGE="${REGISTRY}/${REPOSITORY}:${IMAGE_TAG}"
+          echo "IMAGE=${IMAGE}" >> $GITHUB_OUTPUT
+          echo "skip=false" >> $GITHUB_OUTPUT
+          echo "Published image: ${IMAGE}"
+
+      - name: Testing workflow steps
+        run: echo "The testing / deployment of the image have been skipped for this demo, but the workflow is correctly iterating over the services and would deploy the built image to ECS if those steps were uncommented."
+      
+      - name: Fetch required secrets
+        id: fetch-secrets
+        run: |
+          SECRET_JSON=$(aws secretsmanager get-secret-value \
+            --secret-id ${{ secrets.AWS_SECRETS_ARN }} \
+            --query 'SecretString' \
+            --output text)
+
+          TASK_ROLE=$(echo "$SECRET_JSON" | jq -r '.Task_Role_ARN')
+          EXEC_ROLE=$(echo "$SECRET_JSON" | jq -r '.Execution_Role_ARN')
+          EFS_FS_ID=$(echo "$SECRET_JSON" | jq -r '.EFS_File_System_ID')
+          EFS_AP_ID=$(echo "$SECRET_JSON" | jq -r '.EFS_Access_Point_ID')
+
+          echo "task_role=$TASK_ROLE" >> $GITHUB_OUTPUT
+          echo "exec_role=$EXEC_ROLE" >> $GITHUB_OUTPUT
+          echo "efs-fs-id=$EFS_FS_ID" >> $GITHUB_OUTPUT
+          echo "efs-ap-id=$EFS_AP_ID" >> $GITHUB_OUTPUT
+
+      - name: Build secrets list for service
+        id: build-secrets
+        run: |
+          SECRETS_JSON='${{ toJson(matrix.service.secrets) }}'
+          
+          SECRETS_STRING=""
+          
+          declare -A SECRET_MAP=(
+            ["API_Base_URL"]="API__BaseUrl"
+            ["Authentication_ApiKey"]="Authentication__ApiKey"
+            ["S3_BucketName"]="AWS__S3__BucketName"
+            ["Client_ID"]="AzureAd__ClientId"
+            ["API_Client_ID"]="AzureAd__ClientId"
+            ["Client_Secret"]="AzureAd__ClientSecret"
+            ["AuditDb"]="ConnectionStrings__AuditDb"
+            ["ClusterDb"]="ConnectionStrings__ClusterDb"
+            ["DeliusRunningPictureDb"]="ConnectionStrings__DeliusRunningPictureDb"
+            ["DeliusStagingDb"]="ConnectionStrings__DeliusStagingDb"
+            ["MatchingDb"]="ConnectionStrings__MatchingDb"
+            ["OfflocRunningPictureDb"]="ConnectionStrings__OfflocRunningPictureDb"
+            ["OfflocStagingDb"]="ConnectionStrings__OfflocStagingDb"
+            ["CatsRabbitMQ"]="ConnectionStrings__CatsRabbitMQ"
+            ["RabbitMQ"]="ConnectionStrings__RabbitMQ"
+            ["DMSFilesBasePath"]="DMSFilesBasePath"
+            ["DMSFilesBasePath_DbInteractions"]="DMSFilesBasePath"
+            ["Sentry_Dsn"]="Sentry_Dsn"
+          )
+          
+          # Get the full secret ARN
+          SECRET_ARN="${{ secrets.AWS_SECRETS_ARN }}"
+          
+          for secret in $(echo "$SECRETS_JSON" | jq -r '.[]'); do
+            env_var_name="${SECRET_MAP[$secret]}"
+            if [ -n "$env_var_name" ]; then
+              SECRETS_STRING+="${env_var_name}=${SECRET_ARN}:${secret}::"$'\n'
+            fi
+          done
+
+          echo "Built secrets string:"
+          echo "$SECRETS_STRING"
+          
+          SECRETS_STRING=$(echo "$SECRETS_STRING" | sed '/^$/d')
+          echo "secrets<<EOF" >> $GITHUB_OUTPUT
+          echo "$SECRETS_STRING" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Replace EFS placeholders and inject roles in task definition
+        id: inject-roles
+        run: |
+          TASK_DEF_PATH="${{ matrix.service.taskDef }}"
+          
+          if [ ! -f "$TASK_DEF_PATH" ]; then
+            echo "Task definition not found: $TASK_DEF_PATH - Skipping"
+            echo "skip=true" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
+          echo "Processing task definition: $TASK_DEF_PATH"
+          
+          # Step 1: Replace placeholders (EFS, CloudWatch)
+          LOG_GROUP_NAME="dms-${{ inputs.environment == 'prod' && 'prod' || 'preprod' }}/ecs"
+          
+          sed -i.bak \
+            -e 's/EFS_FILE_SYSTEM_ID/${{ steps.fetch-secrets.outputs.efs-fs-id }}/g' \
+            -e 's/EFS_ACCESS_POINT_ID/${{ steps.fetch-secrets.outputs.efs-ap-id }}/g' \
+            -e "s|PLACEHOLDER|$LOG_GROUP_NAME|g" \
+            "$TASK_DEF_PATH"
+          
+          # Step 2: Inject IAM roles and set family name to match Terraform convention
+          FAMILY_NAME="dms-${{ inputs.environment == 'prod' && 'prod' || 'preprod' }}-${{ matrix.service.name }}-task"
+          
+          UPDATED_TASK_DEF=$(jq \
+            --arg task_role "${{ steps.fetch-secrets.outputs.task_role }}" \
+            --arg exec_role "${{ steps.fetch-secrets.outputs.exec_role }}" \
+            --arg family "$FAMILY_NAME" \
+            '.taskRoleArn = $task_role | .executionRoleArn = $exec_role | .family = $family' \
+            "$TASK_DEF_PATH")
+
+          UPDATED_TASK_DEF_FILE="rendered-task-def.json"
+          echo "$UPDATED_TASK_DEF" > "$UPDATED_TASK_DEF_FILE"
+
+          echo "Updated task definition:"
+          cat "$UPDATED_TASK_DEF_FILE" | jq '.'
+
+          echo "updated_task_def_file=$UPDATED_TASK_DEF_FILE" >> $GITHUB_OUTPUT
+          echo "skip=false" >> $GITHUB_OUTPUT
+
+      - name: Render ECS task definition with secrets
+        id: render-task-def
+        uses: aws-actions/amazon-ecs-render-task-definition@77954e213ba1f9f9cb016b86a1d4f6fcdea0d57e # v1.8.4
+        with:
+          task-definition: ${{ steps.inject-roles.outputs.updated_task_def_file }}
+          container-name: ${{ matrix.service.container }}
+          image: ${{ steps.build-image.outputs.IMAGE }}
+          environment-variables: |
+            DOTNET_ENVIRONMENT=${{ inputs.environment == 'prod' && 'Production' || 'PreProduction' }}
+          secrets: ${{ steps.build-secrets.outputs.secrets }}
+
+      - name: Deploy ECS service
+        if: steps.build-image.outputs.skip != 'true'
+        uses: aws-actions/amazon-ecs-deploy-task-definition@fc8fc60f3a60ffd500fcb13b209c59d221ac8c8c # v2.6.1
+        with:
+          task-definition: ${{ steps.render-task-def.outputs.task-definition }}
+          service: dms-${{ inputs.environment == 'prod' && 'prod' || 'preprod' }}-${{ matrix.service.name }}-service
+          cluster: dms-${{ inputs.environment == 'prod' && 'prod' || 'preprod' }}-cluster
+          wait-for-service-stability: true
