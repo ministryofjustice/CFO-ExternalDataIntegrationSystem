@@ -3,30 +3,176 @@ using Messaging.Interfaces;
 using Messaging.Messages.StatusMessages;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System.Data;
+using System.Globalization;
 
 namespace DbInteractions.Services;
 
 public class DbInteractionService : IDbInteractionService
 {
+    private static readonly string[] DeliusTables =
+    [
+        "AdditionalIdentifier", "AliasDetails", "Disability", "Disposal", "EventDetails", "Header",
+        "MainOffence", "OAS", "OffenderAddress", "OffenderManager", "OffenderManagerBuildings",
+        "OffenderManagerTeam", "OffenderToOffenderManagerMappings", "Offenders", "OffenderTransfer",
+        "PersonalCircumstances", "Provision", "RegistrationDetails", "Requirement"
+    ];
+
+    private static readonly string[] OfflocTables =
+    [
+        "Activities", "Addresses", "Agencies", "Assessments", "Bookings", "Employment", "Flags",
+        "Identifiers", "IncentiveLevel", "Locations", "MainOffence", "Movements", "OffenderAgencies",
+        "OffenderStatus", "OtherOffences", "PersonalDetails", "PNC", "PreviousPrisonNumbers",
+        "SentenceInformation", "SexOffenders"
+    ];
+
+    private static readonly CultureInfo EnGb = CultureInfo.GetCultureInfo("en-GB");
+
     private readonly IFileLocations fileLocations;
     private readonly ServerConfiguration serverConfig;
     private readonly IConfiguration configuration;
-    private readonly bool inContainer;
     private readonly IMessageService messageService;
+    private readonly ILogger<DbInteractionService> logger;
 
     public DbInteractionService(
         IOptions<ServerConfiguration> serverConfig,
         IMessageService messageService,
         IConfiguration config,
-        IFileLocations fileLocations)
+        IFileLocations fileLocations,
+        ILogger<DbInteractionService> logger)
     {
         this.serverConfig = serverConfig.Value;
         this.configuration = config;
         this.fileLocations = fileLocations;
         this.messageService = messageService;
-        this.inContainer = config.GetValue<bool>("RUNNING_IN_CONTAINER");
+        this.logger = logger;
+    }
+
+    private static async Task BulkLoadTableAsync(SqlConnection conn, string schema, string tableName, string basePath, ILogger logger)
+    {
+        var filePath = Path.Combine(basePath, $"{tableName}.txt");
+        if (!File.Exists(filePath))
+            return;
+
+        var dataTable = new DataTable();
+        using (var schemaCmd = new SqlCommand($"SELECT TOP 0 * FROM [{schema}].[{tableName}]", conn))
+        using (var schemaReader = await schemaCmd.ExecuteReaderAsync())
+        {
+            dataTable.Load(schemaReader);
+        }
+
+        int lineNumber = 0;
+        int parseFailures = 0;
+        using (var fileReader = new StreamReader(filePath, detectEncodingFromByteOrderMarks: true))
+        {
+            string? line;
+            while ((line = await fileReader.ReadLineAsync()) != null)
+            {
+                lineNumber++;
+                if (string.IsNullOrWhiteSpace(line))
+                    continue;
+
+                try
+                {
+                    var fields = line.Split('|');
+                    var row = dataTable.NewRow();
+                    for (int i = 0; i < dataTable.Columns.Count && i < fields.Length; i++)
+                        row[i] = ParseField(fields[i], dataTable.Columns[i].DataType);
+                    dataTable.Rows.Add(row);
+                }
+                catch (Exception ex)
+                {
+                    parseFailures++;
+                    logger.LogWarning(ex,
+                        "Skipped unparseable row at line {LineNumber} in {Table} ({FilePath}): {Content}",
+                        lineNumber, tableName, filePath,
+                        line.Length > 500 ? line[..500] + "…" : line);
+                }
+            }
+        }
+
+        if (parseFailures > 0)
+            logger.LogWarning("{ParseFailures} row(s) skipped in {Table} due to parse errors.", parseFailures, tableName);
+
+        int rowCount = dataTable.Rows.Count;
+
+        if (rowCount == 0)
+        {
+            logger.LogInformation("No rows to insert for {Schema}.{Table} — skipping.", schema, tableName);
+            return;
+        }
+
+        logger.LogInformation("Inserting {RowCount} row(s) into {Schema}.{Table} from {FilePath}.", rowCount, schema, tableName, filePath);
+
+        using var bulkCopy = new SqlBulkCopy(conn)
+        {
+            DestinationTableName = $"[{schema}].[{tableName}]",
+            BulkCopyTimeout = 600
+        };
+        for (int i = 0; i < dataTable.Columns.Count; i++)
+            bulkCopy.ColumnMappings.Add(i, i);
+
+        try
+        {
+            await bulkCopy.WriteToServerAsync(dataTable);
+            logger.LogInformation("Successfully inserted {RowCount} row(s) into {Schema}.{Table}.", rowCount, schema, tableName);
+        }
+        catch (Exception ex)
+        {
+            logger.LogWarning(ex, "Bulk insert failed for {Schema}.{Table}, falling back to row-by-row insertion.", schema, tableName);
+            await InsertRowByRowAsync(conn, schema, tableName, dataTable, logger);
+        }
+    }
+
+    private static async Task InsertRowByRowAsync(SqlConnection conn, string schema, string tableName, DataTable dataTable, ILogger logger)
+    {
+        var columns = dataTable.Columns.Cast<DataColumn>().ToList();
+        var colList = string.Join(", ", columns.Select(c => $"[{c.ColumnName}]"));
+        var paramList = string.Join(", ", columns.Select((_, i) => $"@p{i}"));
+        var sql = $"INSERT INTO [{schema}].[{tableName}] ({colList}) VALUES ({paramList})";
+
+        int total = dataTable.Rows.Count;
+        int failures = 0;
+        foreach (DataRow row in dataTable.Rows)
+        {
+            try
+            {
+                using var cmd = new SqlCommand(sql, conn);
+                for (int i = 0; i < columns.Count; i++)
+                    cmd.Parameters.AddWithValue($"@p{i}", row[i]);
+                await cmd.ExecuteNonQueryAsync();
+            }
+            catch (Exception ex)
+            {
+                failures++;
+                logger.LogWarning(ex, "Skipped row that failed to insert into {Schema}.{Table}.", schema, tableName);
+            }
+        }
+
+        int inserted = total - failures;
+        if (failures > 0)
+            logger.LogWarning("{Failures} row(s) failed to insert into {Schema}.{Table} and were skipped. {Inserted}/{Total} rows inserted.", failures, schema, tableName, inserted, total);
+        else
+            logger.LogInformation("Row-by-row fallback: successfully inserted all {Total} row(s) into {Schema}.{Table}.", total, schema, tableName);
+    }
+
+    private static object ParseField(string value, Type targetType)
+    {
+        if (string.IsNullOrEmpty(value))
+            return DBNull.Value;
+        if (targetType == typeof(string))
+            return value;
+        if (targetType == typeof(long))
+            return long.Parse(value, CultureInfo.InvariantCulture);
+        if (targetType == typeof(int))
+            return int.Parse(value, CultureInfo.InvariantCulture);
+        if (targetType == typeof(DateTime))
+            return DateTime.Parse(value, EnGb);
+        if (targetType == typeof(byte[]))
+            return Convert.FromHexString(value);
+        return value;
     }
 
     public async Task<string[]> GetProcessedDeliusFileNames()
@@ -149,41 +295,36 @@ public class DbInteractionService : IDbInteractionService
 
     public async Task StageDelius(string fileName, string filePath)
     {
-        string folderName = filePath.Split('/').Last();
+        string basePath = Path.Combine(fileLocations.deliusOutput, Path.GetFileNameWithoutExtension(fileName));
 
         await messageService.PublishAsync(new StatusUpdateMessage($"Delius staging started for file number {fileName}"));
 
-        string containerFlag = string.Empty;
-        if (inContainer)
+        using var conn = new SqlConnection(configuration.GetConnectionString("DeliusStagingDb")!);
+        await conn.OpenAsync();
+
+        try
         {
-            containerFlag = "Y";
+            foreach (var table in DeliusTables)
+                await BulkLoadTableAsync(conn, "DeliusStaging", table, basePath, logger);
         }
-        else
+        catch (Exception e)
         {
-            containerFlag = "N";
+            await messageService.PublishAsync(new StatusUpdateMessage(e.Message));
+            return;
         }
 
-        var deliusConn = new SqlConnection(configuration.GetConnectionString("DeliusStagingDb")!);
-        using (deliusConn)
+        try
         {
-            await deliusConn.OpenAsync();
-
-            SqlCommand cmd = new SqlCommand(serverConfig.DeliusStagingProcedure, deliusConn);
+            SqlCommand cmd = new SqlCommand(serverConfig.DeliusStagingProcedure, conn);
             cmd.CommandType = CommandType.StoredProcedure;
             cmd.CommandTimeout = 600;
-            cmd.Parameters.AddWithValue("@basePath", $"{fileLocations.deliusOutput}/{folderName}/");
             cmd.Parameters.AddWithValue("@processedFile", fileName);
-            cmd.Parameters.AddWithValue("@inContainer", containerFlag);
-
-            try
-            {
-                var res = await cmd.ExecuteNonQueryAsync();
-            }
-            catch (Exception e)
-            {
-                await messageService.PublishAsync(new StatusUpdateMessage(e.Message));
-                return;
-            }
+            await cmd.ExecuteNonQueryAsync();
+        }
+        catch (Exception e)
+        {
+            await messageService.PublishAsync(new StatusUpdateMessage(e.Message));
+            return;
         }
 
         await messageService.PublishAsync(new StatusUpdateMessage($"Delius staging finished for file {fileName}."));
@@ -191,28 +332,36 @@ public class DbInteractionService : IDbInteractionService
 
     public async Task StageOffloc(string fileName)
     {
-        string folderName = fileName.Split('.').First();
+        string basePath = Path.Combine(fileLocations.offlocOutput, Path.GetFileNameWithoutExtension(fileName));
+
         await messageService.PublishAsync(new StatusUpdateMessage($"Offloc staging started for file {fileName}."));
 
-        var offlocConn = new SqlConnection(configuration.GetConnectionString("OfflocStagingDb")!);
-        using (offlocConn)
+        using var conn = new SqlConnection(configuration.GetConnectionString("OfflocStagingDb")!);
+        await conn.OpenAsync();
+
+        try
         {
-            await offlocConn.OpenAsync();
-            SqlCommand command = new SqlCommand(serverConfig.OfflocStagingProcedure, offlocConn);
+            foreach (var table in OfflocTables)
+                await BulkLoadTableAsync(conn, "OfflocStaging", table, basePath, logger);
+        }
+        catch (Exception e)
+        {
+            await messageService.PublishAsync(new StatusUpdateMessage(e.Message));
+            return;
+        }
+
+        try
+        {
+            SqlCommand command = new SqlCommand(serverConfig.OfflocStagingProcedure, conn);
             command.CommandTimeout = 600;
             command.CommandType = CommandType.StoredProcedure;
-            command.Parameters.AddWithValue("@basePath", $"{fileLocations.offlocOutput}/{folderName}/");
             command.Parameters.AddWithValue("@processedFile", fileName);
-
-            try
-            {
-                var result = await command.ExecuteNonQueryAsync();
-            }
-            catch (Exception e)
-            {
-                await messageService.PublishAsync(new StatusUpdateMessage(e.Message));
-                return;
-            }
+            await command.ExecuteNonQueryAsync();
+        }
+        catch (Exception e)
+        {
+            await messageService.PublishAsync(new StatusUpdateMessage(e.Message));
+            return;
         }
 
         await messageService.PublishAsync(new StatusUpdateMessage($"Offloc staging finished for file {fileName}."));
