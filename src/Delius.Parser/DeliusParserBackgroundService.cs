@@ -3,6 +3,7 @@ using Messaging.Interfaces;
 using Messaging.Messages.DbMessages.Receiving;
 using Messaging.Messages.DbMessages.Sending;
 using Messaging.Messages.StagingMessages;
+using Messaging.Messages.StagingMessages.Delius;
 using Messaging.Messages.StatusMessages;
 using Messaging.Queues;
 using Microsoft.Extensions.Hosting;

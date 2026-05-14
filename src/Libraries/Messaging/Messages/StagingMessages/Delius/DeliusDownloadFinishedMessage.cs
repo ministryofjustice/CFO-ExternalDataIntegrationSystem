@@ -2,7 +2,7 @@
 using Messaging.Messages.StatusMessages;
 using Messaging.Queues;
 
-namespace Messaging.Messages.StagingMessages;
+namespace Messaging.Messages.StagingMessages.Delius;
 
 public class DeliusDownloadFinishedMessage : StagingMessage
 {

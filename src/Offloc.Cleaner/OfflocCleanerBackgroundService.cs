@@ -5,6 +5,7 @@ using Messaging.Interfaces;
 using Messaging.Messages.DbMessages.Receiving;
 using Messaging.Messages.DbMessages.Sending;
 using Messaging.Messages.StagingMessages;
+using Messaging.Messages.StagingMessages.Offloc;
 using Messaging.Messages.StatusMessages;
 using Messaging.Queues;
 using Microsoft.Extensions.Hosting;
@@ -18,13 +19,13 @@ public class OfflocCleanerBackgroundService(
 {
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        await messageService.SubscribeAsync<OfflocDownloadFinished>(async (message) => 
+        await messageService.SubscribeAsync<OfflocDownloadFinishedMessage>(async (message) => 
         {
             await ParseFileAsync(message);
         }, TStagingQueue.OfflocCleaner);
     }
 
-    private async Task ParseFileAsync(OfflocDownloadFinished message)
+    private async Task ParseFileAsync(OfflocDownloadFinishedMessage message)
     {
         string file = message.FileName;
 

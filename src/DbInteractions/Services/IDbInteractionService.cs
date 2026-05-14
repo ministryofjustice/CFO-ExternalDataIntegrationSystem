@@ -7,7 +7,7 @@ namespace DbInteractions.Services;
 public interface IDbInteractionService
 {
     Task<string[]> GetProcessedDeliusFileNames();
-    Task<int> DeliusGetFileIdLastFull();
+    Task<int> GetDeliusFileIdLastFull();
     Task<string[]> GetProcessedOfflocFileNames();
     Task<int[]> GetProcessedOfflocIds();
     Task StageDelius(string fileName, string filePath);

@@ -3,9 +3,9 @@ using Messaging.Messages.StatusMessages;
 using Messaging.Queues;
 using System.Text.Json.Serialization;
 
-namespace Messaging.Messages.StagingMessages;
+namespace Messaging.Messages.StagingMessages.Offloc;
 
-public class OfflocDownloadFinished : StagingMessage
+public class OfflocDownloadFinishedMessage : StagingMessage
 {
     public override StatusUpdateMessage StatusMessage => new();
 
@@ -13,7 +13,7 @@ public class OfflocDownloadFinished : StagingMessage
     public int FileId { get; set; }
 
     [JsonConstructor]
-    public OfflocDownloadFinished(string fileName, int fileId, string? archiveFileName = null)
+    public OfflocDownloadFinishedMessage(string fileName, int fileId, string? archiveFileName = null)
     {
         Queue = TStagingQueue.OfflocCleaner;
         base.FileName = fileName;

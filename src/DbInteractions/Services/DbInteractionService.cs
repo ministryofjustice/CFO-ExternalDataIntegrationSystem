@@ -56,7 +56,7 @@ public class DbInteractionService : IDbInteractionService
         }
     }
 
-    public async Task<int> DeliusGetFileIdLastFull()
+    public async Task<int> GetDeliusFileIdLastFull()
     {
         int fileId = 0;
 

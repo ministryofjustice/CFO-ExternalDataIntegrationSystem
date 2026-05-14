@@ -30,7 +30,7 @@ public class CleanupBackgroundService(
             deliusCleanup.ClearIllegalFiles();
         }, TStagingQueue.DeliusFilesClear);
 
-        await messageService.SubscribeAsync<ClearHalfCleanedOfflocFiles>(async _ =>
+        await messageService.SubscribeAsync<ClearTemporaryOfflocFiles>(async _ =>
         {
             offlocCleanup.ClearIllegalFiles();
         }, TStagingQueue.OfflocFilesClear);

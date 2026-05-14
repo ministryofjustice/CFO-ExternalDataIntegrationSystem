@@ -5,13 +5,13 @@ using System.Text.Json.Serialization;
 
 namespace Messaging.Messages.StagingMessages.Offloc;
 
-public class ClearHalfCleanedOfflocFiles : StagingMessage
+public class ClearTemporaryOfflocFiles : StagingMessage
 {
     public override StatusUpdateMessage StatusMessage => 
         new StatusUpdateMessage();
 
     [JsonConstructor]
-    public ClearHalfCleanedOfflocFiles()
+    public ClearTemporaryOfflocFiles()
     {
         Queue = TStagingQueue.OfflocFilesClear;
     }

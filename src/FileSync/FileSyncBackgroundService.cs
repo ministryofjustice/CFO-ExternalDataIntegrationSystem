@@ -6,7 +6,6 @@ using Messaging.Messages;
 using Messaging.Messages.DbMessages.Receiving;
 using Messaging.Messages.DbMessages.Sending;
 using Messaging.Messages.MatchingMessages.Clustering;
-using Messaging.Messages.StagingMessages;
 using Messaging.Messages.StagingMessages.Delius;
 using Messaging.Messages.StagingMessages.Offloc;
 using Messaging.Messages.StatusMessages;
@@ -147,7 +146,7 @@ public class FileSyncBackgroundService(
             logger.LogInformation($"Targeting: Delius file ({unprocessedDeliusFile.Name}), Offloc file ({unprocessedOfflocFile.Name})");
 
             await messageService.PublishAsync(new DeliusDownloadFinishedMessage(unprocessedDeliusFile.Name, unprocessedDeliusFile.GetFileId()));
-            await messageService.PublishAsync(new OfflocDownloadFinished(unprocessedOfflocFile.Name, unprocessedOfflocFile.GetFileId()!.Value, unprocessedOfflocFile.ParentArchiveName));
+            await messageService.PublishAsync(new OfflocDownloadFinishedMessage(unprocessedOfflocFile.Name, unprocessedOfflocFile.GetFileId()!.Value, unprocessedOfflocFile.ParentArchiveName));
         }
         finally
         {
@@ -277,7 +276,7 @@ public class FileSyncBackgroundService(
     private async Task PreKickoffTasks()
     {
         await LogStatus("Publishing pre-kickoff messages...");
-        await messageService.PublishAsync(new ClearHalfCleanedOfflocFiles());
+        await messageService.PublishAsync(new ClearTemporaryOfflocFiles());
         await messageService.PublishAsync(new ClearTemporaryDeliusFiles());
 
         await LogStatus("Pre-kickoff messages published. Beginning staging database tear down...");

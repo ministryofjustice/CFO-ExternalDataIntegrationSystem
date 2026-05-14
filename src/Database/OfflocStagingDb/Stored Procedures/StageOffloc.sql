@@ -4,7 +4,7 @@
 -- Description:	Import of the OffLoc files
 -- =============================================
 
-CREATE PROCEDURE [OfflocStaging].[Import]
+CREATE PROCEDURE [OfflocStaging].[StageOffloc]
     @basePath VARCHAR(100),
     @processedFile VARCHAR(50)
 AS
