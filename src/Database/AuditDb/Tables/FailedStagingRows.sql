@@ -8,6 +8,7 @@ CREATE TABLE [dbo].[FailedStagingRows]
     [FailureType]     NVARCHAR(32)     NOT NULL,  -- 'ParseFailure' | 'InsertFailure'
     [LineNumber]      INT              NULL,       -- populated for ParseFailure, null for InsertFailure
     [RowContent]      NVARCHAR(MAX)    NOT NULL,
+    [RowJson]         NVARCHAR(MAX)    NULL,       -- column:value pairs as JSON; parse failures include _failingField
     [ErrorMessage]    NVARCHAR(MAX)    NOT NULL,
     [ErrorDetail]     NVARCHAR(MAX)    NULL,       -- full stack trace
     CONSTRAINT [PK_FailedStagingRows] PRIMARY KEY ([Id])

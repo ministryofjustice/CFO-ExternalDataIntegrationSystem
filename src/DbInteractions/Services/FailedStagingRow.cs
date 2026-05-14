@@ -8,6 +8,7 @@ public record FailedStagingRow(
     string FailureType,
     int? LineNumber,
     string RowContent,
+    IReadOnlyDictionary<string, string?> RowValues,
     string ErrorMessage,
     string? ErrorDetail
 );

@@ -7,6 +7,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System.Data;
 using System.Globalization;
+using System.Text.Json;
 
 namespace DbInteractions.Services;
 
@@ -91,6 +92,13 @@ public class DbInteractionService : IDbInteractionService
                         lineNumber, tableReference, filePath,
                         line.Length > 500 ? line[..500] + "…" : line);
 
+                    var fields = line.Split('|');
+                    var rowValues = new Dictionary<string, string?>();
+                    for (int i = 0; i < dataTable.Columns.Count && i < fields.Length; i++)
+                    {
+                        rowValues[dataTable.Columns[i].ColumnName] = fields[i];
+                    }
+
                     failures.Add(new FailedStagingRow(
                         Timestamp: DateTime.UtcNow,
                         FileName: fileName,
@@ -99,6 +107,7 @@ public class DbInteractionService : IDbInteractionService
                         FailureType: "ParseFailure",
                         LineNumber: lineNumber,
                         RowContent: line.Length > 4000 ? line[..4000] + "…" : line,
+                        RowValues: rowValues,
                         ErrorMessage: ex.Message,
                         ErrorDetail: ex.ToString()
                     ));
@@ -165,6 +174,10 @@ public class DbInteractionService : IDbInteractionService
                 logger.LogWarning(ex, "Skipped row that failed to insert into {TableReference}.", tableReference);
 
                 var rowContent = string.Join("|", row.ItemArray.Select(v => v is DBNull ? "" : Convert.ToString(v)));
+                var rowValues = columns.ToDictionary(
+                    c => c.ColumnName,
+                    c => row[c] is DBNull ? null : Convert.ToString(row[c])
+                );
                 failures.Add(new FailedStagingRow(
                     Timestamp: DateTime.UtcNow,
                     FileName: fileName,
@@ -173,6 +186,7 @@ public class DbInteractionService : IDbInteractionService
                     FailureType: "InsertFailure",
                     LineNumber: null,
                     RowContent: rowContent.Length > 4000 ? rowContent[..4000] + "…" : rowContent,
+                    RowValues: rowValues,
                     ErrorMessage: ex.Message,
                     ErrorDetail: ex.ToString()
                 ));
@@ -204,6 +218,7 @@ public class DbInteractionService : IDbInteractionService
             table.Columns.Add("FailureType",     typeof(string));
             table.Columns.Add("LineNumber",      typeof(int));
             table.Columns.Add("RowContent",      typeof(string));
+            table.Columns.Add("RowJson",         typeof(string));
             table.Columns.Add("ErrorMessage",    typeof(string));
             table.Columns.Add("ErrorDetail",     typeof(string));
 
@@ -218,6 +233,7 @@ public class DbInteractionService : IDbInteractionService
                     f.FailureType,
                     f.LineNumber.HasValue ? (object)f.LineNumber.Value : DBNull.Value,
                     f.RowContent,
+                    JsonSerializer.Serialize(f.RowValues),
                     f.ErrorMessage,
                     (object?)f.ErrorDetail ?? DBNull.Value
                 );
