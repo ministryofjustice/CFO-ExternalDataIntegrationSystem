@@ -50,11 +50,14 @@ public class DbInteractionService : IDbInteractionService
         this.logger = logger;
     }
 
-    private static async Task BulkLoadTableAsync(SqlConnection conn, string schema, string tableName, string basePath, ILogger logger)
+    private static async Task<List<FailedStagingRow>> BulkLoadTableAsync(SqlConnection conn, string schema, string tableName, string basePath, string fileName, ILogger logger)
     {
+        var failures = new List<FailedStagingRow>();
         var filePath = Path.Combine(basePath, $"{tableName}.txt");
         if (!File.Exists(filePath))
-            return;
+            return failures;
+
+        var tableReference = $"{conn.Database}.{schema}.{tableName}";
 
         var dataTable = new DataTable();
         using (var schemaCmd = new SqlCommand($"SELECT TOP 0 * FROM [{schema}].[{tableName}]", conn))
@@ -64,7 +67,6 @@ public class DbInteractionService : IDbInteractionService
         }
 
         int lineNumber = 0;
-        int parseFailures = 0;
         using (var fileReader = new StreamReader(filePath, detectEncodingFromByteOrderMarks: true))
         {
             string? line;
@@ -84,27 +86,38 @@ public class DbInteractionService : IDbInteractionService
                 }
                 catch (Exception ex)
                 {
-                    parseFailures++;
                     logger.LogWarning(ex,
-                        "Skipped unparseable row at line {LineNumber} in {Table} ({FilePath}): {Content}",
-                        lineNumber, tableName, filePath,
+                        "Skipped unparseable row at line {LineNumber} in {TableReference} ({FilePath}): {Content}",
+                        lineNumber, tableReference, filePath,
                         line.Length > 500 ? line[..500] + "…" : line);
+
+                    failures.Add(new FailedStagingRow(
+                        Timestamp: DateTime.UtcNow,
+                        FileName: fileName,
+                        FilePath: filePath,
+                        TableReference: tableReference,
+                        FailureType: "ParseFailure",
+                        LineNumber: lineNumber,
+                        RowContent: line.Length > 4000 ? line[..4000] + "…" : line,
+                        ErrorMessage: ex.Message,
+                        ErrorDetail: ex.ToString()
+                    ));
                 }
             }
         }
 
-        if (parseFailures > 0)
-            logger.LogWarning("{ParseFailures} row(s) skipped in {Table} due to parse errors.", parseFailures, tableName);
+        if (failures.Count > 0)
+            logger.LogWarning("{ParseFailures} row(s) skipped in {TableReference} due to parse errors.", failures.Count, tableReference);
 
         int rowCount = dataTable.Rows.Count;
 
         if (rowCount == 0)
         {
-            logger.LogInformation("No rows to insert for {Schema}.{Table} — skipping.", schema, tableName);
-            return;
+            logger.LogInformation("No rows to insert for {TableReference} — skipping.", tableReference);
+            return failures;
         }
 
-        logger.LogInformation("Inserting {RowCount} row(s) into {Schema}.{Table} from {FilePath}.", rowCount, schema, tableName, filePath);
+        logger.LogInformation("Inserting {RowCount} row(s) into {TableReference} from {FilePath}.", rowCount, tableReference, filePath);
 
         using var bulkCopy = new SqlBulkCopy(conn)
         {
@@ -117,24 +130,27 @@ public class DbInteractionService : IDbInteractionService
         try
         {
             await bulkCopy.WriteToServerAsync(dataTable);
-            logger.LogInformation("Successfully inserted {RowCount} row(s) into {Schema}.{Table}.", rowCount, schema, tableName);
+            logger.LogInformation("Successfully inserted {RowCount} row(s) into {TableReference}.", rowCount, tableReference);
         }
         catch (Exception ex)
         {
-            logger.LogWarning(ex, "Bulk insert failed for {Schema}.{Table}, falling back to row-by-row insertion.", schema, tableName);
-            await InsertRowByRowAsync(conn, schema, tableName, dataTable, logger);
+            logger.LogWarning(ex, "Bulk insert failed for {TableReference}, falling back to row-by-row insertion.", tableReference);
+            var insertFailures = await InsertRowByRowAsync(conn, schema, tableName, tableReference, dataTable, fileName, filePath, logger);
+            failures.AddRange(insertFailures);
         }
+
+        return failures;
     }
 
-    private static async Task InsertRowByRowAsync(SqlConnection conn, string schema, string tableName, DataTable dataTable, ILogger logger)
+    private static async Task<List<FailedStagingRow>> InsertRowByRowAsync(SqlConnection conn, string schema, string tableName, string tableReference, DataTable dataTable, string fileName, string filePath, ILogger logger)
     {
+        var failures = new List<FailedStagingRow>();
         var columns = dataTable.Columns.Cast<DataColumn>().ToList();
         var colList = string.Join(", ", columns.Select(c => $"[{c.ColumnName}]"));
         var paramList = string.Join(", ", columns.Select((_, i) => $"@p{i}"));
         var sql = $"INSERT INTO [{schema}].[{tableName}] ({colList}) VALUES ({paramList})";
 
         int total = dataTable.Rows.Count;
-        int failures = 0;
         foreach (DataRow row in dataTable.Rows)
         {
             try
@@ -146,16 +162,87 @@ public class DbInteractionService : IDbInteractionService
             }
             catch (Exception ex)
             {
-                failures++;
-                logger.LogWarning(ex, "Skipped row that failed to insert into {Schema}.{Table}.", schema, tableName);
+                logger.LogWarning(ex, "Skipped row that failed to insert into {TableReference}.", tableReference);
+
+                var rowContent = string.Join("|", row.ItemArray.Select(v => v is DBNull ? "" : Convert.ToString(v)));
+                failures.Add(new FailedStagingRow(
+                    Timestamp: DateTime.UtcNow,
+                    FileName: fileName,
+                    FilePath: filePath,
+                    TableReference: tableReference,
+                    FailureType: "InsertFailure",
+                    LineNumber: null,
+                    RowContent: rowContent.Length > 4000 ? rowContent[..4000] + "…" : rowContent,
+                    ErrorMessage: ex.Message,
+                    ErrorDetail: ex.ToString()
+                ));
             }
         }
 
-        int inserted = total - failures;
-        if (failures > 0)
-            logger.LogWarning("{Failures} row(s) failed to insert into {Schema}.{Table} and were skipped. {Inserted}/{Total} rows inserted.", failures, schema, tableName, inserted, total);
+        int inserted = total - failures.Count;
+        if (failures.Count > 0)
+            logger.LogWarning("{Failures} row(s) failed to insert into {TableReference} and were skipped. {Inserted}/{Total} rows inserted.", failures.Count, tableReference, inserted, total);
         else
-            logger.LogInformation("Row-by-row fallback: successfully inserted all {Total} row(s) into {Schema}.{Table}.", total, schema, tableName);
+            logger.LogInformation("Row-by-row fallback: successfully inserted all {Total} row(s) into {TableReference}.", total, tableReference);
+
+        return failures;
+    }
+
+    private async Task FlushFailedRowsAsync(List<FailedStagingRow> failures)
+    {
+        if (failures.Count == 0)
+            return;
+
+        try
+        {
+            var table = new DataTable();
+            table.Columns.Add("Id",              typeof(Guid));
+            table.Columns.Add("Timestamp",       typeof(DateTime));
+            table.Columns.Add("FileName",        typeof(string));
+            table.Columns.Add("FilePath",        typeof(string));
+            table.Columns.Add("TableReference",  typeof(string));
+            table.Columns.Add("FailureType",     typeof(string));
+            table.Columns.Add("LineNumber",      typeof(int));
+            table.Columns.Add("RowContent",      typeof(string));
+            table.Columns.Add("ErrorMessage",    typeof(string));
+            table.Columns.Add("ErrorDetail",     typeof(string));
+
+            foreach (var f in failures)
+            {
+                table.Rows.Add(
+                    Guid.NewGuid(),
+                    f.Timestamp,
+                    f.FileName,
+                    f.FilePath,
+                    f.TableReference,
+                    f.FailureType,
+                    f.LineNumber.HasValue ? (object)f.LineNumber.Value : DBNull.Value,
+                    f.RowContent,
+                    f.ErrorMessage,
+                    (object?)f.ErrorDetail ?? DBNull.Value
+                );
+            }
+
+            using var conn = new SqlConnection(configuration.GetConnectionString("AuditDb")!);
+            await conn.OpenAsync();
+
+            using var bulkCopy = new SqlBulkCopy(conn)
+            {
+                DestinationTableName = "[dbo].[FailedStagingRows]",
+                BulkCopyTimeout = 120
+            };
+
+            foreach (DataColumn col in table.Columns)
+                bulkCopy.ColumnMappings.Add(col.ColumnName, col.ColumnName);
+
+            await bulkCopy.WriteToServerAsync(table);
+            logger.LogInformation("Recorded {Count} failed staging row(s) to AuditDb.", failures.Count);
+        }
+        catch (Exception ex)
+        {
+            // Audit failures must never affect the import pipeline.
+            logger.LogError(ex, "Failed to record {Count} failed staging row(s) to AuditDb. Import was unaffected.", failures.Count);
+        }
     }
 
     private static object ParseField(string value, Type targetType)
@@ -302,10 +389,15 @@ public class DbInteractionService : IDbInteractionService
         using var conn = new SqlConnection(configuration.GetConnectionString("DeliusStagingDb")!);
         await conn.OpenAsync();
 
+        var allFailures = new List<FailedStagingRow>();
+
         try
         {
             foreach (var table in DeliusTables)
-                await BulkLoadTableAsync(conn, "DeliusStaging", table, basePath, logger);
+            {
+                var failures = await BulkLoadTableAsync(conn, "DeliusStaging", table, basePath, fileName, logger);
+                allFailures.AddRange(failures);
+            }
         }
         catch (Exception e)
         {
@@ -327,6 +419,7 @@ public class DbInteractionService : IDbInteractionService
             return;
         }
 
+        await FlushFailedRowsAsync(allFailures);
         await messageService.PublishAsync(new StatusUpdateMessage($"Delius staging finished for file {fileName}."));
     }
 
@@ -339,10 +432,15 @@ public class DbInteractionService : IDbInteractionService
         using var conn = new SqlConnection(configuration.GetConnectionString("OfflocStagingDb")!);
         await conn.OpenAsync();
 
+        var allFailures = new List<FailedStagingRow>();
+
         try
         {
             foreach (var table in OfflocTables)
-                await BulkLoadTableAsync(conn, "OfflocStaging", table, basePath, logger);
+            {
+                var failures = await BulkLoadTableAsync(conn, "OfflocStaging", table, basePath, fileName, logger);
+                allFailures.AddRange(failures);
+            }
         }
         catch (Exception e)
         {
@@ -364,6 +462,7 @@ public class DbInteractionService : IDbInteractionService
             return;
         }
 
+        await FlushFailedRowsAsync(allFailures);
         await messageService.PublishAsync(new StatusUpdateMessage($"Offloc staging finished for file {fileName}."));
     }
     //Calls merge and then on completion
