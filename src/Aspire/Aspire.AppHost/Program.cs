@@ -13,11 +13,9 @@ var seedData = builder.Configuration.GetValue<bool>("Parameters:seedData");
 var startCoreServices = builder.Configuration.GetValue<bool>("Parameters:startCoreServices");
 
 var hostMount = HostExtensions.Create(Path.Combine(builder.AppHostDirectory, "DMS_STAGING"));
-var targetMount = "/app/";
 
 // Database setup
-var sql = builder.AddDmsSqlServer(sqlPassword)
-    .WithBindMount(hostMount, targetMount);
+var sql = builder.AddDmsSqlServer(sqlPassword);
 
 var databases = builder.AddDmsDatabases(sql, seedData);
 
@@ -42,8 +40,7 @@ if (startCoreServices)
         minio,
         rabbit,
         databases,
-        hostMount,
-        targetMount);
+        hostMount);
 }
 
 builder.Build().Run();
