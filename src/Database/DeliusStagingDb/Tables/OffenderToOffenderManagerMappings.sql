@@ -2,7 +2,7 @@
 (
 	[OffenderId] BIGINT NOT NULL,
 	[Id] BIGINT NOT NULL,
-	[AllocatedDate] SMALLDATETIME NULL,
+	[AllocatedDate] DATE NULL,
 	[EndDate] DATE NULL,
 	[OmCode] NVARCHAR(7) NULL,
 	[OrgCode] [nvarchar](3) NULL,
