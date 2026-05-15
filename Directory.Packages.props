@@ -3,17 +3,17 @@
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
   </PropertyGroup>
   <ItemGroup>
-    <PackageVersion Include="Aspire.Hosting.RabbitMQ" Version="13.2.4" />
-    <PackageVersion Include="Aspire.Hosting.Redis" Version="13.2.4" />
-    <PackageVersion Include="Aspire.Hosting.SqlServer" Version="13.2.4" />
-    <PackageVersion Include="Aspire.RabbitMQ.Client" Version="13.2.4" />
-    <PackageVersion Include="AWSSDK.Extensions.NETCore.Setup" Version="4.0.3.36" />
+    <PackageVersion Include="Aspire.Hosting.RabbitMQ" Version="13.3.0" />
+    <PackageVersion Include="Aspire.Hosting.Redis" Version="13.3.0" />
+    <PackageVersion Include="Aspire.Hosting.SqlServer" Version="13.3.0" />
+    <PackageVersion Include="Aspire.RabbitMQ.Client" Version="13.3.0" />
+    <PackageVersion Include="AWSSDK.Extensions.NETCore.Setup" Version="4.0.3.37" />
     <PackageVersion Include="AWSSDK.SecurityToken" Version="4.0.6.3" />
     <PackageVersion Include="CommunityToolkit.Aspire.Hosting.Minio" Version="13.1.1" />
     <PackageVersion Include="CommunityToolkit.Aspire.Hosting.SqlDatabaseProjects" Version="13.1.1" />
     <PackageVersion Include="Autofac" Version="9.1.0" />
     <PackageVersion Include="Autofac.Extensions.DependencyInjection" Version="11.0.0" />
-    <PackageVersion Include="AWSSDK.S3" Version="4.0.22.2" />
+    <PackageVersion Include="AWSSDK.S3" Version="4.0.23" />
     <PackageVersion Include="CommunityToolkit.Aspire.Minio.Client" Version="13.1.1" />
     <PackageVersion Include="coverlet.collector" Version="10.0.0">
       <PrivateAssets>all</PrivateAssets>
