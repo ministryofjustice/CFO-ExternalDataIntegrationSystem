@@ -140,7 +140,9 @@
         "DMSFilesBasePath",
         "S3_BucketName",
         "RabbitMQ",
-        "Sentry_Dsn"
+        "Sentry_Dsn",
+        "FileSync_ProcessOnStartup",
+        "FileSync_ProcessTimerIntervalSeconds"
       ]
     },
     {

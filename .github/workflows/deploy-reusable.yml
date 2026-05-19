@@ -160,6 +160,8 @@ jobs:
             ["DMSFilesBasePath"]="DMSFilesBasePath"
             ["DMSFilesBasePath_DbInteractions"]="DMSFilesBasePath"
             ["Sentry_Dsn"]="Sentry_Dsn"
+            ["FileSync_ProcessOnStartup"]="SyncOptions__ProcessOnStartup"
+            ["FileSync_ProcessTimerIntervalSeconds"]="SyncOptions__ProcessTimerIntervalSeconds"
           )
           
           # Get the full secret ARN
