@@ -158,7 +158,6 @@ jobs:
             ["CatsRabbitMQ"]="ConnectionStrings__CatsRabbitMQ"
             ["RabbitMQ"]="ConnectionStrings__RabbitMQ"
             ["DMSFilesBasePath"]="DMSFilesBasePath"
-            ["DMSFilesBasePath_DbInteractions"]="DMSFilesBasePath"
             ["Sentry_Dsn"]="Sentry_Dsn"
             ["FileSync_ProcessOnStartup"]="SyncOptions__ProcessOnStartup"
             ["FileSync_ProcessTimerIntervalSeconds"]="SyncOptions__ProcessTimerIntervalSeconds"

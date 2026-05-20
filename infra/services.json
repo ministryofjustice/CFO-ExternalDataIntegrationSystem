@@ -101,7 +101,7 @@
       "taskDef": "infra/task-definitions/dbinteractions-task-def.json",
       "container": "dbinteractions-container",
       "secrets": [
-        "DMSFilesBasePath_DbInteractions",
+        "DMSFilesBasePath",
         "DeliusRunningPictureDb",
         "OfflocRunningPictureDb",
         "DeliusStagingDb",
