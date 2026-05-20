@@ -55,10 +55,12 @@ public class DbInteractionService : IDbInteractionService
     {
         var failures = new List<FailedStagingRow>();
         var filePath = Path.Combine(basePath, $"{tableName}.txt");
-        if (!File.Exists(filePath))
-            return failures;
-
         var tableReference = $"{conn.Database}.{schema}.{tableName}";
+        if (!File.Exists(filePath))
+        {
+            logger.LogWarning("File not found, skipping table {TableReference}. Expected path: {FilePath}", tableReference, filePath);
+            return failures;
+        }
 
         var dataTable = new DataTable();
         using (var schemaCmd = new SqlCommand($"SELECT TOP 0 * FROM [{schema}].[{tableName}]", conn))
@@ -400,6 +402,7 @@ public class DbInteractionService : IDbInteractionService
     {
         string basePath = Path.Combine(fileLocations.deliusOutput, Path.GetFileNameWithoutExtension(fileName));
 
+        logger.LogInformation("StageDelius: reading from basePath={BasePath}", basePath);
         await messageService.PublishAsync(new StatusUpdateMessage($"Delius staging started for file number {fileName}"));
 
         using var conn = new SqlConnection(configuration.GetConnectionString("DeliusStagingDb")!);
@@ -418,7 +421,7 @@ public class DbInteractionService : IDbInteractionService
         catch (Exception e)
         {
             await messageService.PublishAsync(new StatusUpdateMessage(e.Message));
-            return;
+            throw;
         }
 
         try
@@ -432,7 +435,7 @@ public class DbInteractionService : IDbInteractionService
         catch (Exception e)
         {
             await messageService.PublishAsync(new StatusUpdateMessage(e.Message));
-            return;
+            throw;
         }
 
         await FlushFailedRowsAsync(allFailures);
@@ -443,6 +446,7 @@ public class DbInteractionService : IDbInteractionService
     {
         string basePath = Path.Combine(fileLocations.offlocOutput, Path.GetFileNameWithoutExtension(fileName));
 
+        logger.LogInformation("StageOffloc: reading from basePath={BasePath}", basePath);
         await messageService.PublishAsync(new StatusUpdateMessage($"Offloc staging started for file {fileName}."));
 
         using var conn = new SqlConnection(configuration.GetConnectionString("OfflocStagingDb")!);
@@ -461,7 +465,7 @@ public class DbInteractionService : IDbInteractionService
         catch (Exception e)
         {
             await messageService.PublishAsync(new StatusUpdateMessage(e.Message));
-            return;
+            throw;
         }
 
         try
@@ -475,7 +479,7 @@ public class DbInteractionService : IDbInteractionService
         catch (Exception e)
         {
             await messageService.PublishAsync(new StatusUpdateMessage(e.Message));
-            return;
+            throw;
         }
 
         await FlushFailedRowsAsync(allFailures);
