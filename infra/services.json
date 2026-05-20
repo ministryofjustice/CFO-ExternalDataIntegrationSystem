@@ -102,6 +102,7 @@
       "container": "dbinteractions-container",
       "secrets": [
         "DMSFilesBasePath",
+        "AuditDb",
         "DeliusRunningPictureDb",
         "OfflocRunningPictureDb",
         "DeliusStagingDb",
